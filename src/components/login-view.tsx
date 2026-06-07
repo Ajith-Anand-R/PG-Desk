@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -206,7 +206,7 @@ export function LoginView({ onLogin, onRegisterClick }: LoginViewProps) {
 
           {/* Don't have an account link */}
           <div className="text-center mt-2">
-            <span className="text-slate-400 text-xs font-semibold">Don't have an account? </span>
+            <span className="text-slate-400 text-xs font-semibold">Don&apos;t have an account? </span>
             <button
               type="button"
               onClick={onRegisterClick}

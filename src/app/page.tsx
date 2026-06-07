@@ -1,1118 +1,787 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  LayoutDashboard, 
-  Bed, 
-  HelpCircle, 
-  X, 
-  User, 
   Building, 
-  Building2, 
-  Landmark, 
-  Settings, 
-  Wallet, 
-  Gift, 
-  FileText, 
-  Crown, 
-  LogOut, 
-  Home as HomeIcon, 
-  QrCode 
+  Check, 
+  ArrowRight, 
+  Smartphone, 
+  X, 
+  ChevronDown, 
+  Users, 
+  CreditCard, 
+  BedDouble, 
+  AlertCircle, 
+  ShieldCheck, 
+  TrendingUp, 
+  Clock,
+  Download,
+  ExternalLink,
+  ChevronRight,
+  Sparkles
 } from "lucide-react";
-import { MobileFrame } from "@/components/ui/mobile-frame";
-import { DashboardView } from "@/components/dashboard-view";
-import { LoginView } from "@/components/login-view";
-import { RegisterView } from "@/components/register-view";
-import { RoomsView } from "@/components/rooms-view";
-import { SupportView } from "@/components/support-view";
-import { PropertySelector, Property } from "@/components/property-selector";
-import { CreatePropertyView } from "@/components/create-property-view";
-import { ProfileView } from "@/components/profile-view";
-import { SettingsView } from "@/components/settings-view";
-import { ViewProfileView } from "@/components/view-profile-view";
-import { BankDetailsView, BankDetails } from "@/components/bank-details-view";
-import { WalletView, Transaction } from "@/components/wallet-view";
-import { ReferralView } from "@/components/referral-view";
-import { TenantTermsView } from "@/components/tenant-terms-view";
-import { SubscriptionView } from "@/components/subscription-view";
-import { ChangePasswordView } from "@/components/change-password-view";
-import { PropertyQrModal } from "@/components/property-qr-modal";
-import { NotificationsView } from "@/components/notifications-view";
-import { RemindersView } from "@/components/reminders-view";
-import { BillsView } from "@/components/bills-view";
-import { StaffView } from "@/components/staff-view";
-import { ReceiptsView } from "@/components/receipts-view";
 
-// TypeScript interfaces for shared state
-export interface Room {
-  id: string;
-  name: string;
-  floor: number;
-  capacity: number;
-  beds: ("available" | "occupied")[];
-}
+// Dynamically import the 3D Scene with SSR disabled to prevent pre-rendering failures
+const ThreeDScene = dynamic(() => import("@/components/3d/ThreeDScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">BOOTING 3D RENDERING ENGINE...</span>
+      </div>
+    </div>
+  ),
+});
 
-export interface Tenant {
-  id: string;
-  name: string;
-  roomName: string;
-  rentAmount: number;
-  status: "active" | "left";
-}
+export default function LandingPage() {
+  const [currentSection, setCurrentSection] = useState(0);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [pricingTab, setPricingTab] = useState<"pricing" | "faq">("pricing");
+  
+  // PWA Install Event State
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [showLaunchModal, setShowLaunchModal] = useState(false);
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts";
-
-export default function Home() {
-  const [currentView, setCurrentView] = useState<ViewType>("dashboard");
-  const [isPropertySelectorOpen, setIsPropertySelectorOpen] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [currentProperty, setCurrentProperty] = useState("Uday Pg");
-  const [showSplash, setShowSplash] = useState(true);
-  const [receiptsInitialTab, setReceiptsInitialTab] = useState<"dues" | "receipts">("receipts");
-
-  // Shared properties database state
-  const [properties, setProperties] = useState<Property[]>([
-    { name: "Uday Pg", code: "BVBQEEXU" },
-    { name: "Srinivasa PG", code: "SVPGEEXY" },
-    { name: "Venkata PG", code: "VKPGEEXZ" },
-  ]);
-
-  const handleAddProperty = (name: string) => {
-    const randomCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const newProp = { name, code: randomCode };
-    setProperties((prev) => [...prev, newProp]);
-    setCurrentProperty(name);
-    setToastMessage(`Property "${name}" created successfully!`);
-  };
-
-  const handleCreateProperty = (name: string) => {
-    handleAddProperty(name);
-    setCurrentView("dashboard");
-  };
-
-  // --- Shared Application Database State ---
-  const [rooms, setRooms] = useState<Room[]>([
-    { id: "1", name: "Room 1", floor: 1, capacity: 3, beds: ["occupied", "occupied", "available"] },
-    { id: "2", name: "Room 2", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "3", name: "Room 3", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "4", name: "Room 4", floor: 1, capacity: 6, beds: ["occupied", "occupied", "occupied", "occupied", "occupied", "occupied"] },
-    { id: "5", name: "Room 5", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "6", name: "Room 6", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "7", name: "Room 7", floor: 2, capacity: 3, beds: ["available", "available", "occupied"] },
-    { id: "8", name: "Room 8", floor: 2, capacity: 4, beds: ["available", "occupied", "occupied", "occupied"] },
-    { id: "9", name: "Room 9", floor: 3, capacity: 2, beds: ["available", "available"] },
-  ]);
-
-  const [tenants, setTenants] = useState<Tenant[]>([
-    { id: "t1", name: "Aarav Nair", roomName: "Room 1", rentAmount: 7000, status: "active" },
-    { id: "t2", name: "Vihaan Joshi", roomName: "Room 7", rentAmount: 7700.15, status: "active" },
-  ]);
-
-  // Modal display toggles
-  const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
-  const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [user, setUser] = useState({
-    name: "Uday Kumar",
-    email: "uday@example.com",
-    phone: "+91 99887 76655",
-    photo: null as string | null
-  });
-
-  const [bankDetails, setBankDetails] = useState<BankDetails>({
-    upiName: "durga",
-    upiNumber: "6369282277",
-    upiRegisteredName: "durga",
-    upiId: "ahmedp7@ybl",
-    accountHolderName: "",
-    accountNumber: "",
-    ifscCode: "",
-    branchName: ""
-  });
-
-  const [walletPoints, setWalletPoints] = useState(1250);
-  const [walletRedeemed, setWalletRedeemed] = useState(350);
-  const [walletTransactions, setWalletTransactions] = useState<Transaction[]>([
-    { id: "tx_1", title: "Referral Bonus", date: "Jun 5, 2026", points: 500, type: "earn" },
-    { id: "tx_2", title: "Rent Payment Cashback", date: "Jun 1, 2026", points: 150, type: "earn" },
-    { id: "tx_3", title: "Early Bird Discount", date: "May 28, 2026", points: 100, type: "earn" },
-    { id: "tx_4", title: "Redeemed Rent Discount", date: "May 15, 2026", points: 350, type: "redeem" }
-  ]);
-
-  // Auto-hide toast messages
   useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
-
-  // New Tenant form state
-  const [tenantName, setTenantName] = useState("");
-  const [tenantRoomId, setTenantRoomId] = useState("");
-  const [tenantRent, setTenantRent] = useState("");
-
-  // New Room form state
-  const [roomName, setRoomName] = useState("");
-  const [roomFloor, setRoomFloor] = useState("");
-  const [roomCapacity, setRoomCapacity] = useState("3");
-
-  // Auto-hide splash screen after 1.8 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Shared state dynamic computations
-  const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
-  const occupiedBedsCount = rooms.reduce(
-    (acc, r) => acc + r.beds.filter((status) => status === "occupied").length,
-    0
-  );
-  const availableBedsCount = totalBeds - occupiedBedsCount;
-
-  const activeTenantsCount = tenants.filter((t) => t.status === "active").length;
-  const leftTenantsCount = tenants.filter((t) => t.status === "left").length;
-  const collectedAmountSum = tenants
-    .filter((t) => t.status === "active")
-    .reduce((acc, t) => acc + t.rentAmount, 0);
-
-  // Bed status toggling callback
-  const handleToggleBed = (roomId: string, bedIndex: number) => {
-    setRooms((prevRooms) =>
-      prevRooms.map((room) => {
-        if (room.id !== roomId) return room;
-        const newBeds = [...room.beds];
-        newBeds[bedIndex] = newBeds[bedIndex] === "available" ? "occupied" : "available";
-        return { ...room, beds: newBeds };
-      })
-    );
-  };
-
-  // Add a tenant submission handler
-  const handleAddTenantSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenantName.trim() || !tenantRoomId || !tenantRent) return;
-
-    const targetRoom = rooms.find((r) => r.id === tenantRoomId);
-    if (!targetRoom) return;
-
-    // Find the first available bed in this room
-    const availableBedIdx = targetRoom.beds.indexOf("available");
-    if (availableBedIdx === -1) {
-      alert("This room is already at full capacity!");
+    // 0. Redirect immediately if running inside standalone PWA window
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone
+    ) {
+      window.location.replace("/app");
       return;
     }
 
-    // 1. Add tenant to list
-    const newTenant: Tenant = {
-      id: `t_${Date.now()}`,
-      name: tenantName.trim(),
-      roomName: targetRoom.name,
-      rentAmount: Number(tenantRent),
-      status: "active",
+    // 1. Add overflow-hidden to body to block standard scrolling
+    document.body.classList.add("overflow-hidden");
+
+    // 2. Capture PWA Install Prompt
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      console.log("PWA beforeinstallprompt event captured.");
     };
 
-    // 2. Mark bed as occupied
-    const updatedRooms = rooms.map((r) => {
-      if (r.id !== targetRoom.id) return r;
-      const newBeds = [...r.beds];
-      newBeds[availableBedIdx] = "occupied";
-      return { ...r, beds: newBeds };
-    });
-
-    setTenants([...tenants, newTenant]);
-    setRooms(updatedRooms);
-
-    // Reset Form & Close
-    setTenantName("");
-    setTenantRoomId("");
-    setTenantRent("");
-    setIsAddTenantOpen(false);
-  };
-
-  // Add a room submission handler
-  const handleAddRoomSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!roomName.trim() || !roomFloor || !roomCapacity) return;
-
-    const newRoom: Room = {
-      id: `r_${Date.now()}`,
-      name: roomName.trim(),
-      floor: Number(roomFloor),
-      capacity: Number(roomCapacity),
-      beds: Array(Number(roomCapacity)).fill("available"),
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      localStorage.setItem("pwaInstalled", "true");
+      console.log("PWA was installed successfully!");
     };
 
-    setRooms([...rooms, newRoom]);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
-    // Reset Form & Close
-    setRoomName("");
-    setRoomFloor("");
-    setRoomCapacity("3");
-    setIsAddRoomOpen(false);
+    const wasInstalled = localStorage.getItem("pwaInstalled") === "true";
+    if (window.matchMedia("(display-mode: standalone)").matches || wasInstalled) {
+      requestAnimationFrame(() => {
+        setIsAppInstalled(true);
+      });
+    }
+
+    // 3. Slide-based transitions (Wheel listener with cooldown)
+    let lastScrollTime = 0;
+    const scrollCooldown = 900; // ms
+
+    const handleWheel = (e: WheelEvent) => {
+      const now = Date.now();
+      if (now - lastScrollTime < scrollCooldown) return;
+
+      if (e.deltaY > 15) {
+        // Scroll Down
+        setCurrentSection((prev) => Math.min(prev + 1, 4));
+        lastScrollTime = now;
+      } else if (e.deltaY < -15) {
+        // Scroll Up
+        setCurrentSection((prev) => Math.max(prev - 1, 0));
+        lastScrollTime = now;
+      }
+    };
+
+    // 4. Touch swipe listener for mobile support
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const now = Date.now();
+      if (now - lastScrollTime < scrollCooldown) return;
+
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffY = touchStartY - touchEndY;
+
+      if (diffY > 40) {
+        // Swipe Up -> Next section
+        setCurrentSection((prev) => Math.min(prev + 1, 4));
+        lastScrollTime = now;
+      } else if (diffY < -40) {
+        // Swipe Down -> Prev section
+        setCurrentSection((prev) => Math.max(prev - 1, 0));
+        lastScrollTime = now;
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA install prompt result: ${outcome}`);
+      setDeferredPrompt(null);
+    } else {
+      setShowInstallGuide(true);
+    }
   };
 
-  // List of rooms that have at least one empty bed
-  const availableRooms = rooms.filter((r) => r.beds.includes("available"));
+  const handleLaunchApp = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
+    window.location.assign("/app");
+  };
+
+  const faqs = [
+    {
+      q: "Is PG Desk suitable for small PGs?",
+      a: "Yes! PG Desk works perfectly for small accommodations with 5-10 beds as well as large co-living chains.",
+    },
+    {
+      q: "Can I manage multiple properties?",
+      a: "Absolutely. Switch between properties instantly from your single landlord profile.",
+    },
+    {
+      q: "Is tenant data secure?",
+      a: "Yes. All landlord records, tenant information, and agreements are encrypted securely.",
+    },
+    {
+      q: "Can tenants pay rent online?",
+      a: "Yes. We support direct UPI, credit/debit cards, and transfers with instant receipts.",
+    },
+  ];
+
+  // Map section index to normalized scroll progress (0 to 1) for the 3D camera path
+  const scrollProgress = currentSection / 4;
 
   return (
-    <MobileFrame
-      bottomNav={
-        !showSplash && isLoggedIn && ["dashboard", "rooms", "support", "profile"].includes(currentView) && (
-          <div className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-slate-100/80 px-6 py-4 flex items-center justify-around z-30 shadow-lg shadow-slate-200/40">
-            <TabButton
-              active={currentView === "dashboard"}
-              label="Dashboard"
-              icon={LayoutDashboard}
-              onClick={() => setCurrentView("dashboard")}
-            />
-            <TabButton
-              active={currentView === "rooms"}
-              label="Rooms"
-              icon={Bed}
-              onClick={() => setCurrentView("rooms")}
-            />
-            <TabButton
-              active={currentView === "support"}
-              label="Support"
-              icon={HelpCircle}
-              onClick={() => setCurrentView("support")}
-            />
+    <div className="bg-transparent text-slate-800 min-h-screen font-sans selection:bg-emerald-100 selection:text-emerald-900 relative overflow-hidden h-screen w-screen flex flex-col justify-between">
+      
+      {/* 3D WebGL Canvas Layer - Fixed behind overlays, z-index 0 to avoid parent background blocking */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-tr from-slate-200 via-slate-100 to-slate-200 w-full h-full">
+        {/* Soft daylight sky glows behind the 3D scene */}
+        <div className="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-sky-200/30 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[20%] w-[600px] h-[600px] bg-emerald-100/40 rounded-full blur-[120px] pointer-events-none" />
+        <ThreeDScene scrollProgress={scrollProgress} />
+      </div>
+
+      {/* Sticky High-Contrast Navbar */}
+      <header className="sticky top-4 mx-4 md:mx-auto max-w-5xl bg-white/85 backdrop-blur-md border border-slate-200/80 shadow-md rounded-2xl z-40 px-6 py-3 flex items-center justify-between mt-4 w-[calc(100%-2rem)]">
+        <div className="flex items-center gap-2.5 select-none">
+          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-emerald-600/30">
+            <Building className="w-4.5 h-4.5" />
           </div>
-        )
-      }
-      drawer={
-        <>
-          {/* Toast Notification */}
-          <AnimatePresence>
-            {toastMessage && (
+          <span className="font-extrabold text-base tracking-tight text-slate-900">
+            PG Desk
+          </span>
+        </div>
+
+        {/* Section Navigation links */}
+        <nav className="hidden md:flex items-center gap-6 text-[10px] font-black uppercase tracking-wider text-slate-500">
+          {[
+            { label: "Hero", idx: 0 },
+            { label: "Challenges", idx: 1 },
+            { label: "Solution", idx: 2 },
+            { label: "Features", idx: 3 },
+            { label: "Pricing", idx: 4 },
+          ].map((item) => (
+            <button
+              key={item.idx}
+              onClick={() => setCurrentSection(item.idx)}
+              className={`hover:text-slate-800 transition-colors cursor-pointer ${currentSection === item.idx ? "text-emerald-600" : ""}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleInstallApp}
+            className="flex items-center gap-1.5 border border-slate-250 hover:border-emerald-600 hover:bg-emerald-50/40 text-slate-650 hover:text-emerald-600 px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download
+          </button>
+          
+          <button
+            onClick={handleLaunchApp}
+            className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all shadow-sm shadow-emerald-600/25 cursor-pointer"
+          >
+            Launch App
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Slides Content Container - z-10 overlays WebGL canvas */}
+      <div className="fixed inset-0 z-10 flex items-center px-4 md:px-12 pointer-events-none">
+        
+        {/* Render text slides with Framer Motion AnimatePresence */}
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
+          <AnimatePresence mode="wait">
+            
+            {/* Slide 0: Hero (Left-aligned) */}
+            {currentSection === 0 && (
               <motion.div
-                initial={{ opacity: 0, y: -20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md flex items-center gap-2 border border-slate-850"
+                key="hero-slide"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="max-w-md flex flex-col gap-4 bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 rounded-3xl shadow-xl pointer-events-auto select-none text-left"
               >
-                <span>{toastMessage}</span>
+                <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/60 text-emerald-700 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider w-fit">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-555" />
+                  Smart PG SaaS Platform
+                </div>
+
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight leading-[1.1] text-slate-900">
+                  Manage Your PG Smarter. <br />
+                  <span className="text-emerald-600">Increase Occupancy.</span> <br />
+                  Reduce Manual Work.
+                </h1>
+
+                <p className="text-slate-600 text-[11px] leading-relaxed font-bold">
+                  A complete paying guest management platform built for landlords and property managers. Oversee room allocations, automated rent collections, and complaints inside an interactive system.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                  <button
+                    onClick={handleLaunchApp}
+                    className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all shadow-md shadow-emerald-600/30 hover:scale-[1.02] cursor-pointer"
+                  >
+                    Start Free Trial
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={handleInstallApp}
+                    className="flex items-center justify-center gap-1.5 border border-slate-250 hover:border-slate-350 bg-white hover:bg-slate-50 text-slate-750 font-extrabold px-5 py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all hover:scale-[1.02] cursor-pointer"
+                  >
+                    <Smartphone className="w-3.5 h-3.5 text-slate-500" />
+                    Download App
+                  </button>
+                </div>
               </motion.div>
             )}
-          </AnimatePresence>
 
-          {/* Side Drawer Portal/Overlay */}
-          <AnimatePresence>
-            {isDrawerOpen && (
-              <div className="absolute inset-0 z-50 flex overflow-hidden">
-                {/* Backdrop */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs z-10"
-                />
+            {/* Slide 1: Problems (Right-aligned) */}
+            {currentSection === 1 && (
+              <motion.div
+                key="problems-slide"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="max-w-md flex flex-col gap-4 bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 rounded-3xl shadow-xl ml-auto pointer-events-auto select-none text-left"
+              >
+                <span className="text-rose-600 font-extrabold text-[9px] uppercase tracking-widest leading-none">Challenges</span>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                  Still Managing Your PG Using Excel and WhatsApp?
+                </h2>
+                <p className="text-slate-600 text-[11px] leading-relaxed font-bold">
+                  Chasing payments manually, losing track of empty beds, and failing to respond to tenant complaints lead to lost revenues.
+                </p>
 
-                {/* Slide-out Drawer Panel */}
-                <motion.div
-                  initial={{ x: "-100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "-100%" }}
-                  transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                  className="absolute left-0 top-0 bottom-0 w-[290px] bg-white z-20 shadow-2xl flex flex-col h-full overflow-hidden border-r border-slate-100"
-                >
-                  {/* Header Box */}
-                  <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between gap-3 shrink-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0">
-                        <Building className="w-5 h-5" />
+                <div className="flex flex-col gap-3 mt-2">
+                  {[
+                    { t: "Manual Rent Tracking", d: "WhatsApp dunning is tedious and results in delayed cycles.", i: CreditCard },
+                    { t: "Empty Beds Reduction", d: "Beds sit vacant due to lack of real-time occupancy logs.", i: BedDouble },
+                    { t: "Lost Complaint Logs", d: "Tenant tickets get buried in chat archives.", i: AlertCircle },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+                        <item.i className="w-4 h-4" />
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-slate-800 font-bold text-base truncate">{currentProperty}</span>
-                        <span className="text-slate-400 font-semibold text-[10px] tracking-tight truncate">Code: BVBQEEXU</span>
+                      <div className="flex flex-col">
+                        <h4 className="text-[11px] font-extrabold text-slate-800">{item.t}</h4>
+                        <p className="text-[10px] text-slate-550 font-semibold leading-relaxed mt-0.5">{item.d}</p>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => { 
-                        setIsDrawerOpen(false); 
-                        setIsQrModalOpen(true); 
-                      }} 
-                      className="w-10 h-10 border border-slate-200/80 rounded-xl flex items-center justify-center bg-white shadow-xs shrink-0 cursor-pointer hover:bg-slate-50 active:scale-95 transition-transform"
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Slide 2: Solution (Left-aligned) */}
+            {currentSection === 2 && (
+              <motion.div
+                key="solution-slide"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="max-w-md flex flex-col gap-4 bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 rounded-3xl shadow-xl pointer-events-auto select-none text-left"
+              >
+                <span className="text-emerald-600 font-extrabold text-[9px] uppercase tracking-widest leading-none">The Platform</span>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                  One Unified App for Complete PG Control
+                </h2>
+                <p className="text-slate-600 text-[11px] leading-relaxed font-bold">
+                  PG Desk helps landlords automate daily operations, register tenants, allocate beds, collect UPI payments, and generate invoices.
+                </p>
+
+                <div className="flex flex-col gap-2.5 mt-2">
+                  {[
+                    "Room & Bed Allocation",
+                    "Online Rent Collection",
+                    "Automated Payment Reminders",
+                    "Complaint & Maintenance Tracking",
+                    "Multi-PG Location Dashboard"
+                  ].map((f, i) => (
+                    <div key={i} className="flex items-center gap-2.5 text-[10px] font-extrabold text-slate-700">
+                      <div className="w-4.5 h-4.5 rounded-full bg-emerald-50 border border-emerald-250 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3" />
+                      </div>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleLaunchApp}
+                  className="mt-3 flex items-center gap-1 text-emerald-600 font-extrabold text-[10px] uppercase tracking-wider hover:text-emerald-700 transition-colors w-fit group cursor-pointer"
+                >
+                  Explore Dashboard
+                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              </motion.div>
+            )}
+
+            {/* Slide 3: Bento Features (Centered, wide panel) */}
+            {currentSection === 3 && (
+              <motion.div
+                key="features-slide"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="w-full max-w-4xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 rounded-3xl shadow-xl pointer-events-auto select-none text-left flex flex-col gap-6"
+              >
+                <div className="text-center max-w-md mx-auto flex flex-col gap-1">
+                  <span className="text-emerald-600 font-extrabold text-[9px] uppercase tracking-widest">Capabilities</span>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-none">
+                    Core Dashboard Features
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    { t: "Tenant Management", d: "Log tenant details, ID proofs, contact agreements, and dues securely.", icon: Users },
+                    { t: "Rent Collection", d: "Log direct payments, generate receipts, and send automated notifications.", icon: CreditCard },
+                    { t: "Bed Allocation", d: "Real-time 3D bedroom visualization. Check in and manage roommates instantly.", icon: BedDouble },
+                    { t: "Staff Delegation", d: "Manage support staff. Route plumbers and electricians to active logs.", icon: Clock },
+                    { t: "Visitor Logs", d: "Digitally secure visitor check-in histories and enhance safety.", icon: ShieldCheck },
+                    { t: "Reports & Analytics", d: "Evaluate outstanding dues, room occupancy, and cash flows.", icon: TrendingUp },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-slate-50/60 border border-slate-200/50 p-4 rounded-2xl flex flex-col gap-2 hover:border-emerald-500/50 hover:bg-white transition-all duration-300">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-250 flex items-center justify-center text-emerald-600 shrink-0">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-extrabold text-slate-800 text-[11px] leading-none mt-1">{item.t}</h3>
+                      <p className="text-slate-500 text-[10px] leading-relaxed font-semibold">{item.d}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Slide 4: Pricing, FAQ & Final CTA (Centered, wide panel) */}
+            {currentSection === 4 && (
+              <motion.div
+                key="pricing-slide"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 40 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="w-full max-w-4xl bg-white/95 backdrop-blur-xl border border-slate-200/80 p-6 rounded-3xl shadow-xl pointer-events-auto select-none text-left flex flex-col gap-5 text-slate-800"
+              >
+                {/* Tab selector */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">PG Desk SaaS</span>
+                  </div>
+                  <div className="flex gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                    <button
+                      onClick={() => setPricingTab("pricing")}
+                      className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${pricingTab === "pricing" ? "bg-emerald-600 text-white" : "text-slate-500 hover:text-slate-850"}`}
                     >
-                      <QrCode className="w-5 h-5 text-emerald-600" />
+                      Pricing Plans
+                    </button>
+                    <button
+                      onClick={() => setPricingTab("faq")}
+                      className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${pricingTab === "faq" ? "bg-emerald-600 text-white" : "text-slate-500 hover:text-slate-850"}`}
+                    >
+                      FAQs
                     </button>
                   </div>
+                </div>
 
-                  {/* Drawer Scrollable Content */}
-                  <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 no-scrollbar">
-                    {/* DASHBOARD Section */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Dashboard</span>
-                      <DrawerItem 
-                        label="Dashboard" 
-                        icon={HomeIcon} 
-                        active={currentView === "dashboard"} 
-                        onClick={() => {
-                          setCurrentView("dashboard");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Create Property" 
-                        icon={Building} 
-                        onClick={() => {
-                          setCurrentView("create-property");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                    </div>
-
-                    {/* ACCOUNT Section */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Account</span>
-                      <DrawerItem 
-                        label="Profile" 
-                        icon={User} 
-                        onClick={() => {
-                          setCurrentView("profile");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Property Details" 
-                        icon={Building2} 
-                        onClick={() => {
-                          setIsDrawerOpen(false);
-                          setToastMessage("Property details opened!");
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Bank Details" 
-                        icon={Landmark} 
-                        onClick={() => {
-                          setCurrentView("bank-details");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Settings" 
-                        icon={Settings} 
-                        onClick={() => {
-                          setCurrentView("settings");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Wallet" 
-                        icon={Wallet} 
-                        onClick={() => {
-                          setCurrentView("wallet");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Referrals" 
-                        icon={Gift} 
-                        onClick={() => {
-                          setCurrentView("referral");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Tenant Terms" 
-                        icon={FileText} 
-                        onClick={() => {
-                          setCurrentView("tenant-terms");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                    </div>
-
-                    {/* UPGRADE PLAN Section */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Upgrade Plan</span>
-                      <DrawerItem 
-                        label="Subscription" 
-                        icon={Crown} 
-                        variant="orange"
-                        active={currentView === "subscription"}
-                        onClick={() => {
-                          setCurrentView("subscription");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                    </div>
-
-                    {/* HELP & SUPPORT Section */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Help & Support</span>
-                      <DrawerItem 
-                        label="Support" 
-                        icon={HelpCircle} 
-                        active={currentView === "support"} 
-                        onClick={() => {
-                          setCurrentView("support");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                    </div>
-
-                    {/* USER PROFILE Info Card */}
-                    <div className="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl mt-auto shrink-0 select-none">
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 shrink-0 border border-emerald-100 flex items-center justify-center relative">
-                        {user.photo ? (
-                          <img src={user.photo} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-5 h-5 text-slate-400" />
-                        )}
+                <div className="min-h-[220px] flex items-center justify-center">
+                  {pricingTab === "pricing" ? (
+                    /* Pricing Grid */
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                      {/* Starter */}
+                      <div className="bg-slate-50/50 border border-slate-200/50 p-4 rounded-xl flex flex-col justify-between gap-4">
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Starter</span>
+                          <div className="flex items-baseline gap-0.5">
+                            <span className="text-xl font-black text-slate-850">₹999</span>
+                            <span className="text-[9px] font-bold text-slate-400">/ mo</span>
+                          </div>
+                          <ul className="flex flex-col gap-1.5 text-[9px] text-slate-655 font-bold mt-1">
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Up to 50 Tenants</li>
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Basic Features</li>
+                          </ul>
+                        </div>
+                        <button onClick={handleLaunchApp} className="w-full bg-slate-800 hover:bg-slate-750 text-white font-extrabold py-2 rounded-lg text-[9px] uppercase tracking-widest text-center transition-all cursor-pointer">
+                          Select Plan
+                        </button>
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-slate-800 truncate">{user.name}</span>
-                        <span className="text-[10px] font-semibold text-slate-400 truncate">{user.phone}</span>
+
+                      {/* Professional */}
+                      <div className="bg-white border-2 border-emerald-500 p-4 rounded-xl flex flex-col justify-between gap-4 relative shadow-md shadow-emerald-500/5">
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-600 text-white font-black text-[7px] uppercase tracking-wider py-0.5 px-2 rounded-full">Popular</span>
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Professional</span>
+                          <div className="flex items-baseline gap-0.5">
+                            <span className="text-xl font-black text-slate-850">₹2,499</span>
+                            <span className="text-[9px] font-bold text-slate-400">/ mo</span>
+                          </div>
+                          <ul className="flex flex-col gap-1.5 text-[9px] text-slate-700 font-bold mt-1">
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Up to 300 Tenants</li>
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> WhatsApp Reminders</li>
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Priority Support</li>
+                          </ul>
+                        </div>
+                        <button onClick={handleLaunchApp} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 rounded-lg text-[9px] uppercase tracking-widest text-center transition-all cursor-pointer">
+                          Start Free Trial
+                        </button>
+                      </div>
+
+                      {/* Enterprise */}
+                      <div className="bg-slate-50/50 border border-slate-200/50 p-4 rounded-xl flex flex-col justify-between gap-4">
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Enterprise</span>
+                          <div className="flex items-baseline gap-0.5">
+                            <span className="text-xl font-black text-slate-850">Custom</span>
+                          </div>
+                          <ul className="flex flex-col gap-1.5 text-[9px] text-slate-655 font-bold mt-1">
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Unlimited Properties</li>
+                            <li className="flex items-center gap-1"><Check className="w-3 h-3 text-emerald-500" /> Dedicated Manager</li>
+                          </ul>
+                        </div>
+                        <a href="mailto:support@pgdesk.com?subject=Enterprise Inquiry" className="w-full bg-slate-800 hover:bg-slate-750 text-white font-extrabold py-2 rounded-lg text-[9px] uppercase tracking-widest text-center transition-all cursor-pointer">
+                          Contact Sales
+                        </a>
                       </div>
                     </div>
-
-                    {/* OTHER Section */}
-                    <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Other</span>
-                      <DrawerItem 
-                        label="Logout" 
-                        icon={LogOut} 
-                        variant="red"
-                        onClick={() => {
-                          setIsDrawerOpen(false);
-                          setToastMessage("Logging out...");
-                          setTimeout(() => {
-                            setIsLoggedIn(false);
-                          }, 500);
-                        }} 
-                      />
+                  ) : (
+                    /* FAQs Accordion */
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                      {faqs.map((faq, idx) => (
+                        <div key={idx} className="bg-slate-50 border border-slate-200/50 rounded-xl overflow-hidden flex flex-col justify-center">
+                          <button
+                            onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                            className="w-full py-3 px-4 flex items-center justify-between text-left font-bold text-[10px] text-slate-800 cursor-pointer select-none leading-none border-b border-transparent"
+                          >
+                            <span>{faq.q}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-300 ${activeFaq === idx ? "rotate-180 text-emerald-600" : ""}`} />
+                          </button>
+                          
+                          {activeFaq === idx && (
+                            <div className="px-4 pb-3 pt-1 text-slate-500 text-[9px] leading-relaxed font-semibold border-t border-slate-200/50">
+                              {faq.a}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
+                  )}
+                </div>
+
+                {/* Final CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full justify-center border-t border-slate-100 pt-4 items-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider sm:mr-3">Ready to digitize operations?</span>
+                  <div className="flex gap-2">
+                    <button onClick={handleLaunchApp} className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-2 rounded-xl text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-sm shadow-emerald-600/25">
+                      Start Trial
+                    </button>
+                    <button onClick={handleInstallApp} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-750 text-slate-200 font-extrabold px-6 py-2 rounded-xl text-[9px] uppercase tracking-wider transition-all cursor-pointer">
+                      <Download className="w-3.5 h-3.5" /> Install App
+                    </button>
                   </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             )}
+
           </AnimatePresence>
-        </>
-      }
-    >
-      <AnimatePresence mode="wait">
-        {showSplash ? (
-          /* Splash Screen Branding */
-          <motion.div
-            key="splash"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 bg-radial from-slate-900 to-slate-950 flex flex-col items-center justify-center text-white z-50 px-6"
-          >
-            {/* Logo Graphic */}
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 150, damping: 15 }}
-              className="relative w-32 h-32 mb-6"
-            >
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <circle cx="100" cy="100" r="80" fill="url(#logoGrad)" className="drop-shadow-lg" />
-                <path
-                  d="M100 45 L50 85 V140 H150 V85 Z"
-                  stroke="#ffffff"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M90 140 V105 H110 V140"
-                  stroke="#38bdf8"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M100 110 H130 M130 110 V120 M124 110 V120 M85 110 C85 101.7 91.7 95 100 95 C108.3 95 115 101.7 115 110 C115 118.3 108.3 125 100 125"
-                  stroke="#fbbf24"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M50 145 C65 145 75 140 85 125 L125 70"
-                  stroke="#34d399"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M110 70 H125 V85"
-                  stroke="#34d399"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <defs>
-                  <linearGradient id="logoGrad" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#4f46e5" />
-                    <stop offset="1" stopColor="#0f172a" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </motion.div>
+        </div>
 
-            <motion.h2
-              initial={{ y: 15, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
-              className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-200 font-sans"
-            >
-              PG Desk
-            </motion.h2>
-            <motion.p
-              initial={{ y: 15, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 120 }}
-              className="text-[10px] text-slate-400/90 font-bold uppercase tracking-widest mt-2"
-            >
-              Accommodation Management
-            </motion.p>
-          </motion.div>
-        ) : !isLoggedIn ? (
-          /* Authentication Screens (Login / Register) */
-          authMode === "login" ? (
-            <LoginView 
-              onLogin={() => setIsLoggedIn(true)} 
-              onRegisterClick={() => setAuthMode("register")}
-            />
-          ) : (
-            <RegisterView
-              onLoginClick={() => setAuthMode("login")}
-              onRegisterSuccess={(userData) => {
-                setUser({
-                  name: userData.name,
-                  email: userData.email,
-                  phone: userData.phone,
-                  photo: userData.photo,
-                });
-                setIsLoggedIn(true);
-              }}
-            />
-          )
-        ) : (
-          /* Main Screen Views */
-          <motion.div
-            key={currentView}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="flex-1 flex flex-col"
-          >
-            {currentView === "dashboard" && (
-              <DashboardView
-                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
-                onNavigateToRooms={() => setCurrentView("rooms")}
-                onNavigateToSupport={() => setCurrentView("support")}
-                onNavigateToNotifications={() => setCurrentView("notifications")}
-                onNavigateToBills={() => setCurrentView("bills")}
-                onNavigateToReminders={() => setCurrentView("reminders")}
-                onNavigateToStaff={() => setCurrentView("staff")}
-                onNavigateToReceipts={(tab) => {
-                  setReceiptsInitialTab(tab);
-                  setCurrentView("receipts");
-                }}
-                pendingDuesAmount={13700}
-                pendingDuesCount={2}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                currentProperty={currentProperty}
-                roomsCount={rooms.length}
-                availableBeds={availableBedsCount}
-                occupiedBeds={occupiedBedsCount}
-                activeTenants={activeTenantsCount}
-                leftTenants={leftTenantsCount}
-                collectedAmount={collectedAmountSum}
-                onAddTenantClick={() => setIsAddTenantOpen(true)}
-                onAddRoomClick={() => setIsAddRoomOpen(true)}
-              />
-            )}
-
-            {currentView === "rooms" && (
-              <RoomsView
-                onBack={() => setCurrentView("dashboard")}
-                propertyName={currentProperty}
-                rooms={rooms}
-                onToggleBed={handleToggleBed}
-                onAddRoomClick={() => setIsAddRoomOpen(true)}
-              />
-            )}
-
-            {currentView === "support" && (
-              <SupportView
-                onBack={() => setCurrentView("dashboard")}
-                propertyName={currentProperty}
-                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onNavigateToNotifications={() => setCurrentView("notifications")}
-              />
-            )}
-
-            {currentView === "create-property" && (
-              <CreatePropertyView
-                onBack={() => setCurrentView("dashboard")}
-                userEmail={user.email}
-                userPhone={user.phone}
-                onCreateProperty={handleCreateProperty}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
-
-            {currentView === "profile" && (
-              <ProfileView
-                onBack={() => setCurrentView("dashboard")}
-                onNavigateToSupport={() => setCurrentView("support")}
-                onNavigateToNotifications={() => setCurrentView("notifications")}
-                userName={user.name}
-                userEmail={user.email}
-                userPhone={user.phone}
-                userPhoto={user.photo}
-                currentProperty={currentProperty}
-                propertiesCount={properties.length}
-                tenantsCount={activeTenantsCount}
-                roomsCount={rooms.length}
-                onOpenSettings={() => setCurrentView("settings")}
-                onViewProfileDetails={() => setCurrentView("view-profile")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onLogout={() => {
-                  setIsLoggedIn(false);
-                  setCurrentView("dashboard");
-                }}
-              />
-            )}
-
-            {currentView === "settings" && (
-              <SettingsView
-                onBack={() => setCurrentView("profile")}
-                onNavigateToProfile={() => setCurrentView("profile")}
-                onNavigateToViewProfile={() => setCurrentView("view-profile")}
-                onNavigateToSupport={() => setCurrentView("support")}
-                onLogout={() => {
-                  setIsLoggedIn(false);
-                  setCurrentView("dashboard");
-                }}
-                onChangePasswordClick={() => setCurrentView("change-password")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onNavigateToNotifications={() => setCurrentView("notifications")}
-              />
-            )}
-
-            {currentView === "view-profile" && (
-              <ViewProfileView
-                onBack={() => setCurrentView("profile")}
-                userName={user.name}
-                userEmail={user.email}
-                userPhone={user.phone}
-                userPhoto={user.photo}
-                currentProperty={currentProperty}
-              />
-            )}
-
-            {currentView === "change-password" && (
-              <ChangePasswordView
-                userEmail={user.email}
-                onBack={() => setCurrentView("settings")}
-                onPasswordChanged={() => {
-                  setCurrentView("profile");
-                  setToastMessage("Password updated successfully!");
-                }}
-              />
-            )}
-
-            {currentView === "bank-details" && (
-              <BankDetailsView
-                onBack={() => setCurrentView("dashboard")}
-                currentProperty={currentProperty}
-                initialDetails={bankDetails}
-                onSave={(updatedDetails) => {
-                  setBankDetails(updatedDetails);
-                  setCurrentView("dashboard");
-                  setToastMessage("Payment details saved successfully!");
-                }}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
-
-            {currentView === "wallet" && (
-              <WalletView
-                onBack={() => setCurrentView("dashboard")}
-                currentProperty={currentProperty}
-                initialPoints={walletPoints}
-                initialRedeemed={walletRedeemed}
-                initialTransactions={walletTransactions}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onRedeemPoints={(pts, msg) => {
-                  setWalletPoints((prev) => prev - pts);
-                  setWalletRedeemed((prev) => prev + pts);
-                  // Add transaction
-                  const newTx: Transaction = {
-                    id: `tx_${Date.now()}`,
-                    title: `Redeemed ${msg.replace("Successfully redeemed ", "")}`,
-                    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                    points: pts,
-                    type: "redeem"
-                  };
-                  setWalletTransactions((prev) => [newTx, ...prev]);
-                  setToastMessage(msg);
-                }}
-              />
-            )}
-
-            {currentView === "referral" && (
-              <ReferralView
-                onBack={() => setCurrentView("dashboard")}
-                onNavigateToSupport={() => setCurrentView("support")}
-                currentProperty={currentProperty}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
-
-            {currentView === "tenant-terms" && (
-              <TenantTermsView
-                onBack={() => setCurrentView("dashboard")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
-
-            {currentView === "subscription" && (
-              <SubscriptionView
-                onBack={() => setCurrentView("dashboard")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onProceedToPayment={(planName, price) => {
-                  setCurrentView("dashboard");
-                  setToastMessage(`Payment of ₹${price} for ${planName} processed successfully!`);
-                }}
-              />
-            )}
-
-            {currentView === "notifications" && (
-              <NotificationsView
-                onBack={() => setCurrentView("dashboard")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
-
-            {currentView === "reminders" && (
-              <RemindersView
-                onBack={() => setCurrentView("dashboard")}
-              />
-            )}
-
-            {currentView === "bills" && (
-              <BillsView
-                tenants={tenants}
-                onBack={() => setCurrentView("dashboard")}
-                onSendReminder={(name) => setToastMessage(`Bill reminder sent to ${name} via WhatsApp!`)}
-              />
-            )}
-
-            {currentView === "staff" && (
-              <StaffView
-                onBack={() => setCurrentView("dashboard")}
-              />
-            )}
-
-            {currentView === "receipts" && (
-              <ReceiptsView
-                onBack={() => setCurrentView("dashboard")}
-                propertyName={currentProperty}
-                initialTab={receiptsInitialTab}
-              />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Property QR Code Modal */}
-      <PropertyQrModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        propertyName={currentProperty}
-      />
-
-      {/* Property Selector Bottom Sheet */}
-      <PropertySelector
-        isOpen={isPropertySelectorOpen}
-        onClose={() => setIsPropertySelectorOpen(false)}
-        selectedProperty={currentProperty}
-        onSelectProperty={setCurrentProperty}
-        properties={properties}
-        onAddProperty={handleAddProperty}
-      />
-
-      {/* Interactive Overlay Modal: Add Tenant */}
-      <AnimatePresence>
-        {isAddTenantOpen && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAddTenantOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative z-10 bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-100"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-bold text-lg text-slate-800">Add Tenant</h3>
-                <button
-                  onClick={() => setIsAddTenantOpen(false)}
-                  className="p-1 rounded-full hover:bg-slate-100 text-slate-400"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleAddTenantSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="tenantName" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Full Name
-                  </label>
-                  <input
-                    id="tenantName"
-                    type="text"
-                    value={tenantName}
-                    onChange={(e) => setTenantName(e.target.value)}
-                    placeholder="e.g. Rahul Sharma"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="tenantRoom" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Assign Room
-                  </label>
-                  <select
-                    id="tenantRoom"
-                    value={tenantRoomId}
-                    onChange={(e) => setTenantRoomId(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white"
-                    required
-                  >
-                    <option value="">Select an available room</option>
-                    {availableRooms.map((r) => {
-                      const availCount = r.beds.filter((s) => s === "available").length;
-                      return (
-                        <option key={r.id} value={r.id}>
-                          {r.name} (Floor {r.floor}) — {availCount} beds free
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="tenantRent" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Monthly Rent (₹)
-                  </label>
-                  <input
-                    id="tenantRent"
-                    type="number"
-                    value={tenantRent}
-                    onChange={(e) => setTenantRent(e.target.value)}
-                    placeholder="e.g. 7000"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-xs transition-colors mt-2 text-sm tracking-wide"
-                >
-                  Confirm & Check In
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Interactive Overlay Modal: Add Room */}
-      <AnimatePresence>
-        {isAddRoomOpen && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAddRoomOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative z-10 bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-100"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-                <h3 className="font-bold text-lg text-slate-800">Add New Room</h3>
-                <button
-                  onClick={() => setIsAddRoomOpen(false)}
-                  className="p-1 rounded-full hover:bg-slate-100 text-slate-400"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleAddRoomSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="roomNameInput" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Room Name / Number
-                  </label>
-                  <input
-                    id="roomNameInput"
-                    type="text"
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                    placeholder="e.g. Room 10"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="roomFloorInput" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Floor Number
-                    </label>
-                    <input
-                      id="roomFloorInput"
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={roomFloor}
-                      onChange={(e) => setRoomFloor(e.target.value)}
-                      placeholder="e.g. 2"
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="roomCapInput" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Bed Capacity
-                    </label>
-                    <input
-                      id="roomCapInput"
-                      type="number"
-                      min="1"
-                      max="12"
-                      value={roomCapacity}
-                      onChange={(e) => setRoomCapacity(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-xs transition-colors mt-2 text-sm tracking-wide"
-                >
-                  Create Room
-                </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-    </MobileFrame>
-  );
-}
-
-// Nav Bar Tab Button Helper Component
-interface TabButtonProps {
-  active: boolean;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  onClick: () => void;
-}
-
-function TabButton({ active, label, icon: Icon, onClick }: TabButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1.5 relative py-1 cursor-pointer group"
-    >
-      <div
-        className={`w-12 h-8 rounded-full flex items-center justify-center relative transition-colors ${
-          active ? "text-emerald-600 bg-emerald-50/70" : "text-slate-400 group-hover:text-slate-600"
-        }`}
-      >
-        {active && (
-          <motion.div
-            layoutId="activeTabPill"
-            className="absolute inset-0 bg-emerald-100/50 rounded-full -z-10"
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-          />
-        )}
-        <Icon className="w-5 h-5" />
       </div>
-      <span
-        className={`text-[10px] font-bold tracking-tight select-none ${
-          active ? "text-emerald-700" : "text-slate-400/90 font-semibold"
-        }`}
-      >
-        {label}
-      </span>
-    </button>
+
+      {/* Slide Navigation Dots (Right Side indicator) */}
+      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-35 flex flex-col gap-3.5 select-none pointer-events-auto">
+        {[0, 1, 2, 3, 4].map((idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentSection(idx)}
+            className="group relative flex items-center justify-end cursor-pointer"
+          >
+            {/* Tooltip */}
+            <span className="absolute right-7 bg-slate-900 border border-slate-800 px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-wider text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              {idx === 0 ? "Hero" : idx === 1 ? "Problems" : idx === 2 ? "Solution" : idx === 3 ? "Features" : "Pricing"}
+            </span>
+            {/* Dot indicator */}
+            <div
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-350 ${
+                currentSection === idx
+                  ? "bg-emerald-600 scale-125 shadow-sm shadow-emerald-600/40"
+                  : "bg-slate-350 hover:bg-slate-550"
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* Screen Slide Indicators (Bottom Left) */}
+      <div className="fixed left-6 bottom-6 z-35 font-extrabold text-[10px] tracking-widest text-slate-500 uppercase select-none flex items-center gap-2">
+        <span className="text-emerald-600 text-xs font-black">0{currentSection + 1}</span>
+        <div className="w-8 h-px bg-slate-250" />
+        <span>05</span>
+      </div>
+
+      {/* Swipe instructions (Bottom center) */}
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-35 text-[9px] font-black tracking-widest text-slate-400 uppercase select-none animate-pulse flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Use Scroll Wheel or Swipe to Navigate
+      </div>
+
+      {/* PWA Installation Instructions Modal */}
+      <AnimatePresence>
+        {showInstallGuide && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInstallGuide(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 relative z-10 shadow-2xl flex flex-col gap-4 text-left text-slate-800"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Building className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="flex flex-col select-none leading-none">
+                    <h3 className="font-extrabold text-slate-900 text-sm">Install PG Desk</h3>
+                    <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mt-0.5">PWA Downloader</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setShowInstallGuide(false)}
+                  className="p-1 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4 py-1.5 select-none">
+                <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                  Install PG Desk directly to your home screen to launch it instantly in fullscreen and access it offline.
+                </p>
+
+                <div className="flex flex-col gap-3 font-semibold text-[10px] text-slate-600">
+                  {/* Apple / Safari Guide */}
+                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex flex-col gap-2">
+                    <span className="font-black text-emerald-600 uppercase tracking-widest text-[9px] leading-none">For Apple iOS (Safari)</span>
+                    <ol className="list-decimal pl-4 leading-relaxed flex flex-col gap-1.5">
+                      <li>Tap the <span className="bg-slate-200 px-1.5 py-0.5 rounded text-slate-850 font-bold">Share</span> button in Safari.</li>
+                      <li>Scroll down the options list.</li>
+                      <li>Tap <span className="text-emerald-600 font-black">Add to Home Screen</span>.</li>
+                    </ol>
+                  </div>
+
+                  {/* Android / Chrome Guide */}
+                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex flex-col gap-2">
+                    <span className="font-black text-emerald-600 uppercase tracking-widest text-[9px] leading-none">For Android & Chrome Desktop</span>
+                    <ul className="list-disc pl-4 leading-relaxed flex flex-col gap-1.5">
+                      <li>Tap the browser options button (three dots).</li>
+                      <li>Select <span className="text-emerald-600 font-black">Install App</span> or <span className="text-emerald-600 font-black">Add to Home Screen</span>.</li>
+                      <li>Confirm the download to complete shortcut creation.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-1 select-none">
+                <button
+                  onClick={() => setShowInstallGuide(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-extrabold py-2.5 rounded-xl text-xs uppercase tracking-wider text-center transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+                
+                <a
+                  href="/app"
+                  onClick={() => setShowInstallGuide(false)}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl text-xs uppercase tracking-wider text-center transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  Open App
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PWA Launch Manager Modal */}
+      <AnimatePresence>
+        {showLaunchModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLaunchModal(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+            />
+            
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 relative z-10 shadow-2xl flex flex-col gap-4 text-left text-slate-800"
+            >
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                    <Building className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="flex flex-col select-none leading-none">
+                    <h3 className="font-extrabold text-slate-900 text-sm">Launch PG Desk</h3>
+                    <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mt-0.5">App Launcher</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => setShowLaunchModal(false)}
+                  className="p-1 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4 py-1.5 select-none">
+                {isAppInstalled ? (
+                  <>
+                    <p className="text-slate-600 text-xs font-semibold leading-relaxed">
+                      PG Desk App is installed on your device! Open it directly from your device home screen, dock, or apps menu for the premium fullscreen offline experience.
+                    </p>
+                    <div className="bg-slate-50 border border-slate-150 p-4 rounded-xl flex flex-col gap-2">
+                      <span className="font-black text-emerald-600 uppercase tracking-widest text-[9px] leading-none">Why use standalone app?</span>
+                      <ul className="list-disc pl-4 leading-relaxed flex flex-col gap-1 text-[10px] text-slate-600 font-semibold">
+                        <li>📱 Full-screen experience (no browser bars)</li>
+                        <li>⚡ Buttery smooth transitions and faster loading</li>
+                        <li>📶 Works offline and in poor connection areas</li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-slate-600 text-xs font-semibold leading-relaxed">
+                      For the best experience, install PG Desk on your home screen or dock as a standalone application.
+                    </p>
+                    <div className="bg-emerald-50/50 border border-emerald-150 p-4 rounded-xl flex flex-col gap-2">
+                      <span className="font-black text-emerald-700 uppercase tracking-widest text-[9px] leading-none">Instant App Features</span>
+                      <ul className="list-disc pl-4 leading-relaxed flex flex-col gap-1 text-[10px] text-emerald-800 font-semibold">
+                        <li>Instant home-screen access</li>
+                        <li>Fullscreen native-like UI</li>
+                        <li>Automatic updates</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2.5 mt-1 select-none">
+                {!isAppInstalled && deferredPrompt && (
+                  <button
+                    onClick={async () => {
+                      setShowLaunchModal(false);
+                      deferredPrompt.prompt();
+                      const { outcome } = await deferredPrompt.userChoice;
+                      console.log(`PWA install prompt result from Launcher: ${outcome}`);
+                      setDeferredPrompt(null);
+                    }}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider text-center transition-all cursor-pointer shadow-md shadow-emerald-600/20 active:scale-98"
+                  >
+                    Install Standalone App
+                  </button>
+                )}
+
+                <a
+                  href="/app"
+                  onClick={() => setShowLaunchModal(false)}
+                  className={`w-full font-extrabold py-3 rounded-xl text-xs uppercase tracking-wider text-center transition-all cursor-pointer ${
+                    isAppInstalled
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-98"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-755 active:scale-98"
+                  }`}
+                >
+                  {isAppInstalled ? "Launch inside Browser anyway" : "Launch in Browser"}
+                </a>
+                
+                <button
+                  onClick={() => setShowLaunchModal(false)}
+                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 font-bold py-2 rounded-xl text-xs uppercase tracking-wider text-center transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }
-
-// Side Drawer Item Component
-interface DrawerItemProps {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  active?: boolean;
-  onClick: () => void;
-  variant?: "default" | "orange" | "red";
-}
-
-function DrawerItem({ label, icon: Icon, active, onClick, variant = "default" }: DrawerItemProps) {
-  let itemClass = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all select-none text-left ";
-  
-  if (active) {
-    itemClass += "bg-emerald-600 text-white shadow-sm shadow-emerald-200/50";
-  } else {
-    if (variant === "orange") {
-      itemClass += "text-amber-700 hover:bg-amber-50/60";
-    } else if (variant === "red") {
-      itemClass += "text-rose-600 hover:bg-rose-50/60";
-    } else {
-      itemClass += "text-slate-500 hover:bg-slate-50/70 hover:text-slate-800";
-    }
-  }
-
-  return (
-    <button onClick={onClick} className={itemClass}>
-      <Icon className={`w-4 h-4 shrink-0 ${
-        active 
-          ? "text-white" 
-          : variant === "orange" 
-            ? "text-amber-500" 
-            : variant === "red" 
-              ? "text-rose-500" 
-              : "text-slate-400"
-      }`} />
-      <span className="flex-1 truncate">{label}</span>
-    </button>
-  );
-}
-

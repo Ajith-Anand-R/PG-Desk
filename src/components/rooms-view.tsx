@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Search, X } from "lucide-react";
 import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
-import { Room } from "@/app/page";
+import { Room } from "@/lib/types";
 
 interface RoomsViewProps {
   onBack: () => void;

@@ -83,7 +83,7 @@ export function WalletView({
     { id: "p4", title: "High-Speed Wi-Fi Boost", points: 100, icon: Wifi, color: "text-sky-600 bg-sky-50 border-sky-100" }
   ];
 
-  const handleRedeemClick = (perkTitle: string, perkPoints: number) => {
+  const handleRedeemClick = React.useCallback((perkTitle: string, perkPoints: number) => {
     if (points < perkPoints) {
       alert("Insufficient points! Keep paying rent on time to earn more points.");
       return;
@@ -104,7 +104,7 @@ export function WalletView({
 
     setPoints(newPoints);
     setRedeemed(newRedeemed);
-    setTransactions([newTx, ...transactions]);
+    setTransactions((prev) => [newTx, ...prev]);
 
     // Open success modal
     setSuccessModal({
@@ -115,7 +115,7 @@ export function WalletView({
 
     // Notify parent to trigger toast
     onRedeemPoints(perkPoints, `Successfully redeemed ${perkTitle}!`);
-  };
+  }, [points, redeemed, onRedeemPoints]);
 
   return (
     <div className="flex flex-col min-h-[100dvh] pb-20 bg-slate-50 select-none">

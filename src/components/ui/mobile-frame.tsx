@@ -9,11 +9,42 @@ interface MobileFrameProps {
 }
 
 export function MobileFrame({ children, bottomNav, drawer }: MobileFrameProps) {
+  const [isStandalone, setIsStandalone] = React.useState(false);
+
+  React.useEffect(() => {
+    const isStandaloneWindow = 
+      window.matchMedia("(display-mode: standalone)").matches ||
+      ('standalone' in window.navigator && (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+
+    if (isStandaloneWindow) {
+      requestAnimationFrame(() => {
+        setIsStandalone(true);
+      });
+    }
+  }, []);
+
+  if (isStandalone) {
+    return (
+      <div className="w-full h-[100dvh] max-h-[100dvh] bg-slate-50 relative flex flex-col overflow-hidden selection:bg-teal-100 selection:text-teal-900">
+        {/* Content Area */}
+        <div className="min-h-0 flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50">
+          {children}
+        </div>
+
+        {/* Fixed Bottom Navigation inside mobile viewport */}
+        {bottomNav}
+
+        {/* Fixed Overlays (Drawer, Toast) */}
+        {drawer}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[100dvh] bg-slate-100/60 flex items-center justify-center py-0 md:py-6 selection:bg-teal-100 selection:text-teal-900">
       {/* Real-world mobile container emulation on desktop */}
       <div 
-        className="w-full max-w-md min-h-[100dvh] md:min-h-[850px] md:max-h-[900px] md:rounded-[2.5rem] md:shadow-2xl md:border-[10px] md:border-slate-900 bg-slate-50 relative flex flex-col overflow-hidden"
+        className="w-full max-w-md h-[100dvh] md:h-[850px] md:max-h-[calc(100dvh-3rem)] md:rounded-[2.5rem] md:shadow-2xl md:border-[10px] md:border-slate-900 bg-slate-50 relative flex flex-col overflow-hidden"
         style={{ position: "relative" }}
       >
         {/* Mobile Status Bar Emulation on desktop */}
@@ -31,7 +62,7 @@ export function MobileFrame({ children, bottomNav, drawer }: MobileFrameProps) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50">
+        <div className="min-h-0 flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50">
           {children}
         </div>
 

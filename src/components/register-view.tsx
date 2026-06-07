@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,7 +68,7 @@ export function RegisterView({ onLoginClick, onRegisterSuccess }: RegisterViewPr
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Camera access error:", err);
       setCameraError("Could not access camera. Please upload a photo instead.");
       setToastMessage("Camera blocked or unavailable");

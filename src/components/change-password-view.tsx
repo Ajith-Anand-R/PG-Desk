@@ -33,16 +33,10 @@ export function ChangePasswordView({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   
-  // Validation states
-  const [hasEightChars, setHasEightChars] = useState(false);
-  const [hasSpecialOrNumber, setHasSpecialOrNumber] = useState(false);
-  const [passwordsMatch, setPasswordsMatch] = useState(false);
-
-  useEffect(() => {
-    setHasEightChars(newPassword.length >= 8);
-    setHasSpecialOrNumber(/[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword));
-    setPasswordsMatch(newPassword !== "" && newPassword === confirmPassword);
-  }, [newPassword, confirmPassword]);
+  // Validation states (derived dynamically during render)
+  const hasEightChars = newPassword.length >= 8;
+  const hasSpecialOrNumber = /[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword);
+  const passwordsMatch = newPassword !== "" && newPassword === confirmPassword;
 
   const isValid = hasEightChars && hasSpecialOrNumber && passwordsMatch;
 
