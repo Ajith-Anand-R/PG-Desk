@@ -437,6 +437,16 @@ export default function Home() {
 
     if (!profile?.pg_id) return;
 
+    // Verify room belongs to the active PG to prevent cross-tenant bed toggling
+    const { data: roomDetails } = await supabase
+      .from("rooms")
+      .select("id")
+      .eq("id", roomId)
+      .eq("pg_id", profile.pg_id)
+      .single();
+
+    if (!roomDetails) return;
+
     const { data: bedsList } = await supabase
       .from("beds")
       .select("*")
@@ -477,11 +487,12 @@ export default function Home() {
 
     const pgId = profile.pg_id;
 
-    // Fetch the room details
+    // Fetch the room details and verify it belongs to the active PG
     const { data: roomDetails } = await supabase
       .from("rooms")
       .select("*, beds(*)")
       .eq("id", tenantRoomId)
+      .eq("pg_id", pgId)
       .single();
 
     if (!roomDetails) return;
@@ -634,7 +645,8 @@ export default function Home() {
         payment_method: "UPI",
         reference_code: `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
       })
-      .eq("id", dueId);
+      .eq("id", dueId)
+      .eq("pg_id", profile.pg_id);
 
     if (error) {
       setToastMessage(error.message);
@@ -659,7 +671,8 @@ export default function Home() {
     const { error } = await supabase
       .from("complaints")
       .update({ status: newStatus })
-      .eq("id", Number(complaintId));
+      .eq("id", Number(complaintId))
+      .eq("pg_id", profile.pg_id);
 
     if (error) {
       setToastMessage(error.message);
@@ -1178,6 +1191,9 @@ export default function Home() {
                 initialDetails={bankDetails}
                 onSave={async (updatedDetails) => {
                   if (activePgId) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session?.user) return;
+
                     const { error } = await supabase
                       .from("pgs")
                       .update({
@@ -1190,7 +1206,8 @@ export default function Home() {
                         ifsc_code: updatedDetails.ifscCode,
                         branch_name: updatedDetails.branchName
                       })
-                      .eq("id", activePgId);
+                      .eq("id", activePgId)
+                      .eq("owner_id", session.user.id);
 
                     if (error) {
                       setToastMessage("Error saving details: " + error.message);

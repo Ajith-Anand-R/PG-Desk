@@ -179,6 +179,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
   };
 
   const handleDeleteStaff = async (id: string) => {
+    if (!activePgId) return;
     const confirmDelete = window.confirm("Are you sure you want to remove this staff member?");
     if (!confirmDelete) return;
 
@@ -186,7 +187,8 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
       const { error } = await supabase
         .from("staff")
         .delete()
-        .eq("id", Number(id));
+        .eq("id", Number(id))
+        .eq("pg_id", Number(activePgId));
 
       if (error) {
         alert("Error deleting staff member: " + error.message);
