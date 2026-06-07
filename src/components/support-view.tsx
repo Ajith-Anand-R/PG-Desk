@@ -19,6 +19,10 @@ import {
   Menu,
   PhoneCall,
   X,
+  Plus,
+  AlertCircle,
+  Megaphone,
+  CheckCircle,
 } from "lucide-react";
 
 interface SupportViewProps {
@@ -27,6 +31,10 @@ interface SupportViewProps {
   onOpenPropertySelector: () => void;
   onMenuClick: () => void;
   onNavigateToNotifications: () => void;
+  complaints: any[];
+  notices: any[];
+  onUpdateComplaintStatus: (id: string, status: string) => Promise<void>;
+  onCreateNotice: (title: string, message: string) => Promise<void>;
 }
 
 interface FAQItem {
@@ -35,9 +43,24 @@ interface FAQItem {
   answer: string;
 }
 
-export function SupportView({ onBack, propertyName, onOpenPropertySelector, onMenuClick, onNavigateToNotifications }: SupportViewProps) {
+export function SupportView({
+  onBack,
+  propertyName,
+  onOpenPropertySelector,
+  onMenuClick,
+  onNavigateToNotifications,
+  complaints = [],
+  notices = [],
+  onUpdateComplaintStatus,
+  onCreateNotice,
+}: SupportViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFAQ, setActiveFAQ] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"faqs" | "complaints" | "notices">("faqs");
+  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
+  const [noticeTitle, setNoticeTitle] = useState("");
+  const [noticeMessage, setNoticeMessage] = useState("");
+  const [isSubmittingNotice, setIsSubmittingNotice] = useState(false);
 
   // Mock FAQ data
   const faqs: FAQItem[] = [
@@ -163,103 +186,350 @@ export function SupportView({ onBack, propertyName, onOpenPropertySelector, onMe
         </div>
       </div>
 
-      {/* Categories Grid (2x2) */}
-      <div className="px-5 mt-6 flex flex-col gap-3">
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Categories</h3>
-        <div className="grid grid-cols-2 gap-4">
-          {categories.map((cat, idx) => {
-            const Icon = cat.icon;
-            return (
-              <motion.button
-                key={idx}
-                whileTap={{ scale: 0.97 }}
-                className="bg-white p-4 rounded-2xl border border-slate-100 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-3 text-left w-full cursor-pointer"
-              >
-                <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                  <Icon className="w-4.5 h-4.5" />
-                </div>
-                <span className="text-sm font-bold text-slate-700 leading-tight truncate">{cat.label}</span>
-              </motion.button>
-            );
-          })}
+      {/* Navigation Tabs */}
+      <div className="px-5 mt-6 shrink-0 select-none">
+        <div className="flex gap-2 bg-white p-1 rounded-2xl border border-slate-200/50 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setActiveTab("faqs")}
+            className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer text-center ${
+              activeTab === "faqs"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            FAQs
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("complaints")}
+            className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer text-center ${
+              activeTab === "complaints"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Complaints ({complaints.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("notices")}
+            className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer text-center ${
+              activeTab === "notices"
+                ? "bg-emerald-600 text-white shadow-xs"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Notices ({notices.length})
+          </button>
         </div>
       </div>
 
-      {/* Contact Us Row */}
-      <div className="px-5 mt-6 flex flex-col gap-3">
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Contact Us</h3>
-        <div className="grid grid-cols-3 gap-3">
-          {contacts.map((contact, idx) => {
-            const Icon = contact.icon;
-            return (
-              <motion.a
-                key={idx}
-                href={contact.value}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileTap={{ scale: 0.95 }}
-                className="bg-white border border-slate-200/90 rounded-2xl py-3 flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:shadow-xs transition-shadow text-center cursor-pointer"
-              >
-                <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-700">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-xs font-bold text-slate-700 tracking-tight leading-none">
-                  {contact.label}
-                </span>
-              </motion.a>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Helpful Articles Accordions */}
-      <div className="px-5 mt-6 flex flex-col gap-3 flex-1">
-        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Helpful Articles</h3>
-
-        <div className="flex flex-col gap-3">
-          {filteredFaqs.length === 0 ? (
-            <div className="text-center py-8 bg-white border border-slate-100 rounded-2xl">
-              <p className="text-slate-400 font-semibold text-sm">No articles match your search</p>
-            </div>
-          ) : (
-            filteredFaqs.map((faq) => {
-              const isOpen = activeFAQ === faq.id;
-              return (
-                <div
-                  key={faq.id}
-                  className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-2xs"
-                >
-                  <button
-                    onClick={() => setActiveFAQ(isOpen ? null : faq.id)}
-                    className="w-full flex items-center justify-between p-4 font-bold text-slate-700 text-sm tracking-tight text-left hover:bg-slate-50/50 transition-colors"
+      {activeTab === "faqs" && (
+        <>
+          {/* Categories Grid (2x2) */}
+          <div className="px-5 mt-6 flex flex-col gap-3">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Categories</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {categories.map((cat, idx) => {
+                const Icon = cat.icon;
+                return (
+                  <motion.button
+                    key={idx}
+                    whileTap={{ scale: 0.97 }}
+                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-2xs hover:shadow-xs transition-shadow flex items-center gap-3 text-left w-full cursor-pointer"
                   >
-                    <span>{faq.question}</span>
-                    <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    </motion.div>
-                  </button>
+                    <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                      <Icon className="w-4.5 h-4.5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-700 leading-tight truncate">{cat.label}</span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
 
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="overflow-hidden bg-slate-50/20 border-t border-slate-100"
-                      >
-                        <p className="p-4 text-xs font-medium leading-relaxed text-slate-500">
-                          {faq.answer}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+          {/* Contact Us Row */}
+          <div className="px-5 mt-6 flex flex-col gap-3">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Contact Us</h3>
+            <div className="grid grid-cols-3 gap-3">
+              {contacts.map((contact, idx) => {
+                const Icon = contact.icon;
+                return (
+                  <motion.a
+                    key={idx}
+                    href={contact.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white border border-slate-200/90 rounded-2xl py-3 flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:shadow-xs transition-shadow text-center cursor-pointer"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-700">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 tracking-tight leading-none">
+                      {contact.label}
+                    </span>
+                  </motion.a>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Helpful Articles Accordions */}
+          <div className="px-5 mt-6 flex flex-col gap-3 flex-1 pb-10">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider px-0.5">Helpful Articles</h3>
+
+            <div className="flex flex-col gap-3">
+              {filteredFaqs.length === 0 ? (
+                <div className="text-center py-8 bg-white border border-slate-100 rounded-2xl">
+                  <p className="text-slate-400 font-semibold text-sm">No articles match your search</p>
                 </div>
-              );
-            })
-          )}
+              ) : (
+                filteredFaqs.map((faq) => {
+                  const isOpen = activeFAQ === faq.id;
+                  return (
+                    <div
+                      key={faq.id}
+                      className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-2xs"
+                    >
+                      <button
+                        onClick={() => setActiveFAQ(isOpen ? null : faq.id)}
+                        className="w-full flex items-center justify-between p-4 font-bold text-slate-700 text-sm tracking-tight text-left hover:bg-slate-50/50 transition-colors"
+                      >
+                        <span>{faq.question}</span>
+                        <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                        </motion.div>
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: "auto" }}
+                            exit={{ height: 0 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                            className="overflow-hidden bg-slate-50/20 border-t border-slate-100"
+                          >
+                            <p className="p-4 text-xs font-medium leading-relaxed text-slate-500">
+                              {faq.answer}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === "complaints" && (
+        <div className="px-5 mt-6 flex flex-col gap-4 flex-1 pb-10">
+          <div className="flex justify-between items-center px-0.5 select-none">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Tenant Complaints</h3>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{complaints.length} Active</span>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {complaints.length === 0 ? (
+              <div className="text-center py-16 bg-white border border-slate-200/40 shadow-xs rounded-[2rem] flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-800 text-sm">No Active Complaints</h4>
+                  <p className="text-[10.5px] font-semibold text-slate-400 mt-1 max-w-[200px] mx-auto leading-relaxed">
+                    Everything looks good! Tenants have not logged any complaints.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              complaints.map((c) => {
+                const tenantName = c.tenants?.users?.name || "Unknown Tenant";
+                const roomName = c.tenants?.rooms?.room_number ? `Room ${c.tenants.rooms.room_number}` : "Unassigned";
+                const dateStr = c.created_at
+                  ? new Date(c.created_at).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric"
+                    })
+                  : "N/A";
+
+                const statusStyles = {
+                  pending: {
+                    bg: "bg-amber-50",
+                    border: "border-amber-100/60",
+                    text: "text-amber-600",
+                    indicator: "bg-amber-500"
+                  },
+                  "in-progress": {
+                    bg: "bg-blue-50",
+                    border: "border-blue-100/60",
+                    text: "text-blue-600",
+                    indicator: "bg-blue-500"
+                  },
+                  resolved: {
+                    bg: "bg-emerald-50",
+                    border: "border-emerald-100/60",
+                    text: "text-emerald-600",
+                    indicator: "bg-emerald-500"
+                  }
+                }[c.status as "pending" | "in-progress" | "resolved"] || {
+                  bg: "bg-slate-50",
+                  border: "border-slate-100",
+                  text: "text-slate-500",
+                  indicator: "bg-slate-500"
+                };
+
+                return (
+                  <div
+                    key={c.id}
+                    className="bg-white rounded-3xl p-4.5 border border-slate-200/40 shadow-2xs flex flex-col gap-4 relative overflow-hidden"
+                  >
+                    {/* Status side indicator */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusStyles.indicator}`} />
+
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-black text-slate-800 leading-none truncate">
+                            {c.title}
+                          </span>
+                          <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${statusStyles.bg} ${statusStyles.border} ${statusStyles.text} leading-none`}>
+                            {c.status}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 leading-none mt-1">
+                          By: {tenantName} ({roomName}) • {dateStr}
+                        </span>
+                      </div>
+                    </div>
+
+                    {c.description && (
+                      <p className="text-[11px] font-semibold text-slate-555 leading-relaxed break-words bg-slate-50/50 p-3 rounded-xl border border-slate-100/60">
+                        {c.description}
+                      </p>
+                    )}
+
+                    {/* Actions Row */}
+                    <div className="flex gap-2 justify-end select-none">
+                      {c.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() => onUpdateComplaintStatus(c.id, "in-progress")}
+                            className="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
+                          >
+                            Work On
+                          </button>
+                          <button
+                            onClick={() => onUpdateComplaintStatus(c.id, "resolved")}
+                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 shadow-xs"
+                          >
+                            Resolve
+                          </button>
+                        </>
+                      )}
+
+                      {c.status === "in-progress" && (
+                        <>
+                          <button
+                            onClick={() => onUpdateComplaintStatus(c.id, "pending")}
+                            className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
+                          >
+                            Reopen
+                          </button>
+                          <button
+                            onClick={() => onUpdateComplaintStatus(c.id, "resolved")}
+                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 shadow-xs"
+                          >
+                            Resolve
+                          </button>
+                        </>
+                      )}
+
+                      {c.status === "resolved" && (
+                        <button
+                          onClick={() => onUpdateComplaintStatus(c.id, "pending")}
+                          className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
+                        >
+                          Reopen
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === "notices" && (
+        <div className="px-5 mt-6 flex flex-col gap-4 flex-1 pb-10">
+          <div className="flex justify-between items-center px-0.5 select-none">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Property Notices</h3>
+            <button
+              onClick={() => setIsNoticeModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Post Notice</span>
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {notices.length === 0 ? (
+              <div className="text-center py-16 bg-white border border-slate-200/40 shadow-xs rounded-[2rem] flex flex-col items-center justify-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                  <Megaphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-800 text-sm">No Notices Posted</h4>
+                  <p className="text-[10.5px] font-semibold text-slate-400 mt-1 max-w-[200px] mx-auto leading-relaxed">
+                    Broadcast announcements to all tenants by posting a notice.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              notices.map((n) => {
+                const dateStr = n.created_at
+                  ? new Date(n.created_at).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric"
+                    })
+                  : "N/A";
+
+                return (
+                  <div
+                    key={n.id}
+                    className="bg-white rounded-3xl p-4.5 border border-slate-200/40 shadow-2xs flex flex-col gap-2.5 relative overflow-hidden"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
+                    
+                    <div className="flex justify-between items-start gap-4">
+                      <h4 className="text-xs font-black text-slate-800 leading-tight">
+                        {n.title}
+                      </h4>
+                      <span className="text-[9px] font-bold text-slate-400 shrink-0">
+                        {dateStr}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] font-semibold text-slate-550 leading-relaxed break-words bg-slate-50/40 p-3 rounded-xl border border-slate-100/60">
+                      {n.message}
+                    </p>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Footer Branding */}
       <div className="mt-8 text-center text-[10px] text-slate-400 font-bold select-none border-t border-slate-100 pt-6">
@@ -277,6 +547,111 @@ export function SupportView({ onBack, propertyName, onOpenPropertySelector, onMe
       >
         <Globe className="w-6 h-6 animate-pulse" />
       </motion.button>
+
+      {/* Notice Posting Modal overlay */}
+      <AnimatePresence>
+        {isNoticeModalOpen && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNoticeModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-10 bg-white w-full max-w-sm rounded-[2.2rem] p-6 shadow-2xl border border-slate-100 flex flex-col"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 select-none shrink-0">
+                <h3 className="font-black text-slate-850 text-base">Post Notice</h3>
+                <button
+                  onClick={() => setIsNoticeModalOpen(false)}
+                  className="p-1 rounded-full hover:bg-slate-50 text-slate-400 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!noticeTitle.trim() || !noticeMessage.trim()) return;
+
+                  setIsSubmittingNotice(true);
+                  try {
+                    await onCreateNotice(noticeTitle, noticeMessage);
+                    setNoticeTitle("");
+                    setNoticeMessage("");
+                    setIsNoticeModalOpen(false);
+                  } catch (err) {
+                    console.error("Error creating notice", err);
+                  } finally {
+                    setIsSubmittingNotice(false);
+                  }
+                }}
+                className="flex flex-col gap-4"
+              >
+                {/* Title */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="noticeTitle" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    Notice Title <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id="noticeTitle"
+                    type="text"
+                    value={noticeTitle}
+                    onChange={(e) => setNoticeTitle(e.target.value)}
+                    placeholder="e.g. Water Maintenance / Rent Due Alert"
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                    required
+                    disabled={isSubmittingNotice}
+                  />
+                </div>
+
+                {/* Message */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="noticeMessage" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    Announcement Message <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    id="noticeMessage"
+                    rows={4}
+                    value={noticeMessage}
+                    onChange={(e) => setNoticeMessage(e.target.value)}
+                    placeholder="Write details for all tenants to see..."
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold resize-none"
+                    required
+                    disabled={isSubmittingNotice}
+                  />
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={isSubmittingNotice}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-4 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer text-xs tracking-wider uppercase mt-2 select-none"
+                >
+                  {isSubmittingNotice ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-4.5 h-4.5" />
+                      <span>Post Announcement</span>
+                    </>
+                  )}
+                </motion.button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -61,6 +61,8 @@ export default function Home() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [complaints, setComplaints] = useState<any[]>([]);
+  const [notices, setNotices] = useState<any[]>([]);
 
   // Modal display toggles
   const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
@@ -183,6 +185,32 @@ export default function Home() {
       setPayments(paymentsList);
     } else {
       setPayments([]);
+    }
+
+    // 5. Fetch Complaints
+    const { data: complaintsList } = await supabase
+      .from("complaints")
+      .select("*, tenants(*, users(*), rooms(*))")
+      .eq("pg_id", pgId)
+      .order("created_at", { ascending: false });
+
+    if (complaintsList) {
+      setComplaints(complaintsList);
+    } else {
+      setComplaints([]);
+    }
+
+    // 6. Fetch Notices
+    const { data: noticesList } = await supabase
+      .from("notices")
+      .select("*")
+      .eq("pg_id", pgId)
+      .order("created_at", { ascending: false });
+
+    if (noticesList) {
+      setNotices(noticesList);
+    } else {
+      setNotices([]);
     }
   };
 
@@ -616,6 +644,59 @@ export default function Home() {
     }
   };
 
+  const handleUpdateComplaintStatus = async (complaintId: string, newStatus: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) return;
+
+    const { error } = await supabase
+      .from("complaints")
+      .update({ status: newStatus })
+      .eq("id", Number(complaintId));
+
+    if (error) {
+      setToastMessage(error.message);
+    } else {
+      setToastMessage("Complaint status updated successfully!");
+      await fetchPgData(profile.pg_id);
+    }
+  };
+
+  const handleCreateNotice = async (title: string, message: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) return;
+
+    const { error } = await supabase
+      .from("notices")
+      .insert({
+        pg_id: profile.pg_id,
+        title: title.trim(),
+        message: message.trim()
+      });
+
+    if (error) {
+      setToastMessage(error.message);
+    } else {
+      setToastMessage("Notice posted successfully!");
+      await fetchPgData(profile.pg_id);
+    }
+  };
+
   // List of rooms that have at least one empty bed
   const availableRooms = rooms.filter((r) => r.beds.includes("available"));
 
@@ -1012,6 +1093,10 @@ export default function Home() {
                 onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
                 onMenuClick={() => setIsDrawerOpen(true)}
                 onNavigateToNotifications={() => setCurrentView("notifications")}
+                complaints={complaints}
+                notices={notices}
+                onUpdateComplaintStatus={handleUpdateComplaintStatus}
+                onCreateNotice={handleCreateNotice}
               />
             )}
 
@@ -1091,7 +1176,27 @@ export default function Home() {
                 onBack={() => setCurrentView("dashboard")}
                 currentProperty={currentProperty}
                 initialDetails={bankDetails}
-                onSave={(updatedDetails) => {
+                onSave={async (updatedDetails) => {
+                  if (activePgId) {
+                    const { error } = await supabase
+                      .from("pgs")
+                      .update({
+                        upi_name: updatedDetails.upiName,
+                        upi_number: updatedDetails.upiNumber,
+                        upi_registered_name: updatedDetails.upiRegisteredName,
+                        upi_id: updatedDetails.upiId,
+                        account_holder_name: updatedDetails.accountHolderName,
+                        account_number: updatedDetails.accountNumber,
+                        ifsc_code: updatedDetails.ifscCode,
+                        branch_name: updatedDetails.branchName
+                      })
+                      .eq("id", activePgId);
+
+                    if (error) {
+                      setToastMessage("Error saving details: " + error.message);
+                      return;
+                    }
+                  }
                   setBankDetails(updatedDetails);
                   setCurrentView("dashboard");
                   setToastMessage("Payment details saved successfully!");
