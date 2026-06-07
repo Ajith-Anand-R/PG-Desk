@@ -42,8 +42,9 @@ import { NotificationsView } from "@/components/notifications-view";
 import { RemindersView } from "@/components/reminders-view";
 import { BillsView } from "@/components/bills-view";
 import { StaffView } from "@/components/staff-view";
-import { ReceiptsView } from "@/components/receipts-view";
+import { ReceiptsView, DueItem, ReceiptItem } from "@/components/receipts-view";
 import { Room, Tenant } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
 
 type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts";
 
@@ -51,34 +52,15 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isPropertySelectorOpen, setIsPropertySelectorOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [currentProperty, setCurrentProperty] = useState("Uday Pg");
+  const [currentProperty, setCurrentProperty] = useState("Loading...");
   const [showSplash, setShowSplash] = useState(true);
   const [receiptsInitialTab, setReceiptsInitialTab] = useState<"dues" | "receipts">("receipts");
 
   // Shared properties database state
-  const [properties, setProperties] = useState<Property[]>([
-    { name: "Uday Pg", code: "BVBQEEXU" },
-    { name: "Srinivasa PG", code: "SVPGEEXY" },
-    { name: "Venkata PG", code: "VKPGEEXZ" },
-  ]);
-
-  // --- Shared Application Database State ---
-  const [rooms, setRooms] = useState<Room[]>([
-    { id: "1", name: "Room 1", floor: 1, capacity: 3, beds: ["occupied", "occupied", "available"] },
-    { id: "2", name: "Room 2", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "3", name: "Room 3", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "4", name: "Room 4", floor: 1, capacity: 6, beds: ["occupied", "occupied", "occupied", "occupied", "occupied", "occupied"] },
-    { id: "5", name: "Room 5", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "6", name: "Room 6", floor: 1, capacity: 3, beds: ["occupied", "occupied", "occupied"] },
-    { id: "7", name: "Room 7", floor: 2, capacity: 3, beds: ["available", "available", "occupied"] },
-    { id: "8", name: "Room 8", floor: 2, capacity: 4, beds: ["available", "occupied", "occupied", "occupied"] },
-    { id: "9", name: "Room 9", floor: 3, capacity: 2, beds: ["available", "available"] },
-  ]);
-
-  const [tenants, setTenants] = useState<Tenant[]>([
-    { id: "t1", name: "Aarav Nair", roomName: "Room 1", rentAmount: 7000, status: "active" },
-    { id: "t2", name: "Vihaan Joshi", roomName: "Room 7", rentAmount: 7700.15, status: "active" },
-  ]);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
 
   // Modal display toggles
   const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
@@ -88,30 +70,17 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [user, setUser] = useState({
-    name: "Uday Kumar",
-    email: "uday@example.com",
-    phone: "+91 99887 76655",
+    name: "User",
+    email: "user@example.com",
+    phone: "",
     photo: null as string | null
   });
 
-  const handleAddProperty = React.useCallback((name: string) => {
-    const randomCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const newProp = { name, code: randomCode };
-    setProperties((prev) => [...prev, newProp]);
-    setCurrentProperty(name);
-    setToastMessage(`Property "${name}" created successfully!`);
-  }, []);
-
-  const handleCreateProperty = React.useCallback((name: string) => {
-    handleAddProperty(name);
-    setCurrentView("dashboard");
-  }, [handleAddProperty]);
-
   const [bankDetails, setBankDetails] = useState<BankDetails>({
-    upiName: "durga",
-    upiNumber: "6369282277",
-    upiRegisteredName: "durga",
-    upiId: "ahmedp7@ybl",
+    upiName: "",
+    upiNumber: "",
+    upiRegisteredName: "",
+    upiId: "",
     accountHolderName: "",
     accountNumber: "",
     ifscCode: "",
@@ -145,15 +114,243 @@ export default function Home() {
   const [roomFloor, setRoomFloor] = useState("");
   const [roomCapacity, setRoomCapacity] = useState("3");
 
-  // Auto-hide splash screen after 1.8 seconds
+  // Load session and user data from Supabase
+  const fetchPgData = async (pgId: number | string) => {
+    // 1. Fetch Rooms & Beds
+    const { data: roomsList } = await supabase
+      .from("rooms")
+      .select("*, beds(*)")
+      .eq("pg_id", pgId);
+
+    if (roomsList) {
+      const formattedRooms = roomsList.map((r: any) => ({
+        id: String(r.id),
+        name: r.room_number,
+        floor: r.floor,
+        capacity: r.capacity,
+        beds: (r.beds || [])
+          .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
+          .map((b: any) => b.status as "available" | "occupied")
+      }));
+      setRooms(formattedRooms);
+    }
+
+    // 2. Fetch Tenants
+    const { data: tenantsList } = await supabase
+      .from("tenants")
+      .select("*, users(*), rooms(*)")
+      .eq("pg_id", pgId)
+      .eq("status", "active");
+
+    if (tenantsList) {
+      const formattedTenants = tenantsList.map((t: any) => ({
+        id: String(t.id),
+        name: t.users?.name || "Unknown Tenant",
+        roomName: t.rooms?.room_number || "Unassigned",
+        rentAmount: Number(t.rooms?.rent || 0),
+        status: t.status as "active" | "left"
+      }));
+      setTenants(formattedTenants);
+    }
+
+    // 3. Fetch PG details & bank details
+    const { data: pgDetails } = await supabase
+      .from("pgs")
+      .select("*")
+      .eq("id", pgId)
+      .single();
+
+    if (pgDetails) {
+      setBankDetails({
+        upiName: pgDetails.upi_name || "",
+        upiNumber: pgDetails.upi_number || "",
+        upiRegisteredName: pgDetails.upi_registered_name || "",
+        upiId: pgDetails.upi_id || "",
+        accountHolderName: pgDetails.account_holder_name || "",
+        accountNumber: pgDetails.account_number || "",
+        ifscCode: pgDetails.ifsc_code || "",
+        branchName: pgDetails.branch_name || ""
+      });
+    }
+
+    // 4. Fetch Payments Dues & Receipts
+    const { data: paymentsList } = await supabase
+      .from("payments")
+      .select("*, tenants(*, users(*), rooms(*))")
+      .eq("pg_id", pgId);
+
+    if (paymentsList) {
+      setPayments(paymentsList);
+    } else {
+      setPayments([]);
+    }
+  };
+
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setIsLoggedIn(true);
+      const { data: profile } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profile) {
+        setUser({
+          name: profile.name,
+          email: profile.email,
+          phone: profile.phone || "",
+          photo: profile.photo || null
+        });
+
+        // Fetch properties list for this Owner
+        const { data: pgsList } = await supabase
+          .from("pgs")
+          .select("*")
+          .eq("owner_id", session.user.id);
+
+        if (pgsList && pgsList.length > 0) {
+          setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
+          
+          let activePg = pgsList.find(p => p.id === profile.pg_id);
+          if (!activePg) {
+            activePg = pgsList[0];
+            await supabase
+              .from("users")
+              .update({ pg_id: activePg.id })
+              .eq("id", session.user.id);
+          }
+          setCurrentProperty(activePg.name);
+          await fetchPgData(activePg.id);
+        } else {
+          setProperties([]);
+          setCurrentProperty("");
+          setRooms([]);
+          setTenants([]);
+          setPayments([]);
+          setCurrentView("create-property");
+        }
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+    setShowSplash(false);
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1800);
-    return () => clearTimeout(timer);
+    checkUser();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setIsLoggedIn(true);
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        if (profile) {
+          setUser({
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone || "",
+            photo: profile.photo || null
+          });
+          const { data: pgsList } = await supabase
+            .from("pgs")
+            .select("*")
+            .eq("owner_id", session.user.id);
+          if (pgsList && pgsList.length > 0) {
+            setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
+            const activePg = pgsList.find(p => p.id === profile.pg_id) || pgsList[0];
+            setCurrentProperty(activePg.name);
+            await fetchPgData(activePg.id);
+          }
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
+  const handleSelectProperty = async (name: string) => {
+    setCurrentProperty(name);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    
+    const { data: pgsList } = await supabase
+      .from("pgs")
+      .select("*")
+      .eq("owner_id", session.user.id);
+      
+    if (pgsList) {
+      const selectedPg = pgsList.find(p => p.name === name);
+      if (selectedPg) {
+        await supabase
+          .from("users")
+          .update({ pg_id: selectedPg.id })
+          .eq("id", session.user.id);
+        
+        await fetchPgData(selectedPg.id);
+        setToastMessage(`Switched to property "${name}"`);
+      }
+    }
+  };
+
+  const handleAddProperty = async (name: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    // 1. Insert PG
+    const { data: newPg, error: pgError } = await supabase
+      .from("pgs")
+      .insert({
+        name,
+        address: "Address",
+        owner_id: session.user.id,
+        phone: user.phone || "+91 99887 76655",
+        subscription_plan: "free"
+      })
+      .select()
+      .single();
+
+    if (pgError) {
+      setToastMessage(pgError.message);
+      return;
+    }
+
+    // 2. Set active pg_id
+    await supabase
+      .from("users")
+      .update({ pg_id: newPg.id })
+      .eq("id", session.user.id);
+
+    // 3. Reload properties
+    const { data: pgsList } = await supabase
+      .from("pgs")
+      .select("*")
+      .eq("owner_id", session.user.id);
+
+    if (pgsList) {
+      setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
+      setCurrentProperty(newPg.name);
+      await fetchPgData(newPg.id);
+      setToastMessage(`Property "${name}" created successfully!`);
+    }
+  };
+
+  const handleCreateProperty = (name: string) => {
+    handleAddProperty(name);
+    setCurrentView("dashboard");
+  };
+
   // Shared state dynamic computations
+  const activePgId = properties.find((p) => p.name === currentProperty)?.code;
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
   const occupiedBedsCount = rooms.reduce(
     (acc, r) => acc + r.beds.filter((status) => status === "occupied").length,
@@ -163,84 +360,260 @@ export default function Home() {
 
   const activeTenantsCount = tenants.filter((t) => t.status === "active").length;
   const leftTenantsCount = tenants.filter((t) => t.status === "left").length;
-  const collectedAmountSum = tenants
-    .filter((t) => t.status === "active")
-    .reduce((acc, t) => acc + t.rentAmount, 0);
+
+  const collectedAmountSum = payments
+    .filter((p) => p.status === "paid")
+    .reduce((acc, p) => acc + Number(p.amount), 0);
+
+  const pendingDuesAmount = payments
+    .filter((p) => p.status === "pending" || p.status === "overdue")
+    .reduce((acc, p) => acc + Number(p.amount), 0);
+
+  const pendingDuesCount = payments
+    .filter((p) => p.status === "pending" || p.status === "overdue")
+    .length;
+
+  const duesList: DueItem[] = payments
+    .filter((p) => p.status === "pending" || p.status === "overdue")
+    .map((p) => ({
+      id: String(p.id),
+      tenantName: p.tenants?.users?.name || "Unknown",
+      roomName: p.tenants?.rooms?.room_number || "Unassigned",
+      amount: Number(p.amount),
+      dueDate: p.due_date ? new Date(p.due_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",
+      status: p.status as "pending" | "overdue"
+    }));
+
+  const receiptsList: ReceiptItem[] = payments
+    .filter((p) => p.status === "paid")
+    .map((p) => ({
+      id: String(p.id),
+      tenantName: p.tenants?.users?.name || "Unknown",
+      roomName: p.tenants?.rooms?.room_number || "Unassigned",
+      amount: Number(p.amount),
+      date: p.payment_date ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",
+      refCode: p.reference_code || "UPI Payment",
+      paymentMethod: p.payment_method || "UPI"
+    }));
 
   // Bed status toggling callback
-  const handleToggleBed = (roomId: string, bedIndex: number) => {
-    setRooms((prevRooms) =>
-      prevRooms.map((room) => {
-        if (room.id !== roomId) return room;
-        const newBeds = [...room.beds];
-        newBeds[bedIndex] = newBeds[bedIndex] === "available" ? "occupied" : "available";
-        return { ...room, beds: newBeds };
-      })
-    );
+  const handleToggleBed = async (roomId: string, bedIndex: number) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) return;
+
+    const { data: bedsList } = await supabase
+      .from("beds")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("bed_number", { ascending: true });
+
+    if (bedsList && bedsList[bedIndex]) {
+      const targetBed = bedsList[bedIndex];
+      const newStatus = targetBed.status === "available" ? "occupied" : "available";
+      
+      await supabase
+        .from("beds")
+        .update({ status: newStatus })
+        .eq("id", targetBed.id);
+
+      await fetchPgData(profile.pg_id);
+    }
   };
 
   // Add a tenant submission handler
-  const handleAddTenantSubmit = (e: React.FormEvent) => {
+  const handleAddTenantSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantName.trim() || !tenantRoomId || !tenantRent) return;
 
-    const targetRoom = rooms.find((r) => r.id === tenantRoomId);
-    if (!targetRoom) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
 
-    // Find the first available bed in this room
-    const availableBedIdx = targetRoom.beds.indexOf("available");
-    if (availableBedIdx === -1) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) {
+      setToastMessage("Please select or create a property first.");
+      return;
+    }
+
+    const pgId = profile.pg_id;
+
+    // Fetch the room details
+    const { data: roomDetails } = await supabase
+      .from("rooms")
+      .select("*, beds(*)")
+      .eq("id", tenantRoomId)
+      .single();
+
+    if (!roomDetails) return;
+
+    const availableBed = (roomDetails.beds || []).find((b: any) => b.status === "available");
+    if (!availableBed) {
       alert("This room is already at full capacity!");
       return;
     }
 
-    // 1. Add tenant to list
-    const newTenant: Tenant = {
-      id: `t_${Date.now()}`,
+    // 1. Create a dummy tenant user profile
+    const tenantUserId = crypto.randomUUID();
+    const { error: userError } = await supabase.from("users").insert({
+      id: tenantUserId,
       name: tenantName.trim(),
-      roomName: targetRoom.name,
-      rentAmount: Number(tenantRent),
-      status: "active",
-    };
-
-    // 2. Mark bed as occupied
-    const updatedRooms = rooms.map((r) => {
-      if (r.id !== targetRoom.id) return r;
-      const newBeds = [...r.beds];
-      newBeds[availableBedIdx] = "occupied";
-      return { ...r, beds: newBeds };
+      email: `${tenantName.toLowerCase().replace(/\s+/g, "")}@placeholder.com`,
+      role: "Tenant",
+      pg_id: pgId
     });
 
-    setTenants([...tenants, newTenant]);
-    setRooms(updatedRooms);
+    if (userError) {
+      setToastMessage(userError.message);
+      return;
+    }
+
+    // 2. Create tenant record
+    const { data: tenant, error: tenantError } = await supabase
+      .from("tenants")
+      .insert({
+        pg_id: pgId,
+        user_id: tenantUserId,
+        room_id: tenantRoomId,
+        bed_id: availableBed.id,
+        deposit: Number(tenantRent),
+        status: "active"
+      })
+      .select()
+      .single();
+
+    if (tenantError) {
+      setToastMessage(tenantError.message);
+      return;
+    }
+
+    // 3. Mark the bed as occupied
+    await supabase
+      .from("beds")
+      .update({ status: "occupied" })
+      .eq("id", availableBed.id);
+
+    // 4. Create an initial pending payment due
+    await supabase.from("payments").insert({
+      tenant_id: tenant.id,
+      pg_id: pgId,
+      amount: Number(tenantRent),
+      month: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      status: "pending",
+      due_date: new Date().toISOString().split("T")[0]
+    });
+
+    await fetchPgData(pgId);
 
     // Reset Form & Close
     setTenantName("");
     setTenantRoomId("");
     setTenantRent("");
     setIsAddTenantOpen(false);
+    setToastMessage(`Tenant "${tenantName}" boarded successfully!`);
   };
 
   // Add a room submission handler
-  const handleAddRoomSubmit = (e: React.FormEvent) => {
+  const handleAddRoomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomName.trim() || !roomFloor || !roomCapacity) return;
 
-    const newRoom: Room = {
-      id: `r_${Date.now()}`,
-      name: roomName.trim(),
-      floor: Number(roomFloor),
-      capacity: Number(roomCapacity),
-      beds: Array(Number(roomCapacity)).fill("available"),
-    };
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
 
-    setRooms([...rooms, newRoom]);
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) {
+      setToastMessage("Please select or create a property first.");
+      return;
+    }
+
+    const pgId = profile.pg_id;
+    const capacity = Number(roomCapacity);
+    // Hardcode basic rent for V1, or we can prompt for it
+    const rent = 7000;
+
+    // 1. Insert room
+    const { data: room, error: roomError } = await supabase
+      .from("rooms")
+      .insert({
+        pg_id: pgId,
+        room_number: roomName.trim(),
+        floor: Number(roomFloor),
+        capacity,
+        rent,
+        status: "available"
+      })
+      .select()
+      .single();
+
+    if (roomError) {
+      setToastMessage(roomError.message);
+      return;
+    }
+
+    // 2. Insert beds
+    for (let i = 1; i <= capacity; i++) {
+      await supabase.from("beds").insert({
+        room_id: room.id,
+        bed_number: `Bed ${i}`,
+        status: "available"
+      });
+    }
+
+    await fetchPgData(pgId);
 
     // Reset Form & Close
     setRoomName("");
     setRoomFloor("");
     setRoomCapacity("3");
     setIsAddRoomOpen(false);
+    setToastMessage(`Room "${roomName}" added successfully!`);
+  };
+
+  const handleCollectRent = async (dueId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("pg_id")
+      .eq("id", session.user.id)
+      .single();
+
+    if (!profile?.pg_id) return;
+
+    const { error } = await supabase
+      .from("payments")
+      .update({
+        status: "paid",
+        payment_date: new Date().toISOString().split("T")[0],
+        payment_method: "UPI",
+        reference_code: `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
+      })
+      .eq("id", dueId);
+
+    if (error) {
+      setToastMessage(error.message);
+    } else {
+      setToastMessage("Rent collected successfully!");
+      await fetchPgData(profile.pg_id);
+    }
   };
 
   // List of rooms that have at least one empty bed
@@ -467,12 +840,11 @@ export default function Home() {
                         label="Logout" 
                         icon={LogOut} 
                         variant="red"
-                        onClick={() => {
+                        onClick={async () => {
                           setIsDrawerOpen(false);
                           setToastMessage("Logging out...");
-                          setTimeout(() => {
-                            setIsLoggedIn(false);
-                          }, 500);
+                          await supabase.auth.signOut();
+                          setIsLoggedIn(false);
                         }} 
                       />
                     </div>
@@ -607,8 +979,8 @@ export default function Home() {
                   setReceiptsInitialTab(tab);
                   setCurrentView("receipts");
                 }}
-                pendingDuesAmount={13700}
-                pendingDuesCount={2}
+                pendingDuesAmount={pendingDuesAmount}
+                pendingDuesCount={pendingDuesCount}
                 onMenuClick={() => setIsDrawerOpen(true)}
                 currentProperty={currentProperty}
                 roomsCount={rooms.length}
@@ -619,6 +991,7 @@ export default function Home() {
                 collectedAmount={collectedAmountSum}
                 onAddTenantClick={() => setIsAddTenantOpen(true)}
                 onAddRoomClick={() => setIsAddRoomOpen(true)}
+                payments={payments}
               />
             )}
 
@@ -803,6 +1176,7 @@ export default function Home() {
             {currentView === "staff" && (
               <StaffView
                 onBack={() => setCurrentView("dashboard")}
+                activePgId={activePgId}
               />
             )}
 
@@ -811,6 +1185,9 @@ export default function Home() {
                 onBack={() => setCurrentView("dashboard")}
                 propertyName={currentProperty}
                 initialTab={receiptsInitialTab}
+                dues={duesList}
+                receipts={receiptsList}
+                onCollectRent={handleCollectRent}
               />
             )}
           </motion.div>
@@ -829,7 +1206,7 @@ export default function Home() {
         isOpen={isPropertySelectorOpen}
         onClose={() => setIsPropertySelectorOpen(false)}
         selectedProperty={currentProperty}
-        onSelectProperty={setCurrentProperty}
+        onSelectProperty={handleSelectProperty}
         properties={properties}
         onAddProperty={handleAddProperty}
       />

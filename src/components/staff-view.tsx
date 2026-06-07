@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import { 
   ArrowLeft, 
   Plus, 
@@ -35,57 +36,54 @@ interface StaffMember {
 
 interface StaffViewProps {
   onBack: () => void;
+  activePgId?: string;
 }
 
 type RoleFilter = "All" | "Management" | "Kitchen" | "Housekeeping" | "Security";
 
-export function StaffView({ onBack }: StaffViewProps) {
-  const [staff, setStaff] = useState<StaffMember[]>([
-    { 
-      id: "s1", 
-      name: "Ramesh Kumar", 
-      phone: "+91 98765 43210", 
-      role: "Management",
-      email: "ramesh@example.com",
-      status: "ACTIVE",
-      joinDate: "2026-01-15",
-      salary: "25000",
-      aadhaar: "123456789012"
-    },
-    { 
-      id: "s2", 
-      name: "Sita Devi", 
-      phone: "+91 87654 32109", 
-      role: "Kitchen",
-      email: "sita@example.com",
-      status: "ACTIVE",
-      joinDate: "2026-02-10",
-      salary: "18000",
-      aadhaar: "234567890123"
-    },
-    { 
-      id: "s3", 
-      name: "Laxman Singh", 
-      phone: "+91 76543 21098", 
-      role: "Housekeeping",
-      email: "laxman@example.com",
-      status: "ACTIVE",
-      joinDate: "2026-03-05",
-      salary: "15000",
-      aadhaar: "345678901234"
-    },
-    { 
-      id: "s4", 
-      name: "Vikram Rathore", 
-      phone: "+91 65432 10987", 
-      role: "Security",
-      email: "vikram@example.com",
-      status: "ACTIVE",
-      joinDate: "2026-04-01",
-      salary: "20000",
-      aadhaar: "456789012345"
-    },
-  ]);
+export function StaffView({ onBack, activePgId }: StaffViewProps) {
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchStaff = React.useCallback(async () => {
+    if (!activePgId) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("staff")
+        .select("*")
+        .eq("pg_id", Number(activePgId))
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching staff:", error);
+      } else if (data) {
+        setStaff(data.map((s: any) => ({
+          id: String(s.id),
+          name: s.name,
+          phone: s.phone,
+          role: s.role as StaffMember["role"],
+          photo: s.photo,
+          email: s.email || "",
+          status: s.status as "ACTIVE" | "INACTIVE",
+          joinDate: s.join_date,
+          salary: s.salary ? String(s.salary) : "",
+          aadhaar: s.aadhaar,
+          aadhaarFront: s.aadhaar_front,
+          aadhaarBack: s.aadhaar_back,
+          notes: s.notes || ""
+        })));
+      }
+    } catch (err) {
+      console.error("Fetch staff error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activePgId]);
+
+  useEffect(() => {
+    fetchStaff();
+  }, [fetchStaff]);
 
   const [activeCategory, setActiveCategory] = useState<RoleFilter>("Management");
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,7 +109,7 @@ export function StaffView({ onBack }: StaffViewProps) {
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAddStaffSubmit = (e: React.FormEvent) => {
+  const handleAddStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newPhone.trim() || !newEmail.trim() || !newJoinDate || !newAadhaar.trim()) {
       alert("Please fill in all required fields marked with *");
@@ -127,43 +125,78 @@ export function StaffView({ onBack }: StaffViewProps) {
       return;
     }
 
-    const newMember: StaffMember = {
-      id: `staff_${Date.now()}`,
-      name: newName.trim(),
-      phone: newPhone.trim(),
-      role: newRole,
-      photo: newPhoto,
-      email: newEmail.trim(),
-      status: newStatus,
-      joinDate: newJoinDate,
-      salary: newSalary.trim() || undefined,
-      aadhaar: newAadhaar.trim(),
-      aadhaarFront: newAadhaarFrontName,
-      aadhaarBack: newAadhaarBackName,
-      notes: newNotes.trim() || undefined,
-    };
+    if (!activePgId) {
+      alert("No active property selected");
+      return;
+    }
 
-    setStaff((prev) => [...prev, newMember]);
-    
-    // Reset Form
-    setNewName("");
-    setNewPhone("");
-    setNewRole("Management");
-    setNewEmail("");
-    setNewStatus("ACTIVE");
-    setNewJoinDate("");
-    setNewSalary("");
-    setNewAadhaar("");
-    setNewNotes("");
-    setNewPhoto(null);
-    setNewAadhaarFrontName(null);
-    setNewAadhaarBackName(null);
+    try {
+      const insertData = {
+        pg_id: Number(activePgId),
+        name: newName.trim(),
+        phone: newPhone.trim(),
+        role: newRole,
+        photo: newPhoto,
+        email: newEmail.trim() || null,
+        status: newStatus,
+        join_date: newJoinDate,
+        salary: newSalary.trim() ? Number(newSalary.trim()) : null,
+        aadhaar: newAadhaar.trim(),
+        aadhaar_front: newAadhaarFrontName,
+        aadhaar_back: newAadhaarBackName,
+        notes: newNotes.trim() || null,
+      };
 
-    setIsAddModalOpen(false);
+      const { error } = await supabase
+        .from("staff")
+        .insert(insertData);
+
+      if (error) {
+        alert("Error adding staff member: " + error.message);
+        return;
+      }
+
+      await fetchStaff();
+
+      // Reset Form
+      setNewName("");
+      setNewPhone("");
+      setNewRole("Management");
+      setNewEmail("");
+      setNewStatus("ACTIVE");
+      setNewJoinDate("");
+      setNewSalary("");
+      setNewAadhaar("");
+      setNewNotes("");
+      setNewPhoto(null);
+      setNewAadhaarFrontName(null);
+      setNewAadhaarBackName(null);
+
+      setIsAddModalOpen(false);
+    } catch (err: any) {
+      alert("Unexpected error: " + err.message);
+    }
   };
 
-  const handleDeleteStaff = (id: string) => {
-    setStaff((prev) => prev.filter((s) => s.id !== id));
+  const handleDeleteStaff = async (id: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to remove this staff member?");
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("staff")
+        .delete()
+        .eq("id", Number(id));
+
+      if (error) {
+        alert("Error deleting staff member: " + error.message);
+        return;
+      }
+
+      setStaff((prev) => prev.filter((s) => s.id !== id));
+    } catch (err: any) {
+      alert("Unexpected error: " + err.message);
+    }
   };
 
   // Filter staff by category and search query

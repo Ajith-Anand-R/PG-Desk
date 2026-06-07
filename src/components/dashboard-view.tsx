@@ -44,6 +44,7 @@ interface DashboardViewProps {
   onAddTenantClick: () => void;
   onAddRoomClick: () => void;
   onMenuClick: () => void;
+  payments: any[];
 }
 
 export function DashboardView({
@@ -67,43 +68,85 @@ export function DashboardView({
   onAddTenantClick,
   onAddRoomClick,
   onMenuClick,
+  payments = [],
 }: DashboardViewProps) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
-  const monthDetails: Record<string, {
-    title: string;
-    paymentsCount: number;
-    totalRevenue: number;
-    payments: {
-      tenantName: string;
-      room: string;
-      date: string;
-      txn: string;
-      amount: number;
-    }[];
-  }> = {
-    Jan: { title: "January 2026", paymentsCount: 0, totalRevenue: 0, payments: [] },
-    Feb: { title: "February 2026", paymentsCount: 0, totalRevenue: 0, payments: [] },
-    Mar: { title: "March 2026", paymentsCount: 0, totalRevenue: 0, payments: [] },
-    Apr: { title: "April 2026", paymentsCount: 0, totalRevenue: 0, payments: [] },
-    May: { 
-      title: "May 2026", 
-      paymentsCount: 1, 
-      totalRevenue: 8200.00, 
-      payments: [
-        { tenantName: "Vihaan Joshi", room: "Room 107", date: "15 May 2026", txn: "Txn: a38ff028-2835-4dee-a172-11ac5b186635", amount: 8200.00 }
-      ] 
-    },
-    Jun: {
-      title: "June 2026",
-      paymentsCount: 2,
-      totalRevenue: collectedAmount,
-      payments: [
-        { tenantName: "Sab", room: "Room 102", date: "06 Jun 2026", txn: "Txn: a38ff028-2835-4dee-a172-11ac5b186635", amount: 7100.05 },
-        { tenantName: "Sam", room: "Room 101", date: "06 Jun 2026", txn: "Txn: 55c53986-0adf-42aa-af0d-a3825bc18499", amount: 7600.10 }
-      ]
+  // Get last 6 months dynamically based on local time
+  const last6Months = React.useMemo(() => {
+    const list = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const shortName = d.toLocaleString("en-US", { month: "short" });
+      const fullName = d.toLocaleString("en-US", { month: "long" });
+      const year = d.getFullYear();
+      list.push({
+        short: shortName,
+        full: `${fullName} ${year}`,
+        key: `${fullName} ${year}`,
+      });
     }
-  };
+    return list;
+  }, []);
+
+  const monthDetails = React.useMemo(() => {
+    const details: Record<string, {
+      title: string;
+      paymentsCount: number;
+      totalRevenue: number;
+      payments: {
+        tenantName: string;
+        room: string;
+        date: string;
+        txn: string;
+        amount: number;
+      }[];
+    }> = {};
+
+    last6Months.forEach(m => {
+      details[m.short] = {
+        title: m.full,
+        paymentsCount: 0,
+        totalRevenue: 0,
+        payments: []
+      };
+    });
+
+    if (payments && Array.isArray(payments)) {
+      payments.forEach(p => {
+        if (p.status !== "paid") return;
+        const matchedMonth = last6Months.find(m => m.key === p.month);
+        if (matchedMonth) {
+          const shortName = matchedMonth.short;
+          const tenantName = p.tenants?.users?.name || "Unknown Tenant";
+          const room = p.tenants?.rooms?.room_number ? `Room ${p.tenants.rooms.room_number}` : "Unassigned";
+          const date = p.payment_date 
+            ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+            : "N/A";
+          const txn = p.reference_code ? `Txn: ${p.reference_code}` : "UPI Payment";
+          const amount = Number(p.amount);
+
+          details[shortName].paymentsCount += 1;
+          details[shortName].totalRevenue += amount;
+          details[shortName].payments.push({
+            tenantName,
+            room,
+            date,
+            txn,
+            amount
+          });
+        }
+      });
+    }
+
+    return details;
+  }, [payments, last6Months]);
+
+  const maxRevenue = React.useMemo(() => {
+    const revenues = Object.values(monthDetails).map(d => d.totalRevenue);
+    return Math.max(...revenues, 1000);
+  }, [monthDetails]);
 
   // Animation variants
   const containerVariants = {
@@ -422,11 +465,13 @@ export function DashboardView({
               <div className="absolute inset-x-0 top-1/3 h-px border-t border-slate-100/60" />
               <div className="absolute inset-x-0 top-2/3 h-px border-t border-slate-100/60" />
 
-              {["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map((month, idx) => {
-                const isJune = month === "Jun";
-                const isMay = month === "May";
-                const hasData = isJune || isMay;
+              {last6Months.map((mInfo, idx) => {
+                const month = mInfo.short;
+                const details = monthDetails[month] || { totalRevenue: 0 };
+                const revenue = details.totalRevenue;
+                const hasData = revenue > 0;
                 const labelColor = hasData ? "text-emerald-600 font-bold" : "text-slate-400 font-semibold";
+                const isMax = revenue > 0 && revenue === maxRevenue;
                 
                 return (
                   <motion.button
@@ -437,34 +482,24 @@ export function DashboardView({
                     className="flex flex-col items-center gap-2 w-10 z-10 cursor-pointer focus:outline-hidden"
                   >
                     <div className="relative w-full flex justify-center">
-                      {isJune && (
+                      {revenue > 0 && (
                         <motion.span
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5, duration: 0.3 }}
-                          className="absolute -top-7 bg-emerald-600 text-white text-[9px] font-bold py-0.5 px-1.5 rounded-sm font-mono shadow-xs shrink-0"
+                          className={`absolute -top-7 ${isMax ? "bg-emerald-600" : "bg-emerald-500"} text-white text-[9px] font-bold py-0.5 px-1.5 rounded-sm font-mono shadow-xs shrink-0 whitespace-nowrap`}
                         >
-                          {(collectedAmount / 1000).toFixed(1)}K
-                        </motion.span>
-                      )}
-                      {isMay && (
-                        <motion.span
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5, duration: 0.3 }}
-                          className="absolute -top-7 bg-emerald-500 text-white text-[9px] font-bold py-0.5 px-1.5 rounded-sm font-mono shadow-xs shrink-0"
-                        >
-                          8.2K
+                          {revenue >= 1000 ? `${(revenue / 1000).toFixed(1)}K` : `₹${revenue}`}
                         </motion.span>
                       )}
                       <motion.div
                         initial={{ height: 0 }}
-                        animate={{ height: isJune ? 128 : isMay ? 72 : 20 }}
+                        animate={{ height: revenue > 0 ? 20 + (revenue / maxRevenue) * 108 : 20 }}
                         transition={{ type: "spring", stiffness: 100, damping: 15, delay: idx * 0.05 }}
                         className={`w-7 rounded-lg relative flex items-end justify-center transition-all ${
-                          isJune
+                          isMax
                             ? "bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-xs shadow-emerald-250/20"
-                            : isMay
+                            : revenue > 0
                               ? "bg-emerald-500/70 border border-emerald-200/20"
                               : "bg-emerald-100/40 hover:bg-emerald-100/60 border border-emerald-50/10"
                         }`}

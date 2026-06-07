@@ -18,7 +18,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 
-interface ReceiptItem {
+export interface ReceiptItem {
   id: string;
   tenantName: string;
   roomName: string;
@@ -29,7 +29,7 @@ interface ReceiptItem {
   photo?: string | null;
 }
 
-interface DueItem {
+export interface DueItem {
   id: string;
   tenantName: string;
   roomName: string;
@@ -42,14 +42,24 @@ interface ReceiptsViewProps {
   onBack: () => void;
   propertyName: string;
   initialTab?: "dues" | "receipts";
+  dues?: DueItem[];
+  receipts?: ReceiptItem[];
+  onCollectRent?: (dueId: string) => void;
 }
 
-export function ReceiptsView({ onBack, propertyName, initialTab = "receipts" }: ReceiptsViewProps) {
+export function ReceiptsView({
+  onBack,
+  propertyName,
+  initialTab = "receipts",
+  dues: duesProp,
+  receipts: receiptsProp,
+  onCollectRent,
+}: ReceiptsViewProps) {
   const [activeTab, setActiveTab] = useState<"dues" | "receipts">(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock Receipts Database
-  const [receipts] = useState<ReceiptItem[]>([
+  // Mock Receipts Database Fallback
+  const defaultReceipts: ReceiptItem[] = [
     { 
       id: "rc_1", 
       tenantName: "Sam", 
@@ -86,13 +96,16 @@ export function ReceiptsView({ onBack, propertyName, initialTab = "receipts" }: 
       refCode: "TXN-11b23902-1cdf-32aa-cf0d-c93845bc1029-1928371029381",
       paymentMethod: "UPI"
     }
-  ]);
+  ];
 
-  // Mock Dues Database (initially set to some pending items)
-  const [dues, setDues] = useState<DueItem[]>([
+  // Mock Dues Database Fallback
+  const defaultDues: DueItem[] = [
     { id: "due_1", tenantName: "Rahul Sharma", roomName: "Room 105", amount: 6500.00, dueDate: "10 Jun 26", status: "pending" },
     { id: "due_2", tenantName: "Priya Patel", roomName: "Room 108", amount: 7200.00, dueDate: "05 Jun 26", status: "overdue" }
-  ]);
+  ];
+
+  const receipts = receiptsProp || defaultReceipts;
+  const dues = duesProp || defaultDues;
 
   // Compute total outstanding dues
   const totalOutstanding = dues.reduce((acc, item) => acc + item.amount, 0);
@@ -368,6 +381,15 @@ export function ReceiptsView({ onBack, propertyName, initialTab = "receipts" }: 
                             <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
                             <span>Due: {due.dueDate}</span>
                           </span>
+                          {onCollectRent && (
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => onCollectRent(due.id)}
+                              className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1 rounded-lg text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                            >
+                              Collect
+                            </motion.button>
+                          )}
                         </div>
                       </motion.div>
                     );

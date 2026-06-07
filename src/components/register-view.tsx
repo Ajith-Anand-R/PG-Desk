@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Camera, Building, Upload, AlertCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface RegisterViewProps {
   onLoginClick: () => void;
@@ -36,22 +37,39 @@ export function RegisterView({ onLoginClick, onRegisterSuccess }: RegisterViewPr
     }
   }, [toastMessage]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) return;
 
     setIsLoading(true);
 
-    // Simulate registration delay
-    setTimeout(() => {
-      setIsLoading(false);
-      onRegisterSuccess({
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        photo,
-      });
-    }, 1200);
+    const { error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password.trim(),
+      options: {
+        data: {
+          name: name.trim(),
+          role: "Owner",
+          phone: phone.trim(),
+          photo: photo,
+        },
+      },
+    });
+
+    setIsLoading(false);
+    if (error) {
+      setToastMessage(error.message);
+    } else {
+      setToastMessage("Account created successfully!");
+      setTimeout(() => {
+        onRegisterSuccess({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          photo,
+        });
+      }, 1000);
+    }
   };
 
   // Start Camera

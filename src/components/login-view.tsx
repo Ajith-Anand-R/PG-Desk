@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Building } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface LoginViewProps {
   onLogin: () => void;
@@ -26,29 +27,41 @@ export function LoginView({ onLogin, onRegisterClick }: LoginViewProps) {
     }
   }, [toastMessage]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
 
     setIsLoading(true);
     setLoginMethod("email");
 
-    // Simulating authenticating delay
-    setTimeout(() => {
-      setIsLoading(false);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    setIsLoading(false);
+    if (error) {
+      setToastMessage(error.message);
+    } else {
       onLogin();
-    }, 1200);
+    }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     setLoginMethod("google");
 
-    // Simulating authenticating delay
-    setTimeout(() => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/app",
+      },
+    });
+
+    if (error) {
       setIsLoading(false);
-      onLogin();
-    }, 1200);
+      setToastMessage(error.message);
+    }
   };
 
   return (
