@@ -45,6 +45,7 @@ interface DashboardViewProps {
   onAddRoomClick: () => void;
   onMenuClick: () => void;
   payments: any[];
+  hasUnreadNotifications?: boolean;
 }
 
 export function DashboardView({
@@ -69,6 +70,7 @@ export function DashboardView({
   onAddRoomClick,
   onMenuClick,
   payments = [],
+  hasUnreadNotifications = false,
 }: DashboardViewProps) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
@@ -221,7 +223,9 @@ export function DashboardView({
               className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10 relative"
             >
               <Bell className="w-5 h-5 text-white" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-emerald-800" />
+              {hasUnreadNotifications && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-emerald-800" />
+              )}
             </motion.button>
           </div>
         </div>

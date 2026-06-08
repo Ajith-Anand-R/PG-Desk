@@ -42,7 +42,6 @@ export default function LandingPage() {
   const [pricingTab, setPricingTab] = useState<"pricing" | "faq">("pricing");
   
   // PWA Install Event State
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [isAppInstalled, setIsAppInstalled] = useState(false);

@@ -18,7 +18,14 @@ import {
   Crown, 
   LogOut, 
   Home as HomeIcon, 
-  QrCode 
+  QrCode,
+  Coffee,
+  CalendarRange,
+  Users2,
+  TrendingDown,
+  Package,
+  Shield,
+  Briefcase
 } from "lucide-react";
 import { MobileFrame } from "@/components/ui/mobile-frame";
 import { DashboardView } from "@/components/dashboard-view";
@@ -38,15 +45,55 @@ import { TenantTermsView } from "@/components/tenant-terms-view";
 import { SubscriptionView } from "@/components/subscription-view";
 import { ChangePasswordView } from "@/components/change-password-view";
 import { PropertyQrModal } from "@/components/property-qr-modal";
-import { NotificationsView } from "@/components/notifications-view";
+import { NotificationsView, NotificationItem } from "@/components/notifications-view";
 import { RemindersView } from "@/components/reminders-view";
 import { BillsView } from "@/components/bills-view";
 import { StaffView } from "@/components/staff-view";
 import { ReceiptsView, DueItem, ReceiptItem } from "@/components/receipts-view";
+import { MealsManagementView } from "@/components/meals-management-view";
+import { BookingsView } from "@/components/bookings-view";
+import { VisitorLogsView } from "@/components/visitor-logs-view";
+import { ExpensesView } from "@/components/expenses-view";
+import { InventoryView } from "@/components/inventory-view";
+// Removed SuperAdminView import
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory";
+
+function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
+  const now = new Date();
+  const timestamp = date.getTime();
+  
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const eventDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  
+  const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+  
+  if (eventDate.getTime() === today.getTime()) {
+    return {
+      time: timeStr,
+      dateGroup: "Today",
+      timestamp
+    };
+  } else if (eventDate.getTime() === yesterday.getTime()) {
+    return {
+      time: `Yesterday, ${timeStr}`,
+      dateGroup: "Yesterday",
+      timestamp
+    };
+  } else {
+    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return {
+      time: `${dateStr}, ${timeStr}`,
+      dateGroup: "Earlier",
+      timestamp
+    };
+  }
+}
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
@@ -63,6 +110,10 @@ export default function Home() {
   const [payments, setPayments] = useState<any[]>([]);
   const [complaints, setComplaints] = useState<any[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [visitorLogs, setVisitorLogs] = useState<any[]>([]);
+  const [readNotifications, setReadNotifications] = useState<string[]>([]);
+  const [clearedBefore, setClearedBefore] = useState<number>(0);
 
   // Modal display toggles
   const [isAddTenantOpen, setIsAddTenantOpen] = useState(false);
@@ -75,7 +126,8 @@ export default function Home() {
     name: "User",
     email: "user@example.com",
     phone: "",
-    photo: null as string | null
+    photo: null as string | null,
+    role: "Tenant"
   });
 
   const [bankDetails, setBankDetails] = useState<BankDetails>({
@@ -118,152 +170,190 @@ export default function Home() {
 
   // Load session and user data from Supabase
   const fetchPgData = async (pgId: number | string) => {
-    // 1. Fetch Rooms & Beds
-    const { data: roomsList } = await supabase
-      .from("rooms")
-      .select("*, beds(*)")
-      .eq("pg_id", pgId);
+    try {
+      // 1. Fetch Rooms & Beds
+      const { data: roomsList } = await supabase
+        .from("rooms")
+        .select("*, beds(*)")
+        .eq("pg_id", pgId);
 
-    if (roomsList) {
-      const formattedRooms = roomsList.map((r: any) => ({
-        id: String(r.id),
-        name: r.room_number,
-        floor: r.floor,
-        capacity: r.capacity,
-        beds: (r.beds || [])
-          .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
-          .map((b: any) => b.status as "available" | "occupied")
-      }));
-      setRooms(formattedRooms);
-    }
+      if (roomsList) {
+        const formattedRooms = roomsList.map((r: any) => ({
+          id: String(r.id),
+          name: r.room_number,
+          floor: r.floor,
+          capacity: r.capacity,
+          beds: (r.beds || [])
+            .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
+            .map((b: any) => b.status as "available" | "occupied")
+        }));
+        setRooms(formattedRooms);
+      }
 
-    // 2. Fetch Tenants
-    const { data: tenantsList } = await supabase
-      .from("tenants")
-      .select("*, users(*), rooms(*)")
-      .eq("pg_id", pgId)
-      .eq("status", "active");
+      // 2. Fetch Tenants
+      const { data: tenantsList } = await supabase
+        .from("tenants")
+        .select("*, users(*), rooms(*)")
+        .eq("pg_id", pgId)
+        .eq("status", "active");
 
-    if (tenantsList) {
-      const formattedTenants = tenantsList.map((t: any) => ({
-        id: String(t.id),
-        name: t.users?.name || "Unknown Tenant",
-        roomName: t.rooms?.room_number || "Unassigned",
-        rentAmount: Number(t.rooms?.rent || 0),
-        status: t.status as "active" | "left"
-      }));
-      setTenants(formattedTenants);
-    }
+      if (tenantsList) {
+        const formattedTenants = tenantsList.map((t: any) => ({
+          id: String(t.id),
+          name: t.users?.name || "Unknown Tenant",
+          roomName: t.rooms?.room_number || "Unassigned",
+          rentAmount: Number(t.rooms?.rent || 0),
+          status: t.status as "active" | "left",
+          joinDate: t.join_date || null
+        }));
+        setTenants(formattedTenants);
+      }
 
-    // 3. Fetch PG details & bank details
-    const { data: pgDetails } = await supabase
-      .from("pgs")
-      .select("*")
-      .eq("id", pgId)
-      .single();
+      // 3. Fetch PG details & bank details
+      const { data: pgDetails } = await supabase
+        .from("pgs")
+        .select("*")
+        .eq("id", pgId)
+        .single();
 
-    if (pgDetails) {
-      setBankDetails({
-        upiName: pgDetails.upi_name || "",
-        upiNumber: pgDetails.upi_number || "",
-        upiRegisteredName: pgDetails.upi_registered_name || "",
-        upiId: pgDetails.upi_id || "",
-        accountHolderName: pgDetails.account_holder_name || "",
-        accountNumber: pgDetails.account_number || "",
-        ifscCode: pgDetails.ifsc_code || "",
-        branchName: pgDetails.branch_name || ""
-      });
-    }
+      if (pgDetails) {
+        setBankDetails({
+          upiName: pgDetails.upi_name || "",
+          upiNumber: pgDetails.upi_number || "",
+          upiRegisteredName: pgDetails.upi_registered_name || "",
+          upiId: pgDetails.upi_id || "",
+          accountHolderName: pgDetails.account_holder_name || "",
+          accountNumber: pgDetails.account_number || "",
+          ifscCode: pgDetails.ifsc_code || "",
+          branchName: pgDetails.branch_name || ""
+        });
+      }
 
-    // 4. Fetch Payments Dues & Receipts
-    const { data: paymentsList } = await supabase
-      .from("payments")
-      .select("*, tenants(*, users(*), rooms(*))")
-      .eq("pg_id", pgId);
+      // 4. Fetch Payments Dues & Receipts
+      const { data: paymentsList } = await supabase
+        .from("payments")
+        .select("*, tenants(*, users(*), rooms(*))")
+        .eq("pg_id", pgId);
 
-    if (paymentsList) {
-      setPayments(paymentsList);
-    } else {
-      setPayments([]);
-    }
+      if (paymentsList) {
+        setPayments(paymentsList);
+      } else {
+        setPayments([]);
+      }
 
-    // 5. Fetch Complaints
-    const { data: complaintsList } = await supabase
-      .from("complaints")
-      .select("*, tenants(*, users(*), rooms(*))")
-      .eq("pg_id", pgId)
-      .order("created_at", { ascending: false });
+      // 5. Fetch Complaints
+      const { data: complaintsList } = await supabase
+        .from("complaints")
+        .select("*, tenants(*, users(*), rooms(*))")
+        .eq("pg_id", pgId)
+        .order("created_at", { ascending: false });
 
-    if (complaintsList) {
-      setComplaints(complaintsList);
-    } else {
-      setComplaints([]);
-    }
+      if (complaintsList) {
+        setComplaints(complaintsList);
+      } else {
+        setComplaints([]);
+      }
 
-    // 6. Fetch Notices
-    const { data: noticesList } = await supabase
-      .from("notices")
-      .select("*")
-      .eq("pg_id", pgId)
-      .order("created_at", { ascending: false });
+      // 6. Fetch Notices
+      const { data: noticesList } = await supabase
+        .from("notices")
+        .select("*")
+        .eq("pg_id", pgId)
+        .order("created_at", { ascending: false });
 
-    if (noticesList) {
-      setNotices(noticesList);
-    } else {
-      setNotices([]);
+      if (noticesList) {
+        setNotices(noticesList);
+      } else {
+        setNotices([]);
+      }
+
+      // 7. Fetch Bookings
+      const { data: bookingsList } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("pg_id", pgId)
+        .order("created_at", { ascending: false });
+
+      if (bookingsList) {
+        setBookings(bookingsList);
+      } else {
+        setBookings([]);
+      }
+
+      // 8. Fetch Visitor Logs
+      const { data: visitorLogsList } = await supabase
+        .from("visitor_logs")
+        .select("*, tenants(*, rooms(*))")
+        .eq("pg_id", pgId)
+        .order("created_at", { ascending: false });
+
+      if (visitorLogsList) {
+        setVisitorLogs(visitorLogsList);
+      } else {
+        setVisitorLogs([]);
+      }
+    } catch (error) {
+      console.error("Error fetching PG data:", error);
     }
   };
 
   const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      setIsLoggedIn(true);
-      const { data: profile } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profile) {
-        setUser({
-          name: profile.name,
-          email: profile.email,
-          phone: profile.phone || "",
-          photo: profile.photo || null
-        });
-
-        // Fetch properties list for this Owner
-        const { data: pgsList } = await supabase
-          .from("pgs")
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setIsLoggedIn(true);
+        const { data: profile } = await supabase
+          .from("users")
           .select("*")
-          .eq("owner_id", session.user.id);
+          .eq("id", session.user.id)
+          .single();
 
-        if (pgsList && pgsList.length > 0) {
-          setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
-          
-          let activePg = pgsList.find(p => p.id === profile.pg_id);
-          if (!activePg) {
-            activePg = pgsList[0];
-            await supabase
-              .from("users")
-              .update({ pg_id: activePg.id })
-              .eq("id", session.user.id);
+        if (profile) {
+          setUser({
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone || "",
+            photo: profile.photo || null,
+            role: profile.role
+          });
+
+          // Fetch properties list for this Owner
+          const { data: pgsList } = await supabase
+            .from("pgs")
+            .select("*")
+            .eq("owner_id", session.user.id);
+
+          if (pgsList && pgsList.length > 0) {
+            setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
+            
+            let activePg = pgsList.find(p => p.id === profile.pg_id);
+            if (!activePg) {
+              activePg = pgsList[0];
+              await supabase
+                .from("users")
+                .update({ pg_id: activePg.id })
+                .eq("id", session.user.id);
+            }
+            setCurrentProperty(activePg.name);
+            await fetchPgData(activePg.id);
+          } else {
+            setProperties([]);
+            setCurrentProperty("");
+            setRooms([]);
+            setTenants([]);
+            setPayments([]);
+            setCurrentView("create-property");
           }
-          setCurrentProperty(activePg.name);
-          await fetchPgData(activePg.id);
-        } else {
-          setProperties([]);
-          setCurrentProperty("");
-          setRooms([]);
-          setTenants([]);
-          setPayments([]);
-          setCurrentView("create-property");
         }
+      } else {
+        setIsLoggedIn(false);
       }
-    } else {
+    } catch (error) {
+      console.error("Error checking user session:", error);
       setIsLoggedIn(false);
+    } finally {
+      setShowSplash(false);
     }
-    setShowSplash(false);
   };
 
   useEffect(() => {
@@ -283,7 +373,8 @@ export default function Home() {
             name: profile.name,
             email: profile.email,
             phone: profile.phone || "",
-            photo: profile.photo || null
+            photo: profile.photo || null,
+            role: profile.role
           });
           const { data: pgsList } = await supabase
             .from("pgs")
@@ -424,6 +515,166 @@ export default function Home() {
       paymentMethod: p.payment_method || "UPI"
     }));
 
+  // Load read notifications and cleared timestamp from localStorage
+  useEffect(() => {
+    if (activePgId) {
+      const storedRead = localStorage.getItem(`read_notifs_${activePgId}`);
+      setReadNotifications(storedRead ? JSON.parse(storedRead) : []);
+      const storedCleared = localStorage.getItem(`cleared_notifs_${activePgId}`);
+      setClearedBefore(storedCleared ? Number(storedCleared) : 0);
+    }
+  }, [activePgId]);
+
+  // Actions for notifications
+  const handleMarkAsRead = (id: string) => {
+    if (!activePgId) return;
+    const updated = [...readNotifications, id];
+    setReadNotifications(updated);
+    localStorage.setItem(`read_notifs_${activePgId}`, JSON.stringify(updated));
+  };
+
+  const handleMarkAllAsRead = () => {
+    if (!activePgId) return;
+    const allIds = notificationsList.map(n => n.id);
+    const updated = Array.from(new Set([...readNotifications, ...allIds]));
+    setReadNotifications(updated);
+    localStorage.setItem(`read_notifs_${activePgId}`, JSON.stringify(updated));
+  };
+
+  const handleClearAll = () => {
+    if (!activePgId) return;
+    const nowTimestamp = Date.now();
+    setClearedBefore(nowTimestamp);
+    localStorage.setItem(`cleared_notifs_${activePgId}`, String(nowTimestamp));
+  };
+
+  // Construct dynamic notifications list from database states
+  const notificationsList = React.useMemo(() => {
+    const list: any[] = [];
+
+    // 1. Payments -> Rent Payments Received & Rent Payments Due
+    payments.forEach((p) => {
+      if (p.status === "paid") {
+        const date = p.payment_date ? new Date(p.payment_date) : new Date(p.created_at || p.due_date || Date.now());
+        if (p.payment_date && !p.payment_date.includes("T")) {
+          date.setHours(10, 30, 0, 0);
+        }
+        const formatted = getNotificationTimeAndGroup(date);
+        
+        list.push({
+          id: `pay-paid-${p.id}`,
+          type: "payment",
+          title: "Rent Payment Received",
+          description: `${p.tenants?.users?.name || p.tenants?.name || "A tenant"} (Room ${p.tenants?.rooms?.room_number || "?"}) paid rent of ₹${Number(p.amount).toLocaleString("en-IN")} for ${p.month}.`,
+          ...formatted
+        });
+      } else if (p.status === "pending" || p.status === "overdue") {
+        const date = p.due_date ? new Date(p.due_date) : new Date(p.created_at || Date.now());
+        if (p.due_date && !p.due_date.includes("T")) {
+          date.setHours(9, 0, 0, 0);
+        }
+        const formatted = getNotificationTimeAndGroup(date);
+        
+        list.push({
+          id: `pay-due-${p.id}`,
+          type: "payment",
+          title: p.status === "overdue" ? "Late Fee Warning Sent" : "Rent Payment Due",
+          description: p.status === "overdue"
+            ? `System sent automated payment reminder to ${p.tenants?.users?.name || p.tenants?.name || "tenant"} (Room ${p.tenants?.rooms?.room_number || "?"}) for ₹${Number(p.amount).toLocaleString("en-IN")}.`
+            : `Rent of ₹${Number(p.amount).toLocaleString("en-IN")} for ${p.month} is due for ${p.tenants?.users?.name || p.tenants?.name || "tenant"} (Room ${p.tenants?.rooms?.room_number || "?"}).`,
+          ...formatted
+        });
+      }
+    });
+
+    // 2. Tenants -> Check-ins
+    tenants.forEach((t) => {
+      if (t.status === "active") {
+        const date = t.joinDate ? new Date(t.joinDate) : new Date(Date.now());
+        if (t.joinDate && !t.joinDate.includes("T")) {
+          date.setHours(9, 15, 0, 0);
+        }
+        const formatted = getNotificationTimeAndGroup(date);
+        list.push({
+          id: `ten-in-${t.id}`,
+          type: "tenant",
+          title: "New Tenant Checked In",
+          description: `${t.name} assigned to Room ${t.roomName || "?"}.`,
+          ...formatted
+        });
+      }
+    });
+
+    // 3. Complaints -> Support Tickets
+    complaints.forEach((c) => {
+      const date = new Date(c.created_at || Date.now());
+      const formatted = getNotificationTimeAndGroup(date);
+      
+      if (c.status === "resolved") {
+        list.push({
+          id: `comp-res-${c.id}`,
+          type: "support",
+          title: "Support Ticket Resolved",
+          description: `Complaint regarding Room ${c.tenants?.rooms?.room_number || "?"} ("${c.title}") has been resolved.`,
+          ...formatted
+        });
+      } else {
+        list.push({
+          id: `comp-open-${c.id}`,
+          type: "support",
+          title: "New Support Ticket",
+          description: `Complaint regarding Room ${c.tenants?.rooms?.room_number || "?"} ("${c.title}") is pending.`,
+          ...formatted
+        });
+      }
+    });
+
+    // 4. Bookings
+    bookings.forEach((b) => {
+      if (b.status === "pending") {
+        const date = new Date(b.created_at || Date.now());
+        const formatted = getNotificationTimeAndGroup(date);
+        list.push({
+          id: `book-${b.id}`,
+          type: "tenant",
+          title: "New Booking Request",
+          description: `Booking request received from ${b.name} (${b.phone}).`,
+          ...formatted
+        });
+      }
+    });
+
+    // 5. Visitor Logs
+    visitorLogs.forEach((v) => {
+      if (v.check_in_time) {
+        const date = new Date(v.check_in_time);
+        const formatted = getNotificationTimeAndGroup(date);
+        list.push({
+          id: `vis-${v.id}`,
+          type: "system",
+          title: "Visitor Checked In",
+          description: `${v.visitor_name} checked in to visit Room ${v.tenants?.rooms?.room_number || "?"}.`,
+          ...formatted
+        });
+      }
+    });
+
+    // Sort all notifications by timestamp descending
+    const sortedList = list.sort((a, b) => b.timestamp - a.timestamp);
+
+    // Map unread and filter out cleared
+    return sortedList
+      .filter((n) => n.timestamp > clearedBefore)
+      .map((n) => ({
+        ...n,
+        isUnread: !readNotifications.includes(n.id),
+      }));
+  }, [payments, tenants, complaints, bookings, visitorLogs, readNotifications, clearedBefore]);
+
+  const hasUnreadNotifications = React.useMemo(() => {
+    return notificationsList.some((n) => n.isUnread);
+  }, [notificationsList]);
+
   // Bed status toggling callback
   const handleToggleBed = async (roomId: string, bedIndex: number) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -503,31 +754,25 @@ export default function Home() {
       return;
     }
 
-    // 1. Create a dummy tenant user profile
-    const tenantUserId = crypto.randomUUID();
-    const { error: userError } = await supabase.from("users").insert({
-      id: tenantUserId,
-      name: tenantName.trim(),
-      email: `${tenantName.toLowerCase().replace(/\s+/g, "")}@placeholder.com`,
-      role: "Tenant",
-      pg_id: pgId
-    });
+    const inviteToken = "INV-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
+    const inviteExpiresAt = expiryDate.toISOString();
 
-    if (userError) {
-      setToastMessage(userError.message);
-      return;
-    }
-
-    // 2. Create tenant record
+    // 1. Create tenant record with invite token
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
       .insert({
         pg_id: pgId,
-        user_id: tenantUserId,
+        name: tenantName.trim(),
+        email: `${tenantName.toLowerCase().replace(/\s+/g, "")}@placeholder.com`,
         room_id: tenantRoomId,
         bed_id: availableBed.id,
         deposit: Number(tenantRent),
-        status: "active"
+        status: "active",
+        invite_token: inviteToken,
+        invite_expires_at: inviteExpiresAt,
+        user_id: null
       })
       .select()
       .single();
@@ -537,7 +782,7 @@ export default function Home() {
       return;
     }
 
-    // 3. Mark the bed as occupied
+    // 2. Mark the bed as occupied
     await supabase
       .from("beds")
       .update({ status: "occupied" })
@@ -560,6 +805,7 @@ export default function Home() {
     setTenantRoomId("");
     setTenantRent("");
     setIsAddTenantOpen(false);
+    alert(`Tenant boarded successfully! Share this Invite Token with them:\n\nToken: ${inviteToken}\nExpires: 7 days`);
     setToastMessage(`Tenant "${tenantName}" boarded successfully!`);
   };
 
@@ -822,6 +1068,65 @@ export default function Home() {
                       />
                     </div>
 
+                    {/* SERVICES Section */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Services</span>
+                      <DrawerItem 
+                        label="Meals Menu" 
+                        icon={Coffee} 
+                        active={currentView === "meals"} 
+                        onClick={() => {
+                          setCurrentView("meals");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                      <DrawerItem 
+                        label="Booking Requests" 
+                        icon={CalendarRange} 
+                        active={currentView === "bookings"} 
+                        onClick={() => {
+                          setCurrentView("bookings");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                      <DrawerItem 
+                        label="Visitor Logs" 
+                        icon={Users2} 
+                        active={currentView === "visitors"} 
+                        onClick={() => {
+                          setCurrentView("visitors");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                      <DrawerItem 
+                        label="Staff Registry" 
+                        icon={Briefcase} 
+                        active={currentView === "staff"} 
+                        onClick={() => {
+                          setCurrentView("staff");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                      <DrawerItem 
+                        label="Expenses Tracker" 
+                        icon={TrendingDown} 
+                        active={currentView === "expenses"} 
+                        onClick={() => {
+                          setCurrentView("expenses");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                      <DrawerItem 
+                        label="Inventory & Assets" 
+                        icon={Package} 
+                        active={currentView === "inventory"} 
+                        onClick={() => {
+                          setCurrentView("inventory");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
+                    </div>
+
                     {/* ACCOUNT Section */}
                     <div className="flex flex-col gap-1.5">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Account</span>
@@ -911,6 +1216,8 @@ export default function Home() {
                         }} 
                       />
                     </div>
+
+                    {/* ADMIN Section Removed */}
 
                     {/* USER PROFILE Info Card */}
                     <div className="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl mt-auto shrink-0 select-none">
@@ -1045,6 +1352,7 @@ export default function Home() {
                   email: userData.email,
                   phone: userData.phone,
                   photo: userData.photo,
+                  role: "Owner",
                 });
                 setIsLoggedIn(true);
               }}
@@ -1086,6 +1394,7 @@ export default function Home() {
                 onAddTenantClick={() => setIsAddTenantOpen(true)}
                 onAddRoomClick={() => setIsAddRoomOpen(true)}
                 payments={payments}
+                hasUnreadNotifications={hasUnreadNotifications}
               />
             )}
 
@@ -1278,6 +1587,10 @@ export default function Home() {
               <NotificationsView
                 onBack={() => setCurrentView("dashboard")}
                 onMenuClick={() => setIsDrawerOpen(true)}
+                notifications={notificationsList}
+                onMarkAsRead={handleMarkAsRead}
+                onMarkAllAsRead={handleMarkAllAsRead}
+                onClearAll={handleClearAll}
               />
             )}
 
@@ -1312,6 +1625,63 @@ export default function Home() {
                 onCollectRent={handleCollectRent}
               />
             )}
+
+            {currentView === "meals" && (
+              <MealsManagementView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
+                onMenuClick={() => setIsDrawerOpen(true)}
+                onNavigateToNotifications={() => setCurrentView("notifications")}
+                activePgId={activePgId}
+              />
+            )}
+
+            {currentView === "bookings" && (
+              <BookingsView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
+                onMenuClick={() => setIsDrawerOpen(true)}
+                onNavigateToNotifications={() => setCurrentView("notifications")}
+                activePgId={activePgId}
+              />
+            )}
+
+            {currentView === "visitors" && (
+              <VisitorLogsView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
+                onMenuClick={() => setIsDrawerOpen(true)}
+                onNavigateToNotifications={() => setCurrentView("notifications")}
+                activePgId={activePgId}
+              />
+            )}
+
+            {currentView === "expenses" && (
+              <ExpensesView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
+                onMenuClick={() => setIsDrawerOpen(true)}
+                onNavigateToNotifications={() => setCurrentView("notifications")}
+                activePgId={activePgId}
+              />
+            )}
+
+            {currentView === "inventory" && (
+              <InventoryView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                onOpenPropertySelector={() => setIsPropertySelectorOpen(true)}
+                onMenuClick={() => setIsDrawerOpen(true)}
+                onNavigateToNotifications={() => setCurrentView("notifications")}
+                activePgId={activePgId}
+              />
+            )}
+
+            {/* Super Admin view removed */}
           </motion.div>
         )}
       </AnimatePresence>

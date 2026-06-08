@@ -12,4 +12,5 @@ export interface Tenant {
   roomName: string;
   rentAmount: number;
   status: "active" | "left";
+  joinDate?: string | null;
 }

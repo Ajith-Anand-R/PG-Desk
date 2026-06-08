@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
@@ -18,7 +18,7 @@ import {
   BellRing
 } from "lucide-react";
 
-interface NotificationItem {
+export interface NotificationItem {
   id: string;
   type: "payment" | "tenant" | "system" | "support";
   title: string;
@@ -31,83 +31,32 @@ interface NotificationItem {
 interface NotificationsViewProps {
   onBack: () => void;
   onMenuClick: () => void;
+  notifications: NotificationItem[];
+  onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
+  onClearAll: () => void;
 }
 
 export function NotificationsView({
   onBack,
   onMenuClick,
+  notifications = [],
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onClearAll,
 }: NotificationsViewProps) {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: "n1",
-      type: "payment",
-      title: "Rent Payment Received",
-      description: "Aarav Nair (Room 1) paid rent of ₹7,000 for June.",
-      time: "10:30 AM",
-      dateGroup: "Today",
-      isUnread: true
-    },
-    {
-      id: "n2",
-      type: "tenant",
-      title: "New Tenant Checked In",
-      description: "Vihaan Joshi assigned to Room 7 (Floor 2).",
-      time: "09:15 AM",
-      dateGroup: "Today",
-      isUnread: true
-    },
-    {
-      id: "n3",
-      type: "system",
-      title: "Subscription Renewal Notice",
-      description: "Your Yearly Platinum Plan will renew in 15 days.",
-      time: "Yesterday, 06:45 PM",
-      dateGroup: "Yesterday",
-      isUnread: true
-    },
-    {
-      id: "n4",
-      type: "support",
-      title: "Support Ticket Resolved",
-      description: "Complaint regarding Room 3 geyser has been resolved.",
-      time: "Yesterday, 02:30 PM",
-      dateGroup: "Yesterday",
-      isUnread: false
-    },
-    {
-      id: "n5",
-      type: "tenant",
-      title: "Tenant Checkout Scheduled",
-      description: "Rahul Sharma (Room 5) scheduled checkout for Jun 15.",
-      time: "Jun 3, 11:00 AM",
-      dateGroup: "Earlier",
-      isUnread: false
-    },
-    {
-      id: "n6",
-      type: "payment",
-      title: "Late Fee Warning Sent",
-      description: "System sent automated payment reminders to 3 tenants.",
-      time: "Jun 1, 09:00 AM",
-      dateGroup: "Earlier",
-      isUnread: false
-    }
-  ]);
-
   const unreadCount = notifications.filter(n => n.isUnread).length;
 
   const handleMarkAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, isUnread: false } : n))
-    );
+    onMarkAsRead(id);
   };
 
   const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isUnread: false })));
+    onMarkAllAsRead();
   };
 
   const handleClearAll = () => {
-    setNotifications([]);
+    onClearAll();
   };
 
   const getIconForType = (type: NotificationItem["type"]) => {
