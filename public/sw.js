@@ -1,4 +1,4 @@
-const CACHE_NAME = "pg-desk-cache-v4";
+const CACHE_NAME = "pg-desk-cache-v5";
 const ASSETS = [
   "/",
   "/app",
