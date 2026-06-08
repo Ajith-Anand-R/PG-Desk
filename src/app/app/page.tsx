@@ -1025,9 +1025,7 @@ export default function Home() {
                   {/* Header Box */}
                   <div className="bg-slate-50 border-b border-slate-100 p-4 flex items-center justify-between gap-3 shrink-0">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-sm shrink-0">
-                        <Building className="w-5 h-5" />
-                      </div>
+                      <img src="/logo.png" alt="PG Desk Logo" className="w-11 h-11 rounded-xl object-cover shrink-0" />
                       <div className="flex flex-col min-w-0">
                         <span className="text-slate-800 font-bold text-base truncate">{currentProperty}</span>
                         <span className="text-slate-400 font-semibold text-[10px] tracking-tight truncate">Code: BVBQEEXU</span>
@@ -1274,49 +1272,7 @@ export default function Home() {
               transition={{ type: "spring", stiffness: 150, damping: 15 }}
               className="relative w-32 h-32 mb-6"
             >
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                <circle cx="100" cy="100" r="80" fill="url(#logoGrad)" className="drop-shadow-lg" />
-                <path
-                  d="M100 45 L50 85 V140 H150 V85 Z"
-                  stroke="#ffffff"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M90 140 V105 H110 V140"
-                  stroke="#38bdf8"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M100 110 H130 M130 110 V120 M124 110 V120 M85 110 C85 101.7 91.7 95 100 95 C108.3 95 115 101.7 115 110 C115 118.3 108.3 125 100 125"
-                  stroke="#fbbf24"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M50 145 C65 145 75 140 85 125 L125 70"
-                  stroke="#34d399"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M110 70 H125 V85"
-                  stroke="#34d399"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <defs>
-                  <linearGradient id="logoGrad" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#4f46e5" />
-                    <stop offset="1" stopColor="#0f172a" />
-                  </linearGradient>
-                </defs>
-              </svg>
+              <img src="/logo.png" alt="PG Desk Logo" className="w-full h-full object-cover rounded-3xl shadow-lg" />
             </motion.div>
 
             <motion.h2

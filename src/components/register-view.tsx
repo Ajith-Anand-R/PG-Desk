@@ -149,8 +149,8 @@ export function RegisterView({ onLoginClick, onRegisterSuccess }: RegisterViewPr
       >
         {/* Header Section */}
         <div className="flex flex-col items-center text-center gap-1.5">
-          <div className="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white shadow-md rotate-3">
-            <Building className="w-6 h-6 -rotate-3" />
+          <div className="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white shadow-md rotate-3 overflow-hidden">
+            <img src="/logo.png" alt="PG Desk Logo" className="w-8 h-8 rounded-xl object-cover -rotate-3" />
           </div>
           <h1 className="text-xl font-black text-slate-800 tracking-tight mt-2">Create Account</h1>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">

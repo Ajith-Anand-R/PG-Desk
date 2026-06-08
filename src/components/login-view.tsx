@@ -74,8 +74,8 @@ export function LoginView({ onLogin, onRegisterClick }: LoginViewProps) {
       >
         {/* Logo and Header Text */}
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-150 rotate-3">
-            <Building className="w-8 h-8 -rotate-3" />
+          <div className="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-150 rotate-3 overflow-hidden">
+            <img src="/logo.png" alt="PG Desk Logo" className="w-12 h-12 rounded-xl object-cover -rotate-3" />
           </div>
           <div className="flex flex-col gap-1 mt-2">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">PG Desk</h1>

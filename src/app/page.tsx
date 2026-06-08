@@ -193,9 +193,7 @@ export default function LandingPage() {
       {/* Sticky High-Contrast Navbar */}
       <header className="sticky top-4 mx-4 md:mx-auto max-w-5xl bg-white/85 backdrop-blur-md border border-slate-200/80 shadow-md rounded-2xl z-40 px-6 py-3 flex items-center justify-between mt-4 w-[calc(100%-2rem)]">
         <div className="flex items-center gap-2.5 select-none">
-          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-emerald-600/30">
-            <Building className="w-4.5 h-4.5" />
-          </div>
+          <img src="/logo.png" alt="PG Desk Logo" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
           <span className="font-extrabold text-base tracking-tight text-slate-900">
             PG Desk
           </span>
@@ -604,9 +602,7 @@ export default function LandingPage() {
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center text-white shrink-0">
-                    <Building className="w-4.5 h-4.5" />
-                  </div>
+                  <img src="/logo.png" alt="PG Desk Logo" className="w-9 h-9 rounded-lg object-cover shrink-0" />
                   <div className="flex flex-col select-none leading-none">
                     <h3 className="font-extrabold text-slate-900 text-sm">Install PG Desk</h3>
                     <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mt-0.5">PWA Downloader</span>
@@ -692,9 +688,7 @@ export default function LandingPage() {
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center text-white shrink-0">
-                    <Building className="w-4.5 h-4.5" />
-                  </div>
+                  <img src="/logo.png" alt="PG Desk Logo" className="w-9 h-9 rounded-lg object-cover shrink-0" />
                   <div className="flex flex-col select-none leading-none">
                     <h3 className="font-extrabold text-slate-900 text-sm">Launch PG Desk</h3>
                     <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mt-0.5">App Launcher</span>
