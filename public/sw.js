@@ -1,10 +1,9 @@
-const CACHE_NAME = "pg-desk-cache-v3";
+const CACHE_NAME = "pg-desk-cache-v4";
 const ASSETS = [
   "/",
   "/app",
   "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/logo.png"
 ];
 
 // Install Event
