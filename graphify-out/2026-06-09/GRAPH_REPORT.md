@@ -1,16 +1,16 @@
 # Graph Report - PG Desk  (2026-06-09)
 
 ## Corpus Check
-- 48 files · ~59,106 words
+- 49 files · ~61,771 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 365 nodes · 401 edges · 51 communities (34 shown, 17 thin omitted)
+- 368 nodes · 408 edges · 50 communities (33 shown, 17 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `38ad7228`
+- Built from commit: `c45e9ce6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,7 +51,6 @@
 - [[_COMMUNITY_Profile Profileview Profileviewprops|Profile Profileview Profileviewprops]]
 - [[_COMMUNITY_Property Modal Propertyqrmodal|Property Modal Propertyqrmodal]]
 - [[_COMMUNITY_Referral Referralview Referralviewprops|Referral Referralview Referralviewprops]]
-- [[_COMMUNITY_Settings Settingsview Settingsviewprops|Settings Settingsview Settingsviewprops]]
 - [[_COMMUNITY_Subscription Subscriptionview Subscriptionviewprops|Subscription Subscriptionview Subscriptionviewprops]]
 - [[_COMMUNITY_Graphify Lifecycle Update|Graphify Lifecycle Update]]
 - [[_COMMUNITY_Mobile Frame Mobileframe|Mobile Frame Mobileframe]]
@@ -63,11 +62,11 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 16 edges
-2. `supabase` - 10 edges
+2. `supabase` - 11 edges
 3. `tailwind` - 6 edges
 4. `aliases` - 6 edges
-5. `scripts` - 5 edges
-6. `Room` - 4 edges
+5. `Room` - 6 edges
+6. `scripts` - 5 edges
 7. `Button()` - 3 edges
 8. `cn()` - 3 edges
 9. `Step 1 - Ensure graphify is installed` - 3 edges
@@ -80,21 +79,23 @@
   .codex/skills/graphify/SKILL.md → .claude/skills/graphify/SKILL.md
 - `RoomsViewProps` --references--> `Room`  [EXTRACTED]
   src/components/rooms-view.tsx → src/lib/types.ts
+- `VacantBedsViewProps` --references--> `Room`  [EXTRACTED]
+  src/components/vacant-beds-view.tsx → src/lib/types.ts
 - `Button()` --calls--> `cn()`  [EXTRACTED]
   src/components/ui/button.tsx → src/lib/utils.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (51 total, 17 thin omitted)
+## Communities (50 total, 17 thin omitted)
 
 ### Community 0 - "Agent System Documentation"
 Cohesion: 0.33
 Nodes (4): geistMono, metadata, outfit, viewport
 
 ### Community 1 - "Bookings & Expenses Management"
-Cohesion: 0.13
-Nodes (14): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, LoginView(), LoginViewProps, RoleFilter (+6 more)
+Cohesion: 0.08
+Nodes (22): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, InventoryView(), InventoryViewProps, LoginView() (+14 more)
 
 ### Community 2 - "Graphify Lifecycle Update"
 Cohesion: 0.09
@@ -105,32 +106,28 @@ Cohesion: 0.09
 Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent (+13 more)
 
 ### Community 4 - "3D Graphics Scene"
-Cohesion: 0.10
-Nodes (20): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+12 more)
+Cohesion: 0.07
+Nodes (28): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+20 more)
 
 ### Community 5 - "TypeScript Configuration"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 6 - "Linter Settings"
-Cohesion: 0.11
-Nodes (17): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/postcss, @types/node, @types/react, @types/react-dom (+9 more)
+Cohesion: 0.22
+Nodes (9): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/postcss, @types/node, @types/react, @types/react-dom (+1 more)
 
 ### Community 7 - "Graphify Lifecycle Update"
 Cohesion: 0.11
 Nodes (17): Also prune old nodes for re-extracted (changed) files before inserting fresh AST., and newextraction (buildmerge combines them). Falling back to, Explicit source/target last so they win over any stale attrs in d., For --cluster-only, For --update (incremental re-extraction), G.graph"hyperedges" holds hyperedges from both existing graph.json, graphify reference: incremental update and cluster-only, Load new extraction and incremental state (+9 more)
 
-### Community 8 - "Graphify Lifecycle Update"
-Cohesion: 0.40
-Nodes (4): DAYS_OF_WEEK, MealsManagementView(), MealsManagementViewProps, MenuItem
-
 ### Community 9 - "Page Tenant Terms"
-Cohesion: 0.12
-Nodes (12): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, CreatePropertyView(), CreatePropertyViewProps (+4 more)
+Cohesion: 0.16
+Nodes (8): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, ViewProfileView(), ViewProfileViewProps
 
 ### Community 10 - "Rooms & Staff View"
-Cohesion: 0.19
-Nodes (9): RoomCardProps, RoomsView(), RoomsViewProps, Room, Tenant, BedIcon(), BedIconProps, StatCard() (+1 more)
+Cohesion: 0.16
+Nodes (10): RoomCardProps, RoomsView(), RoomsViewProps, VacantBedsViewProps, Room, Tenant, BedIcon(), BedIconProps (+2 more)
 
 ### Community 11 - "Graphify Knowledge Graph"
 Cohesion: 0.09
@@ -215,10 +212,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `recommendations`, `$schema`, `style` to the rest of the system?**
   _146 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bookings & Expenses Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.12631578947368421 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08172043010752689 - nodes in this community are weakly interconnected._
 - **Should `Graphify Lifecycle Update` be split into smaller, more focused modules?**
   _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
 - **Should `Aliases Tailwind Hooks` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
 - **Should `3D Graphics Scene` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06896551724137931 - nodes in this community are weakly interconnected._

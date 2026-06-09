@@ -55,11 +55,12 @@ import { BookingsView } from "@/components/bookings-view";
 import { VisitorLogsView } from "@/components/visitor-logs-view";
 import { ExpensesView } from "@/components/expenses-view";
 import { InventoryView } from "@/components/inventory-view";
+import { VacantBedsView } from "@/components/vacant-beds-view";
 // Removed SuperAdminView import
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
 
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
@@ -1125,6 +1126,15 @@ export default function Home() {
                           setIsDrawerOpen(false);
                         }} 
                       />
+                      <DrawerItem 
+                        label="Vacant Beds" 
+                        icon={Bed} 
+                        active={currentView === "vacant-beds"} 
+                        onClick={() => {
+                          setCurrentView("vacant-beds");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
                     </div>
 
                     {/* ACCOUNT Section */}
@@ -1339,6 +1349,7 @@ export default function Home() {
                   setReceiptsInitialTab(tab);
                   setCurrentView("receipts");
                 }}
+                onNavigateToVacantBeds={() => setCurrentView("vacant-beds")}
                 pendingDuesAmount={pendingDuesAmount}
                 pendingDuesCount={pendingDuesCount}
                 onMenuClick={() => setIsDrawerOpen(true)}
@@ -1636,6 +1647,14 @@ export default function Home() {
                 onMenuClick={() => setIsDrawerOpen(true)}
                 onNavigateToNotifications={() => setCurrentView("notifications")}
                 activePgId={activePgId}
+              />
+            )}
+
+            {currentView === "vacant-beds" && (
+              <VacantBedsView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                rooms={rooms}
               />
             )}
 

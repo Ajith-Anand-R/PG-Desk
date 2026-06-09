@@ -331,7 +331,7 @@ export function SupportView({
         <div className="px-5 mt-6 flex flex-col gap-4 flex-1 pb-10">
           <div className="flex justify-between items-center px-0.5 select-none">
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Tenant Complaints</h3>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{complaints.length} Active</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{complaints.length} Total</span>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -348,121 +348,101 @@ export function SupportView({
                 </div>
               </div>
             ) : (
-              complaints.map((c) => {
-                const tenantName = c.tenants?.users?.name || "Unknown Tenant";
-                const roomName = c.tenants?.rooms?.room_number ? `Room ${c.tenants.rooms.room_number}` : "Unassigned";
-                const dateStr = c.created_at
-                  ? new Date(c.created_at).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric"
-                    })
-                  : "N/A";
+              <div className="flex flex-col gap-3">
+                {/* Table Header Row */}
+                <div className="bg-slate-100 rounded-xl px-4 py-2 flex items-center justify-between text-[10px] font-extrabold text-slate-400 uppercase tracking-wider select-none shrink-0">
+                  <span className="w-2/5">Complaint</span>
+                  <span className="w-1/5 text-center">Room</span>
+                  <span className="w-2/5 text-right">Status</span>
+                </div>
 
-                const statusStyles = {
-                  pending: {
-                    bg: "bg-amber-50",
-                    border: "border-amber-100/60",
-                    text: "text-amber-600",
-                    indicator: "bg-amber-500"
-                  },
-                  "in-progress": {
-                    bg: "bg-blue-50",
-                    border: "border-blue-100/60",
-                    text: "text-blue-600",
-                    indicator: "bg-blue-500"
-                  },
-                  resolved: {
-                    bg: "bg-emerald-50",
-                    border: "border-emerald-100/60",
-                    text: "text-emerald-600",
-                    indicator: "bg-emerald-500"
-                  }
-                }[c.status as "pending" | "in-progress" | "resolved"] || {
-                  bg: "bg-slate-50",
-                  border: "border-slate-100",
-                  text: "text-slate-500",
-                  indicator: "bg-slate-500"
-                };
+                {complaints.map((c) => {
+                  const tenantName = c.tenants?.users?.name || "Unknown Tenant";
+                  const roomNumber = c.tenants?.rooms?.room_number || "N/A";
+                  const isOpen = c.status !== "resolved";
+                  const dateStr = c.created_at
+                    ? new Date(c.created_at).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short"
+                      })
+                    : "N/A";
 
-                return (
-                  <div
-                    key={c.id}
-                    className="bg-white rounded-3xl p-4.5 border border-slate-200/40 shadow-2xs flex flex-col gap-4 relative overflow-hidden"
-                  >
-                    {/* Status side indicator */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusStyles.indicator}`} />
-
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-black text-slate-800 leading-none truncate">
+                  return (
+                    <div
+                      key={c.id}
+                      className="bg-white rounded-3xl p-4 border border-slate-200/40 shadow-[0_4px_16px_rgba(0,0,0,0.015)] flex flex-col gap-3.5 relative overflow-hidden"
+                    >
+                      {/* Status Accent Indicator */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                        isOpen ? "bg-amber-500" : "bg-emerald-500"
+                      }`} />
+                      
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Complaint Column */}
+                        <div className="flex flex-col min-w-0 w-2/5">
+                          <span className="text-xs font-black text-slate-850 truncate leading-none">
                             {c.title}
                           </span>
-                          <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${statusStyles.bg} ${statusStyles.border} ${statusStyles.text} leading-none`}>
-                            {c.status}
+                          <span className="text-[8.5px] font-bold text-slate-400 leading-none mt-1.5 truncate">
+                            By {tenantName} • {dateStr}
                           </span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-400 leading-none mt-1">
-                          By: {tenantName} ({roomName}) • {dateStr}
-                        </span>
+
+                        {/* Room Column */}
+                        <div className="w-1/5 text-center select-none text-[11.5px] font-black text-slate-705">
+                          {roomNumber}
+                        </div>
+
+                        {/* Status Badge Column */}
+                        <div className="w-2/5 flex flex-col items-end gap-1.5 shrink-0 select-none">
+                          <span className={`text-[9.5px] font-black px-2.5 py-0.5 rounded-md leading-none border uppercase tracking-wider ${
+                            isOpen 
+                              ? "bg-amber-50 text-amber-600 border-amber-100" 
+                              : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          }`}>
+                            {isOpen ? "Open" : "Resolved"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {c.description && (
-                      <p className="text-[11px] font-semibold text-slate-555 leading-relaxed break-words bg-slate-50/50 p-3 rounded-xl border border-slate-100/60">
-                        {c.description}
-                      </p>
-                    )}
-
-                    {/* Actions Row */}
-                    <div className="flex gap-2 justify-end select-none">
-                      {c.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() => onUpdateComplaintStatus(c.id, "in-progress")}
-                            className="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
-                          >
-                            Work On
-                          </button>
-                          <button
-                            onClick={() => onUpdateComplaintStatus(c.id, "resolved")}
-                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 shadow-xs"
-                          >
-                            Resolve
-                          </button>
-                        </>
+                      {c.description && (
+                        <p className="text-[10px] font-semibold text-slate-500 leading-relaxed bg-slate-50/50 p-2.5 rounded-xl border border-slate-150/40 break-all">
+                          {c.description}
+                        </p>
                       )}
 
-                      {c.status === "in-progress" && (
-                        <>
+                      {/* Action buttons */}
+                      <div className="flex gap-2 justify-end pt-2 border-t border-slate-100/60 select-none">
+                        {isOpen ? (
+                          <>
+                            {c.status === "pending" && (
+                              <button
+                                onClick={() => onUpdateComplaintStatus(c.id, "in-progress")}
+                                className="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
+                              >
+                                Work On
+                              </button>
+                            )}
+                            <button
+                              onClick={() => onUpdateComplaintStatus(c.id, "resolved")}
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 shadow-xs"
+                            >
+                              Resolve
+                            </button>
+                          </>
+                        ) : (
                           <button
                             onClick={() => onUpdateComplaintStatus(c.id, "pending")}
                             className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                           >
                             Reopen
                           </button>
-                          <button
-                            onClick={() => onUpdateComplaintStatus(c.id, "resolved")}
-                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 shadow-xs"
-                          >
-                            Resolve
-                          </button>
-                        </>
-                      )}
-
-                      {c.status === "resolved" && (
-                        <button
-                          onClick={() => onUpdateComplaintStatus(c.id, "pending")}
-                          className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
-                        >
-                          Reopen
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>

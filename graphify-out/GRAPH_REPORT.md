@@ -1,16 +1,16 @@
 # Graph Report - PG Desk  (2026-06-09)
 
 ## Corpus Check
-- 48 files · ~60,827 words
+- 49 files · ~61,809 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 365 nodes · 403 edges · 50 communities (33 shown, 17 thin omitted)
+- 368 nodes · 410 edges · 50 communities (33 shown, 17 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `38ad7228`
+- Built from commit: `c45e9ce6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,8 +65,8 @@
 2. `supabase` - 11 edges
 3. `tailwind` - 6 edges
 4. `aliases` - 6 edges
-5. `scripts` - 5 edges
-6. `Room` - 4 edges
+5. `Room` - 6 edges
+6. `scripts` - 5 edges
 7. `Button()` - 3 edges
 8. `cn()` - 3 edges
 9. `Step 1 - Ensure graphify is installed` - 3 edges
@@ -79,6 +79,8 @@
   .codex/skills/graphify/SKILL.md → .claude/skills/graphify/SKILL.md
 - `RoomsViewProps` --references--> `Room`  [EXTRACTED]
   src/components/rooms-view.tsx → src/lib/types.ts
+- `VacantBedsViewProps` --references--> `Room`  [EXTRACTED]
+  src/components/vacant-beds-view.tsx → src/lib/types.ts
 - `Button()` --calls--> `cn()`  [EXTRACTED]
   src/components/ui/button.tsx → src/lib/utils.ts
 
@@ -96,24 +98,24 @@ Cohesion: 0.08
 Nodes (22): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, InventoryView(), InventoryViewProps, LoginView() (+14 more)
 
 ### Community 2 - "Graphify Lifecycle Update"
-Cohesion: 0.10
-Nodes (20): 1. uv tool install — 'uv tool dir' is authoritative, respects UVTOOLDIR automatically, 1. uv tool installs — most reliable on modern Mac/Linux, 2. pipx install — 'pipx environment' respects PIPXHOME automatically, 2. Read shebang from graphify binary (pipx and direct pip installs), 3. Active venv / conda / pip-into-current-env, 3. Fall back to python3, Detect Python with graphify — uv/pipx-aware (fixes #831), Detect the correct Python interpreter (handles uv tool, pipx, venv, system installs) (+12 more)
+Cohesion: 0.11
+Nodes (19): 1. uv tool install — 'uv tool dir' is authoritative, respects UVTOOLDIR automatically, 1. uv tool installs — most reliable on modern Mac/Linux, 2. pipx install — 'pipx environment' respects PIPXHOME automatically, 2. Read shebang from graphify binary (pipx and direct pip installs), 3. Active venv / conda / pip-into-current-env, 3. Fall back to python3, Detect Python with graphify — uv/pipx-aware (fixes #831), Detect the correct Python interpreter (handles uv tool, pipx, venv, system installs) (+11 more)
 
 ### Community 3 - "Aliases Tailwind Hooks"
 Cohesion: 0.09
 Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent (+13 more)
 
 ### Community 4 - "3D Graphics Scene"
-Cohesion: 0.10
-Nodes (20): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+12 more)
+Cohesion: 0.07
+Nodes (28): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+20 more)
 
 ### Community 5 - "TypeScript Configuration"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 6 - "Linter Settings"
-Cohesion: 0.11
-Nodes (17): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/postcss, @types/node, @types/react, @types/react-dom (+9 more)
+Cohesion: 0.22
+Nodes (9): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindcss/postcss, @types/node, @types/react, @types/react-dom (+1 more)
 
 ### Community 7 - "Graphify Lifecycle Update"
 Cohesion: 0.11
@@ -124,12 +126,12 @@ Cohesion: 0.16
 Nodes (8): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, ViewProfileView(), ViewProfileViewProps
 
 ### Community 10 - "Rooms & Staff View"
-Cohesion: 0.19
-Nodes (9): RoomCardProps, RoomsView(), RoomsViewProps, Room, Tenant, BedIcon(), BedIconProps, StatCard() (+1 more)
+Cohesion: 0.16
+Nodes (11): RoomCardProps, RoomsView(), RoomsViewProps, VacantBedsView(), VacantBedsViewProps, Room, Tenant, BedIcon() (+3 more)
 
 ### Community 11 - "Graphify Knowledge Graph"
-Cohesion: 0.08
-Nodes (27): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, Honesty Rules, In --update mode, 'allfiles' carries the full corpus; 'files' is the changed, Interpreter guard for subcommands, LABELS - replace these with the names you chose above (+19 more)
+Cohesion: 0.07
+Nodes (28): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, Honesty Rules, In --update mode, 'allfiles' carries the full corpus; 'files' is the changed, Interpreter guard for subcommands, LABELS - replace these with the names you chose above (+20 more)
 
 ### Community 12 - "3D Graphics Scene"
 Cohesion: 0.17
@@ -203,17 +205,17 @@ Nodes (11): background_color, description, display, icons, id, name, orientation
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `Save scan root so graphify update (no args) knows where to look next time` connect `Graphify Lifecycle Update` to `Graphify Knowledge Graph`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `recommendations`, `$schema`, `style` to the rest of the system?**
   _146 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bookings & Expenses Management` be split into smaller, more focused modules?**
   _Cohesion score 0.08172043010752689 - nodes in this community are weakly interconnected._
 - **Should `Graphify Lifecycle Update` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._
 - **Should `Aliases Tailwind Hooks` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
 - **Should `3D Graphics Scene` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06896551724137931 - nodes in this community are weakly interconnected._
 - **Should `TypeScript Configuration` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Should `Linter Settings` be split into smaller, more focused modules?**
-  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._

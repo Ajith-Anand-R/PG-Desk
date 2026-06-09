@@ -95,9 +95,9 @@
     "semantic_hash": "6c731499abbb485186e6647b7f8f86a7"
   },
   "src/components/dashboard-view.tsx": {
-    "mtime": 1780937916.724265,
-    "ast_hash": "62f6ab9e669e734227620881a06cce9c",
-    "semantic_hash": "62f6ab9e669e734227620881a06cce9c"
+    "mtime": 1781012934.750078,
+    "ast_hash": "747b4dcc11667c1ac7a4c2f840023209",
+    "semantic_hash": ""
   },
   "src/components/expenses-view.tsx": {
     "mtime": 1780931374.3474333,
@@ -160,9 +160,9 @@
     "semantic_hash": "e02d2797f46837bb2654233e198f6bd3"
   },
   "src/components/rooms-view.tsx": {
-    "mtime": 1780820506.307168,
-    "ast_hash": "a45f6e81098392da64019bc913a44179",
-    "semantic_hash": "a45f6e81098392da64019bc913a44179"
+    "mtime": 1781012000.333618,
+    "ast_hash": "f0ec9f68f1817814e17d186116688de2",
+    "semantic_hash": ""
   },
   "src/components/settings-view.tsx": {
     "mtime": 1780787128.2152288,
@@ -180,9 +180,9 @@
     "semantic_hash": "daf8257b9bb2331dcaf64f96fa05c2c4"
   },
   "src/components/support-view.tsx": {
-    "mtime": 1780835793.189943,
-    "ast_hash": "6bf5305319c8ff7b1b193dc4aa8bc0f4",
-    "semantic_hash": "6bf5305319c8ff7b1b193dc4aa8bc0f4"
+    "mtime": 1781012898.0336301,
+    "ast_hash": "bb5615503c74b642647d7f439362ccef",
+    "semantic_hash": ""
   },
   "src/components/tenant-terms-view.tsx": {
     "mtime": 1780787163.4896927,
@@ -393,5 +393,10 @@
     "mtime": 1780757759.1766684,
     "ast_hash": "a2760511c65806022ad20adf74370ff3",
     "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "src/components/vacant-beds-view.tsx": {
+    "mtime": 1781012884.4621143,
+    "ast_hash": "c732eb729a230eaa0ef267975f13e5e6",
+    "semantic_hash": ""
   }
 }

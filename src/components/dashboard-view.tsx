@@ -32,6 +32,7 @@ interface DashboardViewProps {
   onNavigateToReminders: () => void;
   onNavigateToStaff: () => void;
   onNavigateToReceipts: (tab: "dues" | "receipts") => void;
+  onNavigateToVacantBeds: () => void;
   pendingDuesAmount: number;
   pendingDuesCount: number;
   currentProperty: string;
@@ -57,6 +58,7 @@ export function DashboardView({
   onNavigateToReminders,
   onNavigateToStaff,
   onNavigateToReceipts,
+  onNavigateToVacantBeds,
   pendingDuesAmount,
   pendingDuesCount,
   currentProperty,
@@ -262,13 +264,16 @@ export function DashboardView({
 
           <div className="grid grid-cols-4 divide-x divide-slate-100 text-center">
             {/* Available */}
-            <div className="flex flex-col items-center justify-center px-1">
-              <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-1">
+            <button
+              onClick={onNavigateToVacantBeds}
+              className="flex flex-col items-center justify-center px-1 hover:bg-slate-50 rounded-xl transition-all cursor-pointer select-none"
+            >
+              <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 mb-1 border border-emerald-100/50">
                 <Bed className="w-4.5 h-4.5" />
               </div>
-              <span className="text-xl font-bold text-red-500 font-mono tracking-tight">{availableBeds}</span>
+              <span className="text-xl font-bold text-emerald-600 font-mono tracking-tight">{availableBeds}</span>
               <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Available</span>
-            </div>
+            </button>
 
             {/* Occupied */}
             <div className="flex flex-col items-center justify-center px-1">
