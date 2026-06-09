@@ -160,8 +160,8 @@
     "semantic_hash": "e02d2797f46837bb2654233e198f6bd3"
   },
   "src/components/rooms-view.tsx": {
-    "mtime": 1781012000.333618,
-    "ast_hash": "f0ec9f68f1817814e17d186116688de2",
+    "mtime": 1781033491.3372276,
+    "ast_hash": "afb76d99080ae9addc428a8d9ff3d02e",
     "semantic_hash": ""
   },
   "src/components/settings-view.tsx": {

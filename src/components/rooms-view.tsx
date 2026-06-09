@@ -108,12 +108,12 @@ export function RoomsView({
         const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
 
         if (status === "occupied") {
-          // Fetch active tenant for this bed
+          // Fetch active or pending tenant for this bed
           const { data: tenantData } = await supabase
             .from("tenants")
             .select("*, users(*)")
             .eq("bed_id", targetBed.id)
-            .eq("status", "active")
+            .in("status", ["active", "pending"])
             .maybeSingle();
 
           if (tenantData) {
@@ -409,13 +409,7 @@ export function RoomsView({
                           {/* Occupied Tenant Section */}
                           <div className="flex flex-col gap-2">
                             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Occupied Tenant</span>
-                            <motion.button
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => {
-                                setSelectedTenant(bedDetails.tenant);
-                              }}
-                              className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-emerald-100 bg-emerald-50/15 hover:bg-emerald-550/5 transition-colors cursor-pointer text-left"
-                            >
+                            <div className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-150 bg-slate-50/30">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center font-extrabold text-sm shrink-0 overflow-hidden shadow-2xs">
                                   {bedDetails.tenant.users?.photo ? (
@@ -428,21 +422,27 @@ export function RoomsView({
                                       }}
                                     />
                                   ) : (
-                                    bedDetails.tenant.name?.substring(0, 2).toUpperCase()
+                                    (bedDetails.tenant.name || "Unknown").substring(0, 2).toUpperCase()
                                   )}
                                 </div>
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-black text-slate-850 hover:underline flex items-center gap-1 leading-none">
-                                    {bedDetails.tenant.name}
-                                    <span className="inline-block text-[8px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-md leading-none uppercase scale-90">View Profile</span>
+                                  <span className="text-xs font-black text-slate-850 leading-none">
+                                    {bedDetails.tenant.name || "Unknown Tenant"}
                                   </span>
-                                  <span className="text-[10px] font-semibold text-slate-505 mt-1 flex items-center gap-1">
+                                  <span className="text-[10px] font-semibold text-slate-505 mt-1.5 flex items-center gap-1">
                                     <Phone className="w-3 h-3 text-slate-400" />
                                     {bedDetails.tenant.phone || bedDetails.tenant.users?.phone || "No phone"}
                                   </span>
                                 </div>
                               </div>
-                            </motion.button>
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setSelectedTenant(bedDetails.tenant)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-2xs shrink-0"
+                              >
+                                View Details
+                              </motion.button>
+                            </div>
                           </div>
 
                           {/* Payment status */}
@@ -549,9 +549,11 @@ export function RoomsView({
                 <h4 className="text-base font-black text-slate-800 tracking-tight mt-2.5">
                   {selectedTenant.name}
                 </h4>
-                <div className="flex items-center gap-1.5 mt-1 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-150">
-                  <Shield className="w-3 h-3 text-emerald-600" />
-                  <span className="text-[9px] font-black text-slate-505 uppercase tracking-wider">Active Tenant</span>
+                 <div className="flex items-center gap-1.5 mt-1 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-150">
+                  <Shield className={`w-3 h-3 ${selectedTenant.status === "active" ? "text-emerald-600" : "text-amber-500"}`} />
+                  <span className="text-[9px] font-black text-slate-505 uppercase tracking-wider">
+                    {selectedTenant.status === "active" ? "Active Tenant" : "Pending Tenant"}
+                  </span>
                 </div>
               </div>
 

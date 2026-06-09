@@ -1807,7 +1807,7 @@
       "label": "RoomCardProps",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L685",
+      "source_location": "L687",
       "_origin": "ast",
       "id": "components_rooms_view_roomcardprops",
       "community": 10,
@@ -1817,7 +1817,7 @@
       "label": "RoomCard()",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L691",
+      "source_location": "L693",
       "_origin": "ast",
       "id": "components_rooms_view_roomcard",
       "community": 10,
@@ -4972,9 +4972,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_vacant_beds_view",
-      "confidence_score": 1.0
+      "target": "components_vacant_beds_view"
     },
     {
       "relation": "imports",
@@ -4983,9 +4983,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_vacant_beds_view_vacantbedsview",
-      "confidence_score": 1.0
+      "target": "components_vacant_beds_view_vacantbedsview"
     },
     {
       "relation": "imports_from",
@@ -7777,5 +7777,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c45e9ce61a239a72bf6156e208a8fdff4a73e9dc"
+  "built_at_commit": "02d1b91798f930125c73a23dbd21caf42cfe9ff7"
 }
