@@ -1,395 +1,395 @@
 {
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\settings.json": {
+  ".claude/settings.json": {
     "mtime": 1781007106.1586058,
     "ast_hash": "af5683cedca023035194f9ad92eb0eef",
     "semantic_hash": "af5683cedca023035194f9ad92eb0eef"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\hooks.json": {
+  ".codex/hooks.json": {
     "mtime": 1781007106.5246124,
     "ast_hash": "fd3097eee86f5660d63a33ffd8fd0d62",
     "semantic_hash": "fd3097eee86f5660d63a33ffd8fd0d62"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.vscode\\extensions.json": {
+  ".vscode/extensions.json": {
     "mtime": 1780822164.5112846,
     "ast_hash": "cc99f26ae685fdeec7f984af2d47cf2c",
     "semantic_hash": "cc99f26ae685fdeec7f984af2d47cf2c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\components.json": {
+  "components.json": {
     "mtime": 1780757971.7752912,
     "ast_hash": "fc5c9e9a7b93eeb2f7b4e1ce0959e4a6",
     "semantic_hash": "fc5c9e9a7b93eeb2f7b4e1ce0959e4a6"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\eslint.config.mjs": {
+  "eslint.config.mjs": {
     "mtime": 1780935610.0779278,
     "ast_hash": "c8c84f43d0dfe4c398e4cc111faa4198",
     "semantic_hash": "c8c84f43d0dfe4c398e4cc111faa4198"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\next.config.ts": {
+  "next.config.ts": {
     "mtime": 1780823372.6040668,
     "ast_hash": "6c7a30e2b859b2cdd7f9c9765123c18d",
     "semantic_hash": "6c7a30e2b859b2cdd7f9c9765123c18d"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\package.json": {
+  "package.json": {
     "mtime": 1780833298.390927,
     "ast_hash": "80abde7e6d57dd24009cd7dcecd0f9ec",
     "semantic_hash": "80abde7e6d57dd24009cd7dcecd0f9ec"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\postcss.config.mjs": {
+  "postcss.config.mjs": {
     "mtime": 1780757759.042343,
     "ast_hash": "239f3ebf717465dc636818a1a619398d",
     "semantic_hash": "239f3ebf717465dc636818a1a619398d"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\manifest.json": {
+  "public/manifest.json": {
     "mtime": 1780940000.2282536,
     "ast_hash": "96c05aaff477aadcb4a6721cffb09ebc",
     "semantic_hash": "96c05aaff477aadcb4a6721cffb09ebc"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\sw.js": {
+  "public/sw.js": {
     "mtime": 1780940182.9758792,
     "ast_hash": "101e859114e5d1a5fdebeaf504c674c8",
     "semantic_hash": "101e859114e5d1a5fdebeaf504c674c8"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\app\\app\\page.tsx": {
+  "src/app/app/page.tsx": {
     "mtime": 1780938441.667937,
     "ast_hash": "e82ddbbaf04a73fecb5df612918cfbe7",
     "semantic_hash": "e82ddbbaf04a73fecb5df612918cfbe7"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\app\\layout.tsx": {
+  "src/app/layout.tsx": {
     "mtime": 1780989561.039851,
     "ast_hash": "1e1ea8838d999d5286150a9c380f2002",
     "semantic_hash": "1e1ea8838d999d5286150a9c380f2002"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\app\\page.tsx": {
+  "src/app/page.tsx": {
     "mtime": 1780938435.6254902,
     "ast_hash": "7f83bfe874124871a1faab95ab1a97fc",
     "semantic_hash": "7f83bfe874124871a1faab95ab1a97fc"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\3d\\ThreeDScene.tsx": {
+  "src/components/3d/ThreeDScene.tsx": {
     "mtime": 1780823288.3414104,
     "ast_hash": "17aad6b6fdfa8409006273c6ca018c63",
     "semantic_hash": "17aad6b6fdfa8409006273c6ca018c63"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\bank-details-view.tsx": {
+  "src/components/bank-details-view.tsx": {
     "mtime": 1780787037.0014796,
     "ast_hash": "08067a5916d48a67a680a1a67dc53981",
     "semantic_hash": "08067a5916d48a67a680a1a67dc53981"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\bills-view.tsx": {
+  "src/components/bills-view.tsx": {
     "mtime": 1780787047.777927,
     "ast_hash": "8efca2538422919e3aca47cb4f3494cd",
     "semantic_hash": "8efca2538422919e3aca47cb4f3494cd"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\bookings-view.tsx": {
+  "src/components/bookings-view.tsx": {
     "mtime": 1780931335.0407622,
     "ast_hash": "2a2ee5704799f4a59655e444fd054431",
     "semantic_hash": "2a2ee5704799f4a59655e444fd054431"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\change-password-view.tsx": {
+  "src/components/change-password-view.tsx": {
     "mtime": 1780821528.7888336,
     "ast_hash": "2e154cc7ec523abe96bde81193d97abe",
     "semantic_hash": "2e154cc7ec523abe96bde81193d97abe"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\create-property-view.tsx": {
+  "src/components/create-property-view.tsx": {
     "mtime": 1780787064.1592398,
     "ast_hash": "6c731499abbb485186e6647b7f8f86a7",
     "semantic_hash": "6c731499abbb485186e6647b7f8f86a7"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\dashboard-view.tsx": {
+  "src/components/dashboard-view.tsx": {
     "mtime": 1780937916.724265,
     "ast_hash": "62f6ab9e669e734227620881a06cce9c",
     "semantic_hash": "62f6ab9e669e734227620881a06cce9c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\expenses-view.tsx": {
+  "src/components/expenses-view.tsx": {
     "mtime": 1780931374.3474333,
     "ast_hash": "95f4b2eca13e095f420fd6adb124c6c6",
     "semantic_hash": "95f4b2eca13e095f420fd6adb124c6c6"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\inventory-view.tsx": {
+  "src/components/inventory-view.tsx": {
     "mtime": 1780931386.0744884,
     "ast_hash": "b35b626a9445b4d6447f8f62699cfd6e",
     "semantic_hash": "b35b626a9445b4d6447f8f62699cfd6e"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\login-view.tsx": {
+  "src/components/login-view.tsx": {
     "mtime": 1780938445.871247,
     "ast_hash": "cb5b07e7d6f6efdae65339244463b55b",
     "semantic_hash": "cb5b07e7d6f6efdae65339244463b55b"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\meals-management-view.tsx": {
+  "src/components/meals-management-view.tsx": {
     "mtime": 1780931318.2953565,
     "ast_hash": "390bccd5a1ff06529fa37a27e3739ba3",
     "semantic_hash": "390bccd5a1ff06529fa37a27e3739ba3"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\notifications-view.tsx": {
+  "src/components/notifications-view.tsx": {
     "mtime": 1780937947.9541345,
     "ast_hash": "41853cf7191220b14460013a435fbe51",
     "semantic_hash": "41853cf7191220b14460013a435fbe51"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\profile-view.tsx": {
+  "src/components/profile-view.tsx": {
     "mtime": 1780787082.8180447,
     "ast_hash": "6ed5017a8111c240ee0e1b65791dc23a",
     "semantic_hash": "6ed5017a8111c240ee0e1b65791dc23a"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\property-qr-modal.tsx": {
+  "src/components/property-qr-modal.tsx": {
     "mtime": 1780786769.4210858,
     "ast_hash": "c33b1fd21dff5d8a888ec1adb594938b",
     "semantic_hash": "c33b1fd21dff5d8a888ec1adb594938b"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\property-selector.tsx": {
+  "src/components/property-selector.tsx": {
     "mtime": 1780785058.3697207,
     "ast_hash": "3bf266ca2fefade9d3a241e719cc4949",
     "semantic_hash": "3bf266ca2fefade9d3a241e719cc4949"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\receipts-view.tsx": {
+  "src/components/receipts-view.tsx": {
     "mtime": 1780833351.9959788,
     "ast_hash": "9901b1927f78108452fd6ea8adb21924",
     "semantic_hash": "9901b1927f78108452fd6ea8adb21924"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\referral-view.tsx": {
+  "src/components/referral-view.tsx": {
     "mtime": 1780787101.4134426,
     "ast_hash": "9c943fe5d9f77939ad61d886dad48f20",
     "semantic_hash": "9c943fe5d9f77939ad61d886dad48f20"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\register-view.tsx": {
+  "src/components/register-view.tsx": {
     "mtime": 1780938450.1799107,
     "ast_hash": "35e2cb14e5a77253626dab89790f38e0",
     "semantic_hash": "35e2cb14e5a77253626dab89790f38e0"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\reminders-view.tsx": {
+  "src/components/reminders-view.tsx": {
     "mtime": 1780787112.3655899,
     "ast_hash": "e02d2797f46837bb2654233e198f6bd3",
     "semantic_hash": "e02d2797f46837bb2654233e198f6bd3"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\rooms-view.tsx": {
+  "src/components/rooms-view.tsx": {
     "mtime": 1780820506.307168,
     "ast_hash": "a45f6e81098392da64019bc913a44179",
     "semantic_hash": "a45f6e81098392da64019bc913a44179"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\settings-view.tsx": {
+  "src/components/settings-view.tsx": {
     "mtime": 1780787128.2152288,
     "ast_hash": "8424254f64fd237d8b832ce4961acc45",
     "semantic_hash": "8424254f64fd237d8b832ce4961acc45"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\staff-view.tsx": {
-    "mtime": 1780836504.8425465,
-    "ast_hash": "a3d68f2535ef4ea3fcae4df7b7d8a533",
-    "semantic_hash": "a3d68f2535ef4ea3fcae4df7b7d8a533"
+  "src/components/staff-view.tsx": {
+    "mtime": 1781008425.7369926,
+    "ast_hash": "196dfe4725a5ebce23add59ec902914c",
+    "semantic_hash": ""
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\subscription-view.tsx": {
+  "src/components/subscription-view.tsx": {
     "mtime": 1780787151.821597,
     "ast_hash": "daf8257b9bb2331dcaf64f96fa05c2c4",
     "semantic_hash": "daf8257b9bb2331dcaf64f96fa05c2c4"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\support-view.tsx": {
+  "src/components/support-view.tsx": {
     "mtime": 1780835793.189943,
     "ast_hash": "6bf5305319c8ff7b1b193dc4aa8bc0f4",
     "semantic_hash": "6bf5305319c8ff7b1b193dc4aa8bc0f4"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\tenant-terms-view.tsx": {
+  "src/components/tenant-terms-view.tsx": {
     "mtime": 1780787163.4896927,
     "ast_hash": "f57d13a9cc6649e8b5b77783a09774ed",
     "semantic_hash": "f57d13a9cc6649e8b5b77783a09774ed"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\ui\\bed-icon.tsx": {
+  "src/components/ui/bed-icon.tsx": {
     "mtime": 1780764300.9948585,
     "ast_hash": "5e00a1cb9eb2b2a198c71ef765d35739",
     "semantic_hash": "5e00a1cb9eb2b2a198c71ef765d35739"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\ui\\bottom-sheet.tsx": {
+  "src/components/ui/bottom-sheet.tsx": {
     "mtime": 1780786792.2089243,
     "ast_hash": "b6bbbc386e0f36fd0184e2da56968694",
     "semantic_hash": "b6bbbc386e0f36fd0184e2da56968694"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\ui\\button.tsx": {
+  "src/components/ui/button.tsx": {
     "mtime": 1780758002.9210565,
     "ast_hash": "e04ce5251d6b0dd04020988126c905e9",
     "semantic_hash": "e04ce5251d6b0dd04020988126c905e9"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\ui\\mobile-frame.tsx": {
+  "src/components/ui/mobile-frame.tsx": {
     "mtime": 1780823288.343792,
     "ast_hash": "8157ca2a575b2d628498aa25e5eb9240",
     "semantic_hash": "8157ca2a575b2d628498aa25e5eb9240"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\ui\\stat-card.tsx": {
+  "src/components/ui/stat-card.tsx": {
     "mtime": 1780764306.277333,
     "ast_hash": "9eecc2dc72d5fb731cb7323b963eec49",
     "semantic_hash": "9eecc2dc72d5fb731cb7323b963eec49"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\view-profile-view.tsx": {
+  "src/components/view-profile-view.tsx": {
     "mtime": 1780787176.0453646,
     "ast_hash": "51ce3b5f386b790dddca73a95929b6c3",
     "semantic_hash": "51ce3b5f386b790dddca73a95929b6c3"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\visitor-logs-view.tsx": {
+  "src/components/visitor-logs-view.tsx": {
     "mtime": 1780930738.33881,
     "ast_hash": "7268d4a80ccb01a8a0f1511dfdb40472",
     "semantic_hash": "7268d4a80ccb01a8a0f1511dfdb40472"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\components\\wallet-view.tsx": {
+  "src/components/wallet-view.tsx": {
     "mtime": 1780821542.833985,
     "ast_hash": "66e16b8e8ab06d9c73d03750e9604ff3",
     "semantic_hash": "66e16b8e8ab06d9c73d03750e9604ff3"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\lib\\supabase.ts": {
+  "src/lib/supabase.ts": {
     "mtime": 1780834716.0963442,
     "ast_hash": "25b5103c4a08b4f368d4fdd106fc000b",
     "semantic_hash": "25b5103c4a08b4f368d4fdd106fc000b"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\lib\\types.ts": {
+  "src/lib/types.ts": {
     "mtime": 1780938002.539741,
     "ast_hash": "f4bbce3a08d587567274a836541a1da6",
     "semantic_hash": "f4bbce3a08d587567274a836541a1da6"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\src\\lib\\utils.ts": {
+  "src/lib/utils.ts": {
     "mtime": 1780758003.1781604,
     "ast_hash": "5a6fd53fdcf2be529e9cc0b718fde352",
     "semantic_hash": "5a6fd53fdcf2be529e9cc0b718fde352"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\tsconfig.json": {
+  "tsconfig.json": {
     "mtime": 1780757772.1896286,
     "ast_hash": "ee17fd1c97c735e9f3564e3f5251f125",
     "semantic_hash": "ee17fd1c97c735e9f3564e3f5251f125"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.agents\\rules\\graphify.md": {
+  ".agents/rules/graphify.md": {
     "mtime": 1781007126.5395114,
     "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
     "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.agents\\workflows\\graphify.md": {
+  ".agents/workflows/graphify.md": {
     "mtime": 1781007126.5410206,
     "ast_hash": "637776aa6f7496d069afe7520c845c8a",
     "semantic_hash": "637776aa6f7496d069afe7520c845c8a"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\CLAUDE.md": {
+  ".claude/CLAUDE.md": {
     "mtime": 1781007106.1450436,
     "ast_hash": "817fe671013b35ae0bc9301dfe449a87",
     "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\SKILL.md": {
+  ".claude/skills/graphify/SKILL.md": {
     "mtime": 1781007106.1386845,
     "ast_hash": "27571c6fb41c9e1e2bde11a53c690892",
     "semantic_hash": "27571c6fb41c9e1e2bde11a53c690892"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\add-watch.md": {
+  ".claude/skills/graphify/references/add-watch.md": {
     "mtime": 1781007000.5005448,
     "ast_hash": "0df0589623217ca38a12bdcabfb42f4c",
     "semantic_hash": "0df0589623217ca38a12bdcabfb42f4c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\exports.md": {
+  ".claude/skills/graphify/references/exports.md": {
     "mtime": 1781007000.5015864,
     "ast_hash": "7fb1a81aca17a462db70684a324fcfb0",
     "semantic_hash": "7fb1a81aca17a462db70684a324fcfb0"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\extraction-spec.md": {
+  ".claude/skills/graphify/references/extraction-spec.md": {
     "mtime": 1781007000.5028882,
     "ast_hash": "24808b03abfeaf5f6435bb69c0125b2c",
     "semantic_hash": "24808b03abfeaf5f6435bb69c0125b2c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\github-and-merge.md": {
+  ".claude/skills/graphify/references/github-and-merge.md": {
     "mtime": 1781007000.5043252,
     "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
     "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\hooks.md": {
+  ".claude/skills/graphify/references/hooks.md": {
     "mtime": 1781007000.5057385,
     "ast_hash": "3f545db6ce646650bb9de588f5512a27",
     "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\query.md": {
+  ".claude/skills/graphify/references/query.md": {
     "mtime": 1781007000.5085711,
     "ast_hash": "c2a8e798674a81b02aa9975f43023819",
     "semantic_hash": "c2a8e798674a81b02aa9975f43023819"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\transcribe.md": {
+  ".claude/skills/graphify/references/transcribe.md": {
     "mtime": 1781007000.51968,
     "ast_hash": "70f6aa30d6211f3a2c7e9fc45479f50c",
     "semantic_hash": "70f6aa30d6211f3a2c7e9fc45479f50c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.claude\\skills\\graphify\\references\\update.md": {
+  ".claude/skills/graphify/references/update.md": {
     "mtime": 1781007000.5338886,
     "ast_hash": "0dad167a95bdb389f02fecffb60b1bc8",
     "semantic_hash": "0dad167a95bdb389f02fecffb60b1bc8"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\SKILL.md": {
+  ".codex/skills/graphify/SKILL.md": {
     "mtime": 1781007106.5148335,
     "ast_hash": "387caca7fe66d3151e67c512bc93dd25",
     "semantic_hash": "387caca7fe66d3151e67c512bc93dd25"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\add-watch.md": {
+  ".codex/skills/graphify/references/add-watch.md": {
     "mtime": 1781007000.1404722,
     "ast_hash": "0df0589623217ca38a12bdcabfb42f4c",
     "semantic_hash": "0df0589623217ca38a12bdcabfb42f4c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\exports.md": {
+  ".codex/skills/graphify/references/exports.md": {
     "mtime": 1781007000.1495948,
     "ast_hash": "7fb1a81aca17a462db70684a324fcfb0",
     "semantic_hash": "7fb1a81aca17a462db70684a324fcfb0"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\extraction-spec.md": {
+  ".codex/skills/graphify/references/extraction-spec.md": {
     "mtime": 1781007000.1548896,
     "ast_hash": "a86a7321597b23cc2b22e011b3dc6e1d",
     "semantic_hash": "a86a7321597b23cc2b22e011b3dc6e1d"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\github-and-merge.md": {
+  ".codex/skills/graphify/references/github-and-merge.md": {
     "mtime": 1781007000.1623304,
     "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
     "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\hooks.md": {
+  ".codex/skills/graphify/references/hooks.md": {
     "mtime": 1781007000.1701362,
     "ast_hash": "3f545db6ce646650bb9de588f5512a27",
     "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\query.md": {
+  ".codex/skills/graphify/references/query.md": {
     "mtime": 1781007000.1707714,
     "ast_hash": "c2a8e798674a81b02aa9975f43023819",
     "semantic_hash": "c2a8e798674a81b02aa9975f43023819"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\transcribe.md": {
+  ".codex/skills/graphify/references/transcribe.md": {
     "mtime": 1781007000.1816213,
     "ast_hash": "70f6aa30d6211f3a2c7e9fc45479f50c",
     "semantic_hash": "70f6aa30d6211f3a2c7e9fc45479f50c"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\.codex\\skills\\graphify\\references\\update.md": {
+  ".codex/skills/graphify/references/update.md": {
     "mtime": 1781007000.1878684,
     "ast_hash": "0dad167a95bdb389f02fecffb60b1bc8",
     "semantic_hash": "0dad167a95bdb389f02fecffb60b1bc8"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\AGENTS.md": {
+  "AGENTS.md": {
     "mtime": 1781007106.5174572,
     "ast_hash": "d498db6fface37583f41e772df2180b0",
     "semantic_hash": "d498db6fface37583f41e772df2180b0"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\Agent.md": {
+  "Agent.md": {
     "mtime": 1780827827.870264,
     "ast_hash": "04bbca9276bc6bbbd8df694779238831",
     "semantic_hash": "04bbca9276bc6bbbd8df694779238831"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\CLAUDE.md": {
+  "CLAUDE.md": {
     "mtime": 1781007106.1560733,
     "ast_hash": "b0517ee048d45b5cd5463430230eb52f",
     "semantic_hash": "b0517ee048d45b5cd5463430230eb52f"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\README.md": {
+  "README.md": {
     "mtime": 1780757758.92274,
     "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
     "semantic_hash": "f15aaa42d5d299d091b1171097ea56ad"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\file.svg": {
+  "public/file.svg": {
     "mtime": 1780757759.0614014,
     "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
     "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\globe.svg": {
+  "public/globe.svg": {
     "mtime": 1780757759.0907495,
     "ast_hash": "2aaafa6a49b6563925fe440891e32717",
     "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\logo.png": {
+  "public/logo.png": {
     "mtime": 1780940175.8650687,
     "ast_hash": "33a748a77131d67462d7289d65a1f6c6",
     "semantic_hash": "33a748a77131d67462d7289d65a1f6c6"
   },
-  "C:\\Users\\Ajith_Anand_R\\Desktop\\PG\\PG Desk\\public\\window.svg": {
+  "public/window.svg": {
     "mtime": 1780757759.1766684,
     "ast_hash": "a2760511c65806022ad20adf74370ff3",
     "semantic_hash": "a2760511c65806022ad20adf74370ff3"
