@@ -123,7 +123,7 @@ export function DashboardView({
         const matchedMonth = last6Months.find(m => m.key === p.month);
         if (matchedMonth) {
           const shortName = matchedMonth.short;
-          const tenantName = p.tenants?.users?.name || "Unknown Tenant";
+          const tenantName = p.tenants?.users?.name || p.tenants?.name || "Unknown Tenant";
           const room = p.tenants?.rooms?.room_number ? `Room ${p.tenants.rooms.room_number}` : "Unassigned";
           const date = p.payment_date 
             ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })

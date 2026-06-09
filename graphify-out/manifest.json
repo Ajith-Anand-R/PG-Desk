@@ -50,8 +50,8 @@
     "semantic_hash": "101e859114e5d1a5fdebeaf504c674c8"
   },
   "src/app/app/page.tsx": {
-    "mtime": 1781012988.7777753,
-    "ast_hash": "c043eae60d7f305424553183c9610365",
+    "mtime": 1781033001.9160793,
+    "ast_hash": "80a8ce04a3f30698497390664d9157a6",
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
@@ -95,8 +95,8 @@
     "semantic_hash": "6c731499abbb485186e6647b7f8f86a7"
   },
   "src/components/dashboard-view.tsx": {
-    "mtime": 1781012934.750078,
-    "ast_hash": "747b4dcc11667c1ac7a4c2f840023209",
+    "mtime": 1781033006.0238516,
+    "ast_hash": "7d5377a40a2a92075863ba98f22b1f62",
     "semantic_hash": ""
   },
   "src/components/expenses-view.tsx": {
@@ -180,8 +180,8 @@
     "semantic_hash": "daf8257b9bb2331dcaf64f96fa05c2c4"
   },
   "src/components/support-view.tsx": {
-    "mtime": 1781012898.0336301,
-    "ast_hash": "bb5615503c74b642647d7f439362ccef",
+    "mtime": 1781033010.199169,
+    "ast_hash": "2cb50b5d418d2ea0e1e7a0c331036706",
     "semantic_hash": ""
   },
   "src/components/tenant-terms-view.tsx": {
@@ -220,9 +220,9 @@
     "semantic_hash": "51ce3b5f386b790dddca73a95929b6c3"
   },
   "src/components/visitor-logs-view.tsx": {
-    "mtime": 1780930738.33881,
-    "ast_hash": "7268d4a80ccb01a8a0f1511dfdb40472",
-    "semantic_hash": "7268d4a80ccb01a8a0f1511dfdb40472"
+    "mtime": 1781033014.903114,
+    "ast_hash": "2101657475fa10fa5bb433843c819533",
+    "semantic_hash": ""
   },
   "src/components/wallet-view.tsx": {
     "mtime": 1780821542.833985,

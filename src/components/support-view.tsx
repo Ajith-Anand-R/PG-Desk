@@ -357,7 +357,7 @@ export function SupportView({
                 </div>
 
                 {complaints.map((c) => {
-                  const tenantName = c.tenants?.users?.name || "Unknown Tenant";
+                  const tenantName = c.tenants?.users?.name || c.tenants?.name || "Unknown Tenant";
                   const roomNumber = c.tenants?.rooms?.room_number || "N/A";
                   const isOpen = c.status !== "resolved";
                   const dateStr = c.created_at

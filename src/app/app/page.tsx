@@ -201,7 +201,7 @@ export default function Home() {
       if (tenantsList) {
         const formattedTenants = tenantsList.map((t: any) => ({
           id: String(t.id),
-          name: t.users?.name || "Unknown Tenant",
+          name: t.users?.name || t.name || "Unknown Tenant",
           roomName: t.rooms?.room_number || "Unassigned",
           rentAmount: Number(t.rooms?.rent || 0),
           status: t.status as "active" | "left",
@@ -497,7 +497,7 @@ export default function Home() {
     .filter((p) => p.status === "pending" || p.status === "overdue")
     .map((p) => ({
       id: String(p.id),
-      tenantName: p.tenants?.users?.name || "Unknown",
+      tenantName: p.tenants?.users?.name || p.tenants?.name || "Unknown",
       roomName: p.tenants?.rooms?.room_number || "Unassigned",
       amount: Number(p.amount),
       dueDate: p.due_date ? new Date(p.due_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",
@@ -509,7 +509,7 @@ export default function Home() {
     .filter((p) => p.status === "paid")
     .map((p) => ({
       id: String(p.id),
-      tenantName: p.tenants?.users?.name || "Unknown",
+      tenantName: p.tenants?.users?.name || p.tenants?.name || "Unknown",
       roomName: p.tenants?.rooms?.room_number || "Unassigned",
       amount: Number(p.amount),
       date: p.payment_date ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",

@@ -124,7 +124,7 @@ export function VisitorLogsView({
   };
 
   const filteredLogs = visitorLogs.filter((log) => {
-    const tenantName = log.tenants?.users?.name || "";
+    const tenantName = log.tenants?.users?.name || log.tenants?.name || "";
     return (
       log.visitor_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tenantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -248,7 +248,7 @@ export function VisitorLogsView({
         ) : (
           <div className="flex flex-col gap-4">
             {filteredLogs.map((log) => {
-              const residentName = log.tenants?.users?.name || "Unknown Resident";
+              const residentName = log.tenants?.users?.name || log.tenants?.name || "Unknown Resident";
               const roomNo = log.tenants?.rooms?.room_number ? `Room ${log.tenants.rooms.room_number}` : "Unassigned";
 
               const hasCheckedIn = log.status === "used" || log.entry_time !== "Pending" && log.entry_time !== "";
