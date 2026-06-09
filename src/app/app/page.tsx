@@ -500,7 +500,8 @@ export default function Home() {
       roomName: p.tenants?.rooms?.room_number || "Unassigned",
       amount: Number(p.amount),
       dueDate: p.due_date ? new Date(p.due_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",
-      status: p.status as "pending" | "overdue"
+      status: p.status as "pending" | "overdue",
+      tenantPhone: p.tenants?.phone || p.tenants?.users?.phone || ""
     }));
 
   const receiptsList: ReceiptItem[] = payments
@@ -512,7 +513,8 @@ export default function Home() {
       amount: Number(p.amount),
       date: p.payment_date ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "2-digit" }) : "N/A",
       refCode: p.reference_code || "UPI Payment",
-      paymentMethod: p.payment_method || "UPI"
+      paymentMethod: p.payment_method || "UPI",
+      tenantPhone: p.tenants?.phone || p.tenants?.users?.phone || ""
     }));
 
   // Load read notifications and cleared timestamp from localStorage

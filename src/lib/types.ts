@@ -13,4 +13,11 @@ export interface Tenant {
   rentAmount: number;
   status: "active" | "left";
   joinDate?: string | null;
+  roomId?: string | null;
+  bedId?: string | null;
+  deposit?: number | null;
+  aadhaarNumber?: string | null;
+  emergencyContact?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }

@@ -1,11 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ArrowLeft, 
+  Plus, 
+  Search, 
+  X, 
+  User, 
+  Calendar, 
+  DollarSign, 
+  Phone, 
+  Shield, 
+  Mail, 
+  AlertCircle
+} from "lucide-react";
 import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
 import { Room } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
 
 interface RoomsViewProps {
   onBack: () => void;
@@ -24,6 +37,24 @@ export function RoomsView({
 }: RoomsViewProps) {
   const [selectedFloor, setSelectedFloor] = useState<number | "All">("All");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Modals state
+  const [selectedBed, setSelectedBed] = useState<{
+    roomId: string;
+    roomName: string;
+    bedIndex: number;
+    status: "available" | "occupied";
+  } | null>(null);
+
+  const [bedDetails, setBedDetails] = useState<{
+    tenant?: any;
+    dueDate?: string;
+    paymentStatus?: "paid" | "pending" | "overdue";
+    rentAmount?: number;
+  } | null>(null);
+
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
 
   // Dynamic calculations
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
@@ -46,8 +77,127 @@ export function RoomsView({
   // Group rooms by floor dynamically
   const targetFloors = selectedFloor === "All" ? floors : [selectedFloor];
 
+  const handleBedClick = async (room: Room, bedIndex: number, status: "available" | "occupied") => {
+    setSelectedBed({
+      roomId: room.id,
+      roomName: room.name,
+      bedIndex,
+      status,
+    });
+    setBedDetails(null);
+    setLoadingDetails(true);
+
+    try {
+      // 1. Fetch beds for this room to resolve bed_id
+      const { data: bedsList } = await supabase
+        .from("beds")
+        .select("*")
+        .eq("room_id", room.id)
+        .order("bed_number", { ascending: true });
+
+      if (bedsList && bedsList[bedIndex]) {
+        const targetBed = bedsList[bedIndex];
+        
+        // 2. Fetch room rent info
+        const { data: roomInfo } = await supabase
+          .from("rooms")
+          .select("rent")
+          .eq("id", room.id)
+          .single();
+
+        const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
+
+        if (status === "occupied") {
+          // Fetch active tenant for this bed
+          const { data: tenantData } = await supabase
+            .from("tenants")
+            .select("*, users(*)")
+            .eq("bed_id", targetBed.id)
+            .eq("status", "active")
+            .maybeSingle();
+
+          if (tenantData) {
+            // Fetch payments to find due date
+            const { data: paymentData } = await supabase
+              .from("payments")
+              .select("*")
+              .eq("tenant_id", tenantData.id)
+              .order("due_date", { ascending: false });
+
+            let dueDate = "N/A";
+            let paymentStatus: "paid" | "pending" | "overdue" = "paid";
+
+            if (paymentData && paymentData.length > 0) {
+              const latestPayment = paymentData[0];
+              paymentStatus = latestPayment.status;
+              if (latestPayment.due_date) {
+                dueDate = new Date(latestPayment.due_date).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                });
+              }
+            }
+
+            setBedDetails({
+              tenant: tenantData,
+              dueDate,
+              paymentStatus,
+              rentAmount,
+            });
+          } else {
+            setBedDetails({
+              rentAmount,
+            });
+          }
+        } else {
+          setBedDetails({
+            rentAmount,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching bed details:", err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleToggleBedStatus = async () => {
+    if (!selectedBed) return;
+    try {
+      await onToggleBed(selectedBed.roomId, selectedBed.bedIndex);
+      setSelectedBed(null);
+      setBedDetails(null);
+    } catch (err) {
+      console.error("Error toggling bed status:", err);
+    }
+  };
+
+  const formatAadhaar = (num?: string) => {
+    if (!num) return "N/A";
+    const cleaned = num.replace(/\s+/g, "");
+    return cleaned.replace(/(\d{4})/g, "$1 ").trim();
+  };
+
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount?: number | string | null) => {
+    if (amount === undefined || amount === null) return "N/A";
+    return "₹" + Number(amount).toLocaleString("en-IN");
+  };
+
+  const bedLetter = selectedBed ? String.fromCharCode(65 + selectedBed.bedIndex) : "";
+
   return (
-    <div className="flex flex-col min-h-[100dvh] pb-24 bg-slate-50/60">
+    <div className="flex flex-col min-h-[100dvh] pb-24 bg-slate-50/60 relative">
       {/* Header Banner (Royal emerald Gradient with glowing backdrop) */}
       <div className="bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-900 text-white rounded-b-[2.5rem] px-5 pt-6 pb-10 shadow-lg relative overflow-hidden">
         <div className="absolute -left-12 -bottom-12 w-40 h-40 rounded-full bg-emerald-500/20 blur-2xl pointer-events-none" />
@@ -181,6 +331,7 @@ export function RoomsView({
                       key={room.id}
                       room={room}
                       onToggleBed={(bedIdx) => onToggleBed(room.id, bedIdx)}
+                      onBedClick={handleBedClick}
                     />
                   ))}
                 </div>
@@ -189,6 +340,343 @@ export function RoomsView({
           })
         )}
       </div>
+
+      {/* Bed Details Modal Overlay */}
+      <AnimatePresence>
+        {selectedBed && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden border border-slate-100 shadow-2xl relative flex flex-col"
+            >
+              <button
+                onClick={() => {
+                  setSelectedBed(null);
+                  setBedDetails(null);
+                }}
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-400 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Modal Header */}
+              <div className="p-6 pb-4 border-b border-slate-100 bg-gradient-to-br from-emerald-50/50 to-slate-50/30">
+                <span className="text-[9.5px] font-extrabold tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-md uppercase">
+                  Bed {bedLetter}
+                </span>
+                <h3 className="text-lg font-black text-slate-800 tracking-tight mt-2.5">
+                  Room {selectedBed.roomName}
+                </h3>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className={`w-2 h-2 rounded-full ${selectedBed.status === "occupied" ? "bg-rose-500 animate-pulse" : "bg-emerald-500"}`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${selectedBed.status === "occupied" ? "text-rose-600" : "text-emerald-600"}`}>
+                    {selectedBed.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 flex flex-col gap-5">
+                {loadingDetails ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                    <div className="w-8 h-8 rounded-full border-3 border-slate-100 border-t-emerald-600 animate-spin" />
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Loading details...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* General Rent details */}
+                    <div className="flex items-center justify-between bg-slate-50 p-4.5 rounded-2xl border border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-slate-500 shadow-xs border border-slate-200/50">
+                          <DollarSign className="w-4 h-4 text-emerald-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Bed Rent</span>
+                          <span className="text-xs font-black text-slate-700">Monthly Rent</span>
+                        </div>
+                      </div>
+                      <span className="text-sm font-black text-slate-800 font-mono">
+                        {formatCurrency(bedDetails?.rentAmount)}
+                      </span>
+                    </div>
+
+                    {selectedBed.status === "occupied" ? (
+                      bedDetails?.tenant ? (
+                        <>
+                          {/* Occupied Tenant Section */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Occupied Tenant</span>
+                            <motion.button
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => {
+                                setSelectedTenant(bedDetails.tenant);
+                              }}
+                              className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-emerald-100 bg-emerald-50/15 hover:bg-emerald-550/5 transition-colors cursor-pointer text-left"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center font-extrabold text-sm shrink-0 overflow-hidden shadow-2xs">
+                                  {bedDetails.tenant.users?.photo ? (
+                                    <img 
+                                      src={bedDetails.tenant.users.photo} 
+                                      alt={bedDetails.tenant.name} 
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLElement).style.display = "none";
+                                      }}
+                                    />
+                                  ) : (
+                                    bedDetails.tenant.name?.substring(0, 2).toUpperCase()
+                                  )}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-black text-slate-850 hover:underline flex items-center gap-1 leading-none">
+                                    {bedDetails.tenant.name}
+                                    <span className="inline-block text-[8px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded-md leading-none uppercase scale-90">View Profile</span>
+                                  </span>
+                                  <span className="text-[10px] font-semibold text-slate-505 mt-1 flex items-center gap-1">
+                                    <Phone className="w-3 h-3 text-slate-400" />
+                                    {bedDetails.tenant.phone || bedDetails.tenant.users?.phone || "No phone"}
+                                  </span>
+                                </div>
+                              </div>
+                            </motion.button>
+                          </div>
+
+                          {/* Payment status */}
+                          <div className="flex flex-col gap-2">
+                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Payment & Dues</span>
+                            <div className="p-4 rounded-2xl border border-slate-150 flex flex-col gap-3">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="font-semibold text-slate-500 flex items-center gap-1.5">
+                                  <Calendar className="w-4 h-4 text-slate-400" />
+                                  Next Due Date
+                                </span>
+                                <span className="font-extrabold text-slate-700">{bedDetails.dueDate}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-xs pt-2.5 border-t border-slate-100">
+                                <span className="font-semibold text-slate-500 flex items-center gap-1.5">
+                                  <AlertCircle className="w-4 h-4 text-slate-400" />
+                                  Payment Status
+                                </span>
+                                <span className={`text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                                  bedDetails.paymentStatus === "paid"
+                                    ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                    : bedDetails.paymentStatus === "overdue"
+                                    ? "bg-rose-50 border-rose-100 text-rose-600"
+                                    : "bg-amber-50 border-amber-100 text-amber-600"
+                                }`}>
+                                  {bedDetails.paymentStatus}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-4 text-xs font-semibold text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                          No tenant details found in database.
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-center py-6 text-xs font-semibold text-slate-400 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                        This bed is currently empty and available.
+                      </div>
+                    )}
+
+                    {/* Action toggles */}
+                    <div className="flex gap-3 pt-2">
+                      <motion.button
+                        whileTap={{ scale: 0.96 }}
+                        onClick={handleToggleBedStatus}
+                        className={`flex-1 font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
+                          selectedBed.status === "occupied"
+                            ? "bg-rose-655 bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                            : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
+                        }`}
+                      >
+                        {selectedBed.status === "occupied" ? "Mark Bed Available" : "Assign / Mark Occupied"}
+                      </motion.button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Tenant Details Modal Overlay */}
+      <AnimatePresence>
+        {selectedTenant && (
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-55 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-sm overflow-hidden border border-slate-100 shadow-2xl relative flex flex-col max-h-[85dvh]"
+            >
+              <button
+                onClick={() => setSelectedTenant(null)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-slate-100/70 hover:bg-slate-200/70 text-slate-500 cursor-pointer z-10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Banner Cover */}
+              <div className="h-28 bg-gradient-to-r from-emerald-750 from-emerald-700 to-emerald-900 relative shrink-0">
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+              </div>
+
+              {/* User Avatar Overlapping */}
+              <div className="flex flex-col items-center px-6 -mt-11 relative z-10 pb-4 border-b border-slate-100">
+                <div className="w-22 h-22 rounded-full bg-white border-4 border-white shadow-md flex items-center justify-center font-extrabold text-3xl text-emerald-800 overflow-hidden shrink-0">
+                  {selectedTenant.users?.photo ? (
+                    <img 
+                      src={selectedTenant.users.photo} 
+                      alt={selectedTenant.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    selectedTenant.name?.substring(0, 2).toUpperCase()
+                  )}
+                </div>
+                <h4 className="text-base font-black text-slate-800 tracking-tight mt-2.5">
+                  {selectedTenant.name}
+                </h4>
+                <div className="flex items-center gap-1.5 mt-1 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-150">
+                  <Shield className="w-3 h-3 text-emerald-600" />
+                  <span className="text-[9px] font-black text-slate-505 uppercase tracking-wider">Active Tenant</span>
+                </div>
+              </div>
+
+              {/* Scrollable Details */}
+              <div className="px-5 py-4 overflow-y-auto flex flex-col gap-4.5 no-scrollbar flex-1 bg-slate-50/30">
+                
+                {/* Aadhaar Info Card */}
+                <div className="bg-white rounded-3xl p-4.5 border border-slate-150 flex flex-col gap-3 shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-emerald-650" />
+                    Identity Verification
+                  </span>
+                  
+                  {/* Aadhaar Visual Layout */}
+                  <div className="bg-gradient-to-br from-blue-50/70 via-sky-50/50 to-orange-50/70 border border-sky-100/70 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden select-none shadow-2xs min-h-[120px]">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/5 rounded-full blur-xl pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-16 h-16 bg-blue-500/5 rounded-full blur-xl pointer-events-none" />
+                    
+                    {/* Header */}
+                    <div className="flex justify-between items-center pb-2 border-b border-sky-100/50">
+                      <span className="text-[7px] font-black text-slate-400 tracking-wider uppercase">GOVERNMENT OF INDIA</span>
+                      <span className="text-[8px] font-black text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded-sm border border-emerald-100 uppercase tracking-wide">AADHAAR</span>
+                    </div>
+
+                    {/* Aadhaar details */}
+                    <div className="flex items-center gap-3 py-2.5">
+                      <div className="w-11 h-13 bg-slate-200/50 border border-slate-300/30 rounded-xs flex items-center justify-center shrink-0 overflow-hidden">
+                        {selectedTenant.users?.photo ? (
+                          <img 
+                            src={selectedTenant.users.photo} 
+                            alt="Aadhaar" 
+                            className="w-full h-full object-cover grayscale"
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9.5px] font-black text-slate-750">{selectedTenant.name}</span>
+                        <span className="text-[7px] font-bold text-slate-400">DOB: {selectedTenant.dob ? formatDate(selectedTenant.dob) : "N/A"}</span>
+                        <span className="text-[7px] font-bold text-slate-400">Gender: {selectedTenant.gender || "N/A"}</span>
+                      </div>
+                    </div>
+
+                    {/* Large bold number */}
+                    <div className="text-center text-xs font-black text-slate-800 tracking-widest font-mono pt-1.5 border-t border-sky-100/50">
+                      {formatAadhaar(selectedTenant.aadhaar_number)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stay details */}
+                <div className="bg-white rounded-3xl p-4.5 border border-slate-150 flex flex-col gap-3.5 shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                    Stay Details
+                  </span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-semibold text-slate-505">Join Date</span>
+                    <span className="font-extrabold text-slate-700">{formatDate(selectedTenant.join_date)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                    <span className="font-semibold text-slate-505">Advance Payment</span>
+                    <span className="font-black text-emerald-600 font-mono">{formatCurrency(selectedTenant.deposit)}</span>
+                  </div>
+                </div>
+
+                {/* Emergency & parents */}
+                <div className="bg-white rounded-3xl p-4.5 border border-slate-150 flex flex-col gap-3.5 shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    Emergency & Family Contacts
+                  </span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-semibold text-slate-505">Emergency Contact</span>
+                    <span className="font-extrabold text-slate-700">{selectedTenant.emergency_contact || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                    <span className="font-semibold text-slate-505">Father's Name</span>
+                    <span className="font-extrabold text-slate-700">{selectedTenant.father_name || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                    <span className="font-semibold text-slate-505">Father's Phone</span>
+                    <span className="font-extrabold text-slate-700">{selectedTenant.father_phone || "N/A"}</span>
+                  </div>
+                </div>
+
+                {/* Additional contacts */}
+                <div className="bg-white rounded-3xl p-4.5 border border-slate-150 flex flex-col gap-3.5 shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-emerald-650" />
+                    Other Information
+                  </span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-semibold text-slate-505">Email</span>
+                    <span className="font-extrabold text-slate-700 truncate max-w-[180px]">{selectedTenant.email || "N/A"}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                    <span className="font-semibold text-slate-505">Occupation</span>
+                    <span className="font-extrabold text-slate-700">{selectedTenant.occupation || "N/A"}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 pt-3 border-t border-slate-100 text-xs">
+                    <span className="font-semibold text-slate-505">Permanent Address</span>
+                    <span className="font-extrabold text-slate-700 leading-relaxed mt-0.5 bg-slate-50/50 p-2.5 rounded-xl border border-slate-150/40">
+                      {selectedTenant.permanent_address || "N/A"}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Close Button Footer */}
+              <div className="p-4 bg-white border-t border-slate-100 shrink-0">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setSelectedTenant(null)}
+                  className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 transition-all font-extrabold text-slate-700 text-xs uppercase tracking-wider cursor-pointer text-center animate-none"
+                >
+                  Back
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -197,9 +685,10 @@ export function RoomsView({
 interface RoomCardProps {
   room: Room;
   onToggleBed: (index: number) => void;
+  onBedClick: (room: Room, index: number, status: "available" | "occupied") => void;
 }
 
-function RoomCard({ room, onToggleBed }: RoomCardProps) {
+function RoomCard({ room, onToggleBed, onBedClick }: RoomCardProps) {
   const occupiedCount = room.beds.filter((status) => status === "occupied").length;
   const isFull = occupiedCount === room.capacity;
 
@@ -228,7 +717,7 @@ function RoomCard({ room, onToggleBed }: RoomCardProps) {
       {/* Bed icons grid */}
       <div className="flex flex-wrap gap-2">
         {room.beds.map((status, idx) => (
-          <BedIcon key={idx} status={status} onClick={() => onToggleBed(idx)} />
+          <BedIcon key={idx} status={status} onClick={() => onBedClick(room, idx, status)} />
         ))}
       </div>
     </motion.div>

@@ -27,6 +27,7 @@ export interface ReceiptItem {
   refCode: string;
   paymentMethod: string;
   photo?: string | null;
+  tenantPhone?: string;
 }
 
 export interface DueItem {
@@ -36,6 +37,7 @@ export interface DueItem {
   amount: number;
   dueDate: string;
   status: "pending" | "overdue";
+  tenantPhone?: string;
 }
 
 interface ReceiptsViewProps {
@@ -122,6 +124,58 @@ export function ReceiptsView({
            due.roomName.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // Combine dues and receipts into a unified rent collection list
+  const rentCollectionList = React.useMemo(() => {
+    const list: any[] = [];
+    
+    dues.forEach((d) => {
+      list.push({
+        id: d.id,
+        tenantName: d.tenantName,
+        roomName: d.roomName,
+        amount: d.amount,
+        dueDate: d.dueDate,
+        status: d.status,
+        phone: d.tenantPhone || ""
+      });
+    });
+
+    receipts.forEach((r) => {
+      list.push({
+        id: r.id,
+        tenantName: r.tenantName,
+        roomName: r.roomName,
+        amount: r.amount,
+        dueDate: r.date,
+        status: "paid",
+        phone: r.tenantPhone || ""
+      });
+    });
+
+    // Sort: Pending/Overdue first, then Paid
+    return list.sort((a, b) => {
+      if (a.status === "paid" && b.status !== "paid") return 1;
+      if (a.status !== "paid" && b.status === "paid") return -1;
+      return 0;
+    });
+  }, [dues, receipts]);
+
+  const filteredRentCollection = rentCollectionList.filter((item) => {
+    return item.tenantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           item.roomName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const handleSendReminder = (tenantName: string, phone: string, amount: number, dueDate: string) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    const text = `Hi ${tenantName}, this is a friendly reminder that your rent payment of ₹${amount} is pending. The due date was ${dueDate}. Please pay as soon as possible. Thank you!`;
+    if (cleanPhone) {
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`, "_blank");
+    } else {
+      alert(`Reminder notification generated for ${tenantName}! (No phone number registered)`);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-[100dvh] pb-24 bg-slate-50 select-none">
       {/* Top Banner Header */}
@@ -196,7 +250,7 @@ export function ReceiptsView({
                 />
               )}
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Pending Dues</span>
+              <span>Rent Collection</span>
             </button>
 
             <button
@@ -308,8 +362,8 @@ export function ReceiptsView({
                 </div>
               )
             ) : (
-              /* Pending Dues Tab */
-              filteredDues.length === 0 ? (
+              /* Rent Collection Tab (includes both Paid and Pending/Overdue records) */
+              filteredRentCollection.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -320,77 +374,106 @@ export function ReceiptsView({
                     <TrendingUp className="w-8 h-8 text-emerald-600/80" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-slate-800 text-base">All cleared!</h4>
+                    <h4 className="font-extrabold text-slate-800 text-base">No records found</h4>
                     <p className="text-xs font-semibold text-slate-400 mt-1 leading-relaxed max-w-[240px] mx-auto">
-                      Excellent, there are no outstanding dues for this property.
+                      Rent records will be listed here.
                     </p>
                   </div>
                 </motion.div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  {filteredDues.map((due) => {
-                    const isOverdue = due.status === "overdue";
+                  {/* Rent Collection Header Row */}
+                  <div className="bg-slate-100 rounded-xl px-4 py-2 flex items-center justify-between text-[10px] font-extrabold text-slate-400 uppercase tracking-wider select-none shrink-0">
+                    <span className="w-2/5">Tenant</span>
+                    <span className="w-1/4 text-center">Due Date</span>
+                    <span className="w-1/4 text-right">Status / Action</span>
+                  </div>
+
+                  {filteredRentCollection.map((item) => {
+                    const isPaid = item.status === "paid";
+                    const isOverdue = item.status === "overdue";
+                    
                     return (
                       <motion.div
-                        key={due.id}
+                        key={item.id}
                         layout
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        className="bg-white rounded-3xl p-4 border border-slate-200/40 shadow-[0_4px_16px_rgba(0,0,0,0.015)] flex items-center justify-between gap-4 relative overflow-hidden"
+                        className="bg-white rounded-3xl p-4 border border-slate-200/40 shadow-[0_4px_16px_rgba(0,0,0,0.015)] flex flex-col gap-3 relative overflow-hidden"
                       >
-                        {/* Accent Red/Amber Line */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${isOverdue ? "bg-rose-500" : "bg-amber-500"}`} />
+                        {/* Accent Status Line */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                          isPaid ? "bg-emerald-500" : isOverdue ? "bg-rose-500" : "bg-amber-500"
+                        }`} />
                         
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          {/* Avatar */}
-                          <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 text-xs font-extrabold select-none ${
-                            isOverdue 
-                              ? "bg-rose-50 border-rose-100 text-rose-600" 
-                              : "bg-amber-50 border-amber-100 text-amber-600"
-                          }`}>
-                            {due.tenantName.substring(0, 2).toUpperCase()}
-                          </div>
-                          
-                          <div className="flex flex-col gap-0.5 min-w-0">
-                            <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-between gap-4">
+                          {/* Tenant Info column */}
+                          <div className="flex items-center gap-3 min-w-0 w-2/5">
+                            <div className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 text-xs font-extrabold select-none ${
+                              isPaid 
+                                ? "bg-emerald-50 border-emerald-100 text-emerald-600" 
+                                : isOverdue 
+                                ? "bg-rose-50 border-rose-100 text-rose-600" 
+                                : "bg-amber-50 border-amber-100 text-amber-600"
+                            }`}>
+                              {item.tenantName.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="flex flex-col min-w-0">
                               <span className="text-xs font-black text-slate-850 truncate leading-none">
-                                {due.tenantName}
+                                {item.tenantName}
                               </span>
-                              <span className="text-[8.5px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm shrink-0 leading-none">
-                                {due.roomName}
+                              <span className="text-[8.5px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm shrink-0 leading-none w-max mt-1">
+                                {item.roomName}
                               </span>
                             </div>
-                            <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-md leading-none w-max mt-1 border ${
-                              isOverdue 
+                          </div>
+
+                          {/* Due Date column */}
+                          <div className="w-1/4 text-center select-none text-[10.5px] font-bold text-slate-500">
+                            {item.dueDate}
+                          </div>
+
+                          {/* Status Badge */}
+                          <div className="w-1/4 flex flex-col items-end gap-1.5 shrink-0 select-none">
+                            <span className={`text-[12px] font-black font-mono leading-none ${
+                              isPaid ? "text-emerald-600" : isOverdue ? "text-rose-600" : "text-amber-650"
+                            }`}>
+                              ₹{item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-md leading-none border uppercase tracking-wider ${
+                              isPaid 
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                                : isOverdue 
                                 ? "bg-rose-50/70 text-rose-600 border-rose-100/50" 
                                 : "bg-amber-50/70 text-amber-600 border-amber-100/50"
                             }`}>
-                              {isOverdue ? "Overdue" : "Pending"}
+                              {isPaid ? "Paid" : isOverdue ? "Overdue" : "Pending"}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-1.5 shrink-0 select-none">
-                          <span className={`text-[12px] font-black font-mono leading-none ${
-                            isOverdue ? "text-rose-600" : "text-amber-650"
-                          }`}>
-                            ₹{due.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                          </span>
-                          <span className="text-[8.5px] font-bold text-slate-400/90 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-sm leading-none flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
-                            <span>Due: {due.dueDate}</span>
-                          </span>
-                          {onCollectRent && (
+                        {/* Action buttons (only for unpaid) */}
+                        {!isPaid && (
+                          <div className="flex gap-2.5 pt-2 border-t border-slate-100/60 select-none">
+                            {onCollectRent && (
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => onCollectRent(item.id)}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-xs text-center"
+                              >
+                                Mark Paid
+                              </motion.button>
+                            )}
                             <motion.button
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => onCollectRent(due.id)}
-                              className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3 py-1 rounded-lg text-[9px] uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                              onClick={() => handleSendReminder(item.tenantName, item.phone, item.amount, item.dueDate)}
+                              className="flex-1 bg-white border border-emerald-600/30 hover:border-emerald-600 text-emerald-600 font-extrabold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer text-center"
                             >
-                              Collect
+                              Send Reminder
                             </motion.button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })}

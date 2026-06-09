@@ -1,16 +1,16 @@
 # Graph Report - PG Desk  (2026-06-09)
 
 ## Corpus Check
-- 48 files · ~58,751 words
+- 48 files · ~60,827 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 365 nodes · 401 edges · 51 communities (34 shown, 17 thin omitted)
+- 365 nodes · 403 edges · 50 communities (33 shown, 17 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1c3e4440`
+- Built from commit: `38ad7228`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -51,7 +51,6 @@
 - [[_COMMUNITY_Profile Profileview Profileviewprops|Profile Profileview Profileviewprops]]
 - [[_COMMUNITY_Property Modal Propertyqrmodal|Property Modal Propertyqrmodal]]
 - [[_COMMUNITY_Referral Referralview Referralviewprops|Referral Referralview Referralviewprops]]
-- [[_COMMUNITY_Settings Settingsview Settingsviewprops|Settings Settingsview Settingsviewprops]]
 - [[_COMMUNITY_Subscription Subscriptionview Subscriptionviewprops|Subscription Subscriptionview Subscriptionviewprops]]
 - [[_COMMUNITY_Graphify Lifecycle Update|Graphify Lifecycle Update]]
 - [[_COMMUNITY_Mobile Frame Mobileframe|Mobile Frame Mobileframe]]
@@ -63,7 +62,7 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 16 edges
-2. `supabase` - 10 edges
+2. `supabase` - 11 edges
 3. `tailwind` - 6 edges
 4. `aliases` - 6 edges
 5. `scripts` - 5 edges
@@ -86,19 +85,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (51 total, 17 thin omitted)
+## Communities (50 total, 17 thin omitted)
 
 ### Community 0 - "Agent System Documentation"
 Cohesion: 0.33
 Nodes (4): geistMono, metadata, outfit, viewport
 
 ### Community 1 - "Bookings & Expenses Management"
-Cohesion: 0.13
-Nodes (14): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, LoginView(), LoginViewProps, RoleFilter (+6 more)
+Cohesion: 0.08
+Nodes (22): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, InventoryView(), InventoryViewProps, LoginView() (+14 more)
 
 ### Community 2 - "Graphify Lifecycle Update"
-Cohesion: 0.09
-Nodes (23): 1. uv tool install — 'uv tool dir' is authoritative, respects UVTOOLDIR automatically, 1. uv tool installs — most reliable on modern Mac/Linux, 2. pipx install — 'pipx environment' respects PIPXHOME automatically, 2. Read shebang from graphify binary (pipx and direct pip installs), 3. Active venv / conda / pip-into-current-env, 3. Fall back to python3, Detect Python with graphify — uv/pipx-aware (fixes #831), Detect the correct Python interpreter (handles uv tool, pipx, venv, system installs) (+15 more)
+Cohesion: 0.10
+Nodes (20): 1. uv tool install — 'uv tool dir' is authoritative, respects UVTOOLDIR automatically, 1. uv tool installs — most reliable on modern Mac/Linux, 2. pipx install — 'pipx environment' respects PIPXHOME automatically, 2. Read shebang from graphify binary (pipx and direct pip installs), 3. Active venv / conda / pip-into-current-env, 3. Fall back to python3, Detect Python with graphify — uv/pipx-aware (fixes #831), Detect the correct Python interpreter (handles uv tool, pipx, venv, system installs) (+12 more)
 
 ### Community 3 - "Aliases Tailwind Hooks"
 Cohesion: 0.09
@@ -120,21 +119,17 @@ Nodes (17): devDependencies, eslint, eslint-config-next, tailwindcss, @tailwindc
 Cohesion: 0.11
 Nodes (17): Also prune old nodes for re-extracted (changed) files before inserting fresh AST., and newextraction (buildmerge combines them). Falling back to, Explicit source/target last so they win over any stale attrs in d., For --cluster-only, For --update (incremental re-extraction), G.graph"hyperedges" holds hyperedges from both existing graph.json, graphify reference: incremental update and cluster-only, Load new extraction and incremental state (+9 more)
 
-### Community 8 - "Graphify Lifecycle Update"
-Cohesion: 0.40
-Nodes (4): DAYS_OF_WEEK, MealsManagementView(), MealsManagementViewProps, MenuItem
-
 ### Community 9 - "Page Tenant Terms"
-Cohesion: 0.12
-Nodes (12): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, CreatePropertyView(), CreatePropertyViewProps (+4 more)
+Cohesion: 0.16
+Nodes (8): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, ViewProfileView(), ViewProfileViewProps
 
 ### Community 10 - "Rooms & Staff View"
 Cohesion: 0.19
 Nodes (9): RoomCardProps, RoomsView(), RoomsViewProps, Room, Tenant, BedIcon(), BedIconProps, StatCard() (+1 more)
 
 ### Community 11 - "Graphify Knowledge Graph"
-Cohesion: 0.09
-Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, Honesty Rules, In --update mode, 'allfiles' carries the full corpus; 'files' is the changed, Interpreter guard for subcommands, LABELS - replace these with the names you chose above (+16 more)
+Cohesion: 0.08
+Nodes (27): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, Honesty Rules, In --update mode, 'allfiles' carries the full corpus; 'files' is the changed, Interpreter guard for subcommands, LABELS - replace these with the names you chose above (+19 more)
 
 ### Community 12 - "3D Graphics Scene"
 Cohesion: 0.17
@@ -208,17 +203,17 @@ Nodes (11): background_color, description, display, icons, id, name, orientation
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Part A - Structural extraction for code files` connect `Graphify Lifecycle Update` to `Graphify Knowledge Graph`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **Why does `Part B - Semantic extraction (parallel subagents)` connect `Graphify Knowledge Graph` to `Graphify Lifecycle Update`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `recommendations`, `$schema`, `style` to the rest of the system?**
   _146 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bookings & Expenses Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.12631578947368421 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08172043010752689 - nodes in this community are weakly interconnected._
 - **Should `Graphify Lifecycle Update` be split into smaller, more focused modules?**
-  _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `Aliases Tailwind Hooks` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
 - **Should `3D Graphics Scene` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+- **Should `TypeScript Configuration` be split into smaller, more focused modules?**
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+- **Should `Linter Settings` be split into smaller, more focused modules?**
+  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._

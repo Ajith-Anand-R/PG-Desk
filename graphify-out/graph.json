@@ -867,7 +867,7 @@
       "label": "TabButtonProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1850",
+      "source_location": "L1852",
       "_origin": "ast",
       "id": "app_page_tabbuttonprops",
       "community": 9,
@@ -877,7 +877,7 @@
       "label": "TabButton()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1857",
+      "source_location": "L1859",
       "_origin": "ast",
       "id": "app_page_tabbutton",
       "community": 9,
@@ -887,7 +887,7 @@
       "label": "DrawerItemProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1889",
+      "source_location": "L1891",
       "_origin": "ast",
       "id": "app_page_draweritemprops",
       "community": 9,
@@ -897,7 +897,7 @@
       "label": "DrawerItem()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1897",
+      "source_location": "L1899",
       "_origin": "ast",
       "id": "app_page_draweritem",
       "community": 9,
@@ -1280,7 +1280,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_create_property_view",
-      "community": 9,
+      "community": 8,
       "norm_label": "create-property-view.tsx"
     },
     {
@@ -1290,7 +1290,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "components_create_property_view_createpropertyviewprops",
-      "community": 9,
+      "community": 8,
       "norm_label": "createpropertyviewprops"
     },
     {
@@ -1300,7 +1300,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "components_create_property_view_createpropertyview",
-      "community": 9,
+      "community": 8,
       "norm_label": "createpropertyview()"
     },
     {
@@ -1380,7 +1380,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_inventory_view",
-      "community": 30,
+      "community": 1,
       "norm_label": "inventory-view.tsx"
     },
     {
@@ -1390,7 +1390,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "components_inventory_view_inventoryviewprops",
-      "community": 30,
+      "community": 1,
       "norm_label": "inventoryviewprops"
     },
     {
@@ -1400,7 +1400,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "components_inventory_view_inventoryview",
-      "community": 30,
+      "community": 1,
       "norm_label": "inventoryview()"
     },
     {
@@ -1440,7 +1440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_meals_management_view",
-      "community": 8,
+      "community": 1,
       "norm_label": "meals-management-view.tsx"
     },
     {
@@ -1450,7 +1450,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "components_meals_management_view_mealsmanagementviewprops",
-      "community": 8,
+      "community": 1,
       "norm_label": "mealsmanagementviewprops"
     },
     {
@@ -1460,7 +1460,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "components_meals_management_view_menuitem",
-      "community": 8,
+      "community": 1,
       "norm_label": "menuitem"
     },
     {
@@ -1470,7 +1470,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "components_meals_management_view_days_of_week",
-      "community": 8,
+      "community": 1,
       "norm_label": "days_of_week"
     },
     {
@@ -1480,7 +1480,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "components_meals_management_view_mealsmanagementview",
-      "community": 8,
+      "community": 1,
       "norm_label": "mealsmanagementview()"
     },
     {
@@ -1647,7 +1647,7 @@
       "label": "DueItem",
       "file_type": "code",
       "source_file": "src/components/receipts-view.tsx",
-      "source_location": "L32",
+      "source_location": "L33",
       "_origin": "ast",
       "id": "components_receipts_view_dueitem",
       "community": 19,
@@ -1657,7 +1657,7 @@
       "label": "ReceiptsViewProps",
       "file_type": "code",
       "source_file": "src/components/receipts-view.tsx",
-      "source_location": "L41",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "components_receipts_view_receiptsviewprops",
       "community": 19,
@@ -1667,7 +1667,7 @@
       "label": "ReceiptsView()",
       "file_type": "code",
       "source_file": "src/components/receipts-view.tsx",
-      "source_location": "L50",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "components_receipts_view_receiptsview",
       "community": 19,
@@ -1710,7 +1710,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_register_view",
-      "community": 31,
+      "community": 1,
       "norm_label": "register-view.tsx"
     },
     {
@@ -1720,7 +1720,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "components_register_view_registerviewprops",
-      "community": 31,
+      "community": 1,
       "norm_label": "registerviewprops"
     },
     {
@@ -1730,7 +1730,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "components_register_view_registerview",
-      "community": 31,
+      "community": 1,
       "norm_label": "registerview()"
     },
     {
@@ -1787,7 +1787,7 @@
       "label": "RoomsViewProps",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L10",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "components_rooms_view_roomsviewprops",
       "community": 10,
@@ -1797,7 +1797,7 @@
       "label": "RoomsView()",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L18",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "components_rooms_view_roomsview",
       "community": 10,
@@ -1807,7 +1807,7 @@
       "label": "RoomCardProps",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L197",
+      "source_location": "L685",
       "_origin": "ast",
       "id": "components_rooms_view_roomcardprops",
       "community": 10,
@@ -1817,7 +1817,7 @@
       "label": "RoomCard()",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L202",
+      "source_location": "L691",
       "_origin": "ast",
       "id": "components_rooms_view_roomcard",
       "community": 10,
@@ -1830,7 +1830,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_settings_view",
-      "community": 9,
+      "community": 30,
       "norm_label": "settings-view.tsx"
     },
     {
@@ -1840,7 +1840,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "components_settings_view_settingsviewprops",
-      "community": 9,
+      "community": 30,
       "norm_label": "settingsviewprops"
     },
     {
@@ -1850,7 +1850,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "components_settings_view_settingsview",
-      "community": 9,
+      "community": 30,
       "norm_label": "settingsview()"
     },
     {
@@ -1910,7 +1910,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_subscription_view",
-      "community": 9,
+      "community": 31,
       "norm_label": "subscription-view.tsx"
     },
     {
@@ -1920,7 +1920,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "components_subscription_view_subscriptionviewprops",
-      "community": 9,
+      "community": 31,
       "norm_label": "subscriptionviewprops"
     },
     {
@@ -1930,7 +1930,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "components_subscription_view_subscriptionview",
-      "community": 9,
+      "community": 31,
       "norm_label": "subscriptionview()"
     },
     {
@@ -2160,7 +2160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_view_profile_view",
-      "community": 36,
+      "community": 9,
       "norm_label": "view-profile-view.tsx"
     },
     {
@@ -2170,7 +2170,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_view_profile_view_viewprofileviewprops",
-      "community": 36,
+      "community": 9,
       "norm_label": "viewprofileviewprops"
     },
     {
@@ -2180,7 +2180,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "components_view_profile_view_viewprofileview",
-      "community": 36,
+      "community": 9,
       "norm_label": "viewprofileview()"
     },
     {
@@ -2681,7 +2681,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L164",
-      "community": 2,
+      "community": 11,
       "norm_label": "step 2.5 - video and audio (only if video files detected)",
       "id": "graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected"
     },
@@ -2690,7 +2690,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L168",
-      "community": 2,
+      "community": 11,
       "norm_label": "step 3 - extract entities and relationships",
       "id": "graphify_skill_step_3_extract_entities_and_relationships"
     },
@@ -2699,7 +2699,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L185",
-      "community": 2,
+      "community": 11,
       "norm_label": "part a - structural extraction for code files",
       "id": "graphify_skill_part_a_structural_extraction_for_code_files"
     },
@@ -5948,6 +5948,28 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/components/rooms-view.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "components_rooms_view",
+      "target": "lib_supabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/rooms-view.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "source": "components_rooms_view",
+      "target": "lib_supabase_supabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/components/rooms-view.tsx",
       "source_location": "L8",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -7650,5 +7672,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1c3e4440ec26414ce1eb89ad9b862794125a92b5"
+  "built_at_commit": "38ad7228279ff2f7883234a453e7200db0259493"
 }
