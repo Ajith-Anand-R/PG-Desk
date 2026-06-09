@@ -68,7 +68,8 @@ export default function RootLayout({
                 // Reload the page when a new service worker takes control
                 let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
-                  if (!refreshing) {
+                  if (refreshing) return;
+                  if (navigator.serviceWorker.controller) {
                     refreshing = true;
                     window.location.reload();
                   }
