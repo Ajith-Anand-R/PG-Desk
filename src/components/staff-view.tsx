@@ -111,7 +111,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
 
   const handleAddStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim() || !newPhone.trim() || !newEmail.trim() || !newJoinDate || !newAadhaar.trim()) {
+    if (!newName.trim() || !newPhone.trim() || !newJoinDate || !newAadhaar.trim()) {
       alert("Please fill in all required fields marked with *");
       return;
     }
@@ -452,7 +452,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                 {/* Profile Photo Uploader */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    Profile Photo <span className="text-rose-500">*</span>
+                    Profile Photo (Optional)
                   </label>
                   
                   <input
@@ -536,7 +536,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                 {/* Email Address */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="staffEmail" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    Email Address <span className="text-rose-500">*</span>
+                    Email Address (Optional)
                   </label>
                   <input
                     id="staffEmail"
@@ -545,7 +545,6 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="Enter email"
                     className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                    required
                   />
                 </div>
 
@@ -603,7 +602,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                 {/* Monthly Salary */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="staffSalary" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    Monthly Salary <span className="text-rose-500">*</span>
+                    Monthly Salary (Optional)
                   </label>
                   <input
                     id="staffSalary"
@@ -637,7 +636,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                   {/* Front Upload */}
                   <div className="flex flex-col gap-1.5 min-w-0">
                     <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider text-center">
-                      Aadhaar Front <span className="text-rose-500">*</span>
+                      Aadhaar Front (Optional)
                     </label>
                     <input
                       type="file"
@@ -671,7 +670,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                   {/* Back Upload */}
                   <div className="flex flex-col gap-1.5 min-w-0">
                     <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider text-center">
-                      Aadhaar Back <span className="text-rose-500">*</span>
+                      Aadhaar Back (Optional)
                     </label>
                     <input
                       type="file"
@@ -706,7 +705,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
                 {/* Notes */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="staffNotes" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    Notes <span className="text-rose-500">*</span>
+                    Notes (Optional)
                   </label>
                   <textarea
                     id="staffNotes"
