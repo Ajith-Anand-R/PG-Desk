@@ -3,7 +3,7 @@ export interface Room {
   name: string;
   floor: number;
   capacity: number;
-  beds: ("available" | "occupied")[];
+  beds: ("available" | "occupied" | "reserved")[];
 }
 
 export interface Tenant {
@@ -11,7 +11,7 @@ export interface Tenant {
   name: string;
   roomName: string;
   rentAmount: number;
-  status: "active" | "left";
+  status: "active" | "left" | "prebooked";
   joinDate?: string | null;
   roomId?: string | null;
   bedId?: string | null;

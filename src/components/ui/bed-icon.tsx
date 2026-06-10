@@ -4,13 +4,11 @@ import React from "react";
 import { motion } from "framer-motion";
 
 interface BedIconProps {
-  status: "available" | "occupied";
+  status: "available" | "occupied" | "reserved";
   onClick?: () => void;
 }
 
 export function BedIcon({ status, onClick }: BedIconProps) {
-  const isAvailable = status === "available";
-
   return (
     <motion.button
       whileHover={{ scale: 1.08 }}
@@ -18,8 +16,10 @@ export function BedIcon({ status, onClick }: BedIconProps) {
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
       onClick={onClick}
       className={`w-9 h-9 rounded-xl flex items-center justify-center focus:outline-hidden transition-all duration-300 cursor-pointer ${
-        isAvailable
+        status === "available"
           ? "bg-emerald-500 text-white shadow-[0_3px_8px_rgba(16,185,129,0.22)]"
+          : status === "reserved"
+          ? "bg-amber-500 text-white shadow-[0_3px_8px_rgba(245,158,11,0.22)]"
           : "bg-slate-100 text-slate-400 border border-slate-200/50"
       }`}
     >

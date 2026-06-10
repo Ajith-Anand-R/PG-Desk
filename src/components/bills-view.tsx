@@ -9,7 +9,7 @@ interface Tenant {
   name: string;
   roomName: string;
   rentAmount: number;
-  status: "active" | "left";
+  status: "active" | "left" | "prebooked";
 }
 
 interface BillsViewProps {

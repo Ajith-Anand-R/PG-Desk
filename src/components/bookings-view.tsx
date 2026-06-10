@@ -51,6 +51,10 @@ export function BookingsView({
   const [assignedBedId, setAssignedBedId] = useState("");
   const [availableBeds, setAvailableBeds] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [joinDate, setJoinDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
   useEffect(() => {
     if (toastMessage) {
@@ -124,6 +128,15 @@ export function BookingsView({
       expiryDate.setDate(expiryDate.getDate() + 7);
       const inviteExpiresAt = expiryDate.toISOString();
 
+      // Check if join date is in the future
+      const checkInDate = new Date(joinDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isFuture = checkInDate.getTime() > today.getTime();
+
+      const tenantStatus = isFuture ? "prebooked" : "active";
+      const bedStatus = isFuture ? "reserved" : "occupied";
+
       // 1. Create tenant record with invite token
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
@@ -135,32 +148,45 @@ export function BookingsView({
           room_id: Number(assignedRoomId),
           bed_id: Number(assignedBedId),
           deposit: 5000, // standard deposit
-          status: "active",
+          status: tenantStatus,
           invite_token: inviteToken,
           invite_expires_at: inviteExpiresAt,
-          user_id: null
+          user_id: null,
+          join_date: joinDate
         })
         .select()
         .single();
 
       if (tenantError) throw tenantError;
 
-      // 2. Mark bed as occupied
+      // 2. Mark bed as occupied or reserved
       const { error: bedError } = await supabase
         .from("beds")
-        .update({ status: "occupied" })
+        .update({ status: bedStatus })
         .eq("id", Number(assignedBedId));
 
       if (bedError) throw bedError;
+
+      // 2b. Create Security Deposit payment record
+      const { error: depositError } = await supabase.from("payments").insert({
+        tenant_id: tenant.id,
+        pg_id: pgIdVal,
+        amount: 5000,
+        month: "Security Deposit",
+        status: "pending",
+        due_date: joinDate
+      });
+
+      if (depositError) throw depositError;
 
       // 3. Create initial rent payment
       const { error: paymentError } = await supabase.from("payments").insert({
         tenant_id: tenant.id,
         pg_id: pgIdVal,
         amount: 6500, // standard rent
-        month: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        month: new Date(joinDate).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
         status: "pending",
-        due_date: new Date().toISOString().split("T")[0]
+        due_date: joinDate
       });
 
       if (paymentError) throw paymentError;
@@ -422,6 +448,21 @@ export function BookingsView({
                 <div className="flex flex-col gap-1.5 bg-slate-50 p-3 rounded-xl text-xs font-semibold text-slate-500">
                   <p>Name: <span className="font-bold text-slate-800">{selectedBooking.name}</span></p>
                   <p>Contact: <span className="font-bold text-slate-800">{selectedBooking.phone}</span></p>
+                </div>
+
+                {/* Check-In Date */}
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="joinDate" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    Check-In Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="joinDate"
+                    value={joinDate}
+                    onChange={(e) => setJoinDate(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white"
+                    required
+                  />
                 </div>
 
                 {/* Assign Room */}

@@ -187,7 +187,7 @@ export default function Home() {
           capacity: r.capacity,
           beds: (r.beds || [])
             .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
-            .map((b: any) => b.status as "available" | "occupied")
+            .map((b: any) => b.status as "available" | "occupied" | "reserved")
         }));
         setRooms(formattedRooms);
       }
@@ -197,7 +197,7 @@ export default function Home() {
         .from("tenants")
         .select("*, users(*), rooms(*)")
         .eq("pg_id", pgId)
-        .in("status", ["active", "notice"]);
+        .in("status", ["active", "notice", "prebooked"]);
 
       if (tenantsList) {
         const formattedTenants = tenantsList.map((t: any) => ({
@@ -205,7 +205,7 @@ export default function Home() {
           name: t.users?.name || t.name || "Unknown Tenant",
           roomName: t.rooms?.room_number || "Unassigned",
           rentAmount: Number(t.rooms?.rent || 0),
-          status: (t.status === "notice" ? "active" : t.status) as "active" | "left",
+          status: (t.status === "notice" ? "active" : t.status) as "active" | "left" | "prebooked",
           joinDate: t.join_date || null
         }));
         setTenants(formattedTenants);

@@ -43,7 +43,7 @@ export function RoomsView({
     roomId: string;
     roomName: string;
     bedIndex: number;
-    status: "available" | "occupied";
+    status: "available" | "occupied" | "reserved";
   } | null>(null);
 
   const [bedDetails, setBedDetails] = useState<{
@@ -77,7 +77,7 @@ export function RoomsView({
   // Group rooms by floor dynamically
   const targetFloors = selectedFloor === "All" ? floors : [selectedFloor];
 
-  const handleBedClick = async (room: Room, bedIndex: number, status: "available" | "occupied") => {
+  const handleBedClick = async (room: Room, bedIndex: number, status: "available" | "occupied" | "reserved") => {
     setSelectedBed({
       roomId: room.id,
       roomName: room.name,
@@ -107,13 +107,13 @@ export function RoomsView({
 
         const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
 
-        if (status === "occupied") {
-          // Fetch active or pending tenant for this bed
+        if (status === "occupied" || status === "reserved") {
+          // Fetch active, pending, or prebooked tenant for this bed
           const { data: tenantData } = await supabase
             .from("tenants")
             .select("*, users(*)")
             .eq("bed_id", targetBed.id)
-            .in("status", ["active", "pending"])
+            .in("status", ["active", "pending", "prebooked"])
             .maybeSingle();
 
           if (tenantData) {
@@ -370,9 +370,21 @@ export function RoomsView({
                 <h3 className="text-lg font-black text-slate-800 tracking-tight mt-2.5">
                   Room {selectedBed.roomName}
                 </h3>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <div className={`w-2 h-2 rounded-full ${selectedBed.status === "occupied" ? "bg-rose-500 animate-pulse" : "bg-emerald-500"}`} />
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${selectedBed.status === "occupied" ? "text-rose-600" : "text-emerald-600"}`}>
+                 <div className="flex items-center gap-2 mt-1.5">
+                  <div className={`w-2 h-2 rounded-full ${
+                    selectedBed.status === "occupied" 
+                      ? "bg-rose-500 animate-pulse" 
+                      : selectedBed.status === "reserved"
+                      ? "bg-amber-500 animate-pulse"
+                      : "bg-emerald-500"
+                  }`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                    selectedBed.status === "occupied" 
+                      ? "text-rose-600" 
+                      : selectedBed.status === "reserved"
+                      ? "text-amber-600"
+                      : "text-emerald-600"
+                  }`}>
                     {selectedBed.status}
                   </span>
                 </div>
@@ -403,12 +415,14 @@ export function RoomsView({
                       </span>
                     </div>
 
-                    {selectedBed.status === "occupied" ? (
+                    {(selectedBed.status === "occupied" || selectedBed.status === "reserved") ? (
                       bedDetails?.tenant ? (
                         <>
                           {/* Occupied Tenant Section */}
                           <div className="flex flex-col gap-2">
-                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">Occupied Tenant</span>
+                            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">
+                              {selectedBed.status === "reserved" ? "Reserved Tenant" : "Occupied Tenant"}
+                            </span>
                             <div className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-150 bg-slate-50/30">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center font-extrabold text-sm shrink-0 overflow-hidden shadow-2xs">
@@ -486,17 +500,65 @@ export function RoomsView({
                     )}
 
                     {/* Action toggles */}
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-col gap-2 pt-2">
+                      {selectedBed.status === "reserved" && bedDetails?.tenant && (
+                        <motion.button
+                          whileTap={{ scale: 0.96 }}
+                          onClick={async () => {
+                            if (!confirm(`Confirm physical check-in for ${bedDetails.tenant.name}?`)) return;
+                            try {
+                              // 1. Update tenant status to active
+                              const { error: tErr } = await supabase
+                                .from("tenants")
+                                .update({ status: "active" })
+                                .eq("id", bedDetails.tenant.id);
+                              if (tErr) throw tErr;
+
+                              // 2. Update bed status to occupied
+                              const { data: bedsList } = await supabase
+                                .from("beds")
+                                .select("id")
+                                .eq("room_id", selectedBed.roomId)
+                                .order("bed_number", { ascending: true });
+                              if (bedsList && bedsList[selectedBed.bedIndex]) {
+                                const { error: bErr } = await supabase
+                                  .from("beds")
+                                  .update({ status: "occupied" })
+                                  .eq("id", bedsList[selectedBed.bedIndex].id);
+                                if (bErr) throw bErr;
+                              }
+
+                              setSelectedBed(null);
+                              setBedDetails(null);
+                              // Trigger reload of data
+                              onToggleBed(selectedBed.roomId, selectedBed.bedIndex); // notify parent
+                            } catch (e) {
+                              console.error(e);
+                              alert("Check-in failed!");
+                            }
+                          }}
+                          className="w-full font-extrabold py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center shadow-md shadow-emerald-900/10"
+                        >
+                          Check In Tenant
+                        </motion.button>
+                      )}
+
                       <motion.button
                         whileTap={{ scale: 0.96 }}
                         onClick={handleToggleBedStatus}
-                        className={`flex-1 font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
+                        className={`w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
                           selectedBed.status === "occupied"
-                            ? "bg-rose-655 bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                            ? "bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                            : selectedBed.status === "reserved"
+                            ? "bg-slate-500 hover:bg-slate-600 shadow-md shadow-slate-900/10"
                             : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
                         }`}
                       >
-                        {selectedBed.status === "occupied" ? "Mark Bed Available" : "Assign / Mark Occupied"}
+                        {selectedBed.status === "occupied" 
+                          ? "Mark Bed Available" 
+                          : selectedBed.status === "reserved"
+                          ? "Cancel Reservation (Mark Available)"
+                          : "Assign / Mark Occupied"}
                       </motion.button>
                     </div>
                   </>
@@ -687,11 +749,11 @@ export function RoomsView({
 interface RoomCardProps {
   room: Room;
   onToggleBed: (index: number) => void;
-  onBedClick: (room: Room, index: number, status: "available" | "occupied") => void;
+  onBedClick: (room: Room, index: number, status: "available" | "occupied" | "reserved") => void;
 }
 
 function RoomCard({ room, onToggleBed, onBedClick }: RoomCardProps) {
-  const occupiedCount = room.beds.filter((status) => status === "occupied").length;
+  const occupiedCount = room.beds.filter((status) => status === "occupied" || status === "reserved").length;
   const isFull = occupiedCount === room.capacity;
 
   return (
