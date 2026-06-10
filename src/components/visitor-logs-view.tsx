@@ -338,7 +338,8 @@ export function VisitorLogsView({
           approval_status: "pending",
           photo_url: walkinPhoto,
           vehicle_number: vehicleNo,
-          purpose: walkinPurpose
+          purpose: walkinPurpose,
+          qr_code_token: token
         })
         .select()
         .single();
@@ -380,7 +381,8 @@ export function VisitorLogsView({
           visitor_type: "delivery",
           approval_status: "pending",
           delivery_company: deliveryCompany,
-          purpose: "Delivery"
+          purpose: "Delivery",
+          qr_code_token: token
         })
         .select()
         .single();
