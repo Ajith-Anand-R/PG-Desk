@@ -33,6 +33,7 @@ interface DashboardViewProps {
   onNavigateToStaff: () => void;
   onNavigateToReceipts: (tab: "dues" | "receipts") => void;
   onNavigateToVacantBeds: () => void;
+  onNavigateToVisitors: () => void;
   pendingDuesAmount: number;
   pendingDuesCount: number;
   currentProperty: string;
@@ -59,6 +60,7 @@ export function DashboardView({
   onNavigateToStaff,
   onNavigateToReceipts,
   onNavigateToVacantBeds,
+  onNavigateToVisitors,
   pendingDuesAmount,
   pendingDuesCount,
   currentProperty,
@@ -173,6 +175,7 @@ export function DashboardView({
     { label: "Add Room", icon: Home, color: "bg-teal-50/50 text-teal-600 border-teal-100/70 hover:bg-teal-100/60", onClick: onAddRoomClick },
     { label: "Bills", icon: FileText, color: "bg-amber-50/50 text-amber-600 border-amber-100/70 hover:bg-amber-100/60", onClick: onNavigateToBills },
     { label: "Remind", icon: Bell, color: "bg-rose-50/50 text-rose-600 border-rose-100/70 hover:bg-rose-100/60", onClick: onNavigateToReminders },
+    { label: "Gate Logs", icon: UserCheck, color: "bg-indigo-50/50 text-indigo-650 border-indigo-100/70 hover:bg-indigo-100/60", onClick: onNavigateToVisitors },
     { label: "Staff", icon: Users, color: "bg-sky-50/50 text-sky-600 border-sky-100/70 hover:bg-sky-100/60", onClick: onNavigateToStaff },
   ];
 

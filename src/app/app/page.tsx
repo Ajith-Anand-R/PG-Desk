@@ -1400,6 +1400,7 @@ export default function Home() {
                   setCurrentView("receipts");
                 }}
                 onNavigateToVacantBeds={() => setCurrentView("vacant-beds")}
+                onNavigateToVisitors={() => setCurrentView("visitors")}
                 pendingDuesAmount={pendingDuesAmount}
                 pendingDuesCount={pendingDuesCount}
                 onMenuClick={() => setIsDrawerOpen(true)}

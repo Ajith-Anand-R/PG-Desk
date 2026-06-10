@@ -139,6 +139,43 @@ export function VisitorLogsView({
 
   useEffect(() => {
     fetchData();
+
+    if (!activePgId) return;
+
+    // Listen to changes in visitor_logs and parcels for this PG in real-time
+    const channel = supabase
+      .channel(`desk-vsm-global-${activePgId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'visitor_logs',
+          filter: `pg_id=eq.${activePgId}`
+        },
+        async (payload) => {
+          console.log("Realtime visitor_logs update received:", payload);
+          await fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'parcels',
+          filter: `pg_id=eq.${activePgId}`
+        },
+        async (payload) => {
+          console.log("Realtime parcels update received:", payload);
+          await fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [activePgId]);
 
   // Handle pre-approved check-in
@@ -638,13 +675,62 @@ export function VisitorLogsView({
                   const hasCheckedIn = log.entry_time !== "Pending" && log.entry_time !== "";
                   const hasCheckedOut = log.exit_time !== "Pending" && log.exit_time !== "";
 
+                  const getStatusBadge = () => {
+                    if (hasCheckedOut) {
+                      return {
+                        label: "Checked Out",
+                        class: "bg-slate-100 border-slate-200 text-slate-500"
+                      };
+                    }
+                    if (hasCheckedIn) {
+                      return {
+                        label: "Checked In",
+                        class: "bg-blue-50 border-blue-100 text-blue-600"
+                      };
+                    }
+                    if (log.approval_status === 'pending') {
+                      return {
+                        label: "Awaiting Resident Approval",
+                        class: "bg-amber-50 border-amber-250 text-amber-600 animate-pulse"
+                      };
+                    }
+                    if (log.approval_status === 'rejected') {
+                      return {
+                        label: "Access Denied by Resident",
+                        class: "bg-rose-50 border-rose-250 text-rose-600"
+                      };
+                    }
+                    if (log.approval_status === 'leave_at_gate') {
+                      return {
+                        label: "Leave at Gate Requested",
+                        class: "bg-indigo-50 border-indigo-250 text-indigo-650"
+                      };
+                    }
+                    return {
+                      label: "Approved - Ready to Check-In",
+                      class: "bg-emerald-50 border-emerald-150 text-emerald-600"
+                    };
+                  };
+
+                  const badge = getStatusBadge();
+
                   return (
                     <div
                       key={log.id}
                       className="bg-white rounded-3xl p-4.5 border border-slate-200/40 shadow-2xs flex flex-col gap-3 relative overflow-hidden"
                     >
                       <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                        hasCheckedOut ? "bg-slate-300" : hasCheckedIn ? "bg-blue-500" : "bg-emerald-500"
+                        hasCheckedOut 
+                          ? "bg-slate-300" 
+                          : hasCheckedIn 
+                          ? "bg-blue-500" 
+                          : log.approval_status === 'pending' 
+                          ? "bg-amber-400" 
+                          : log.approval_status === 'rejected' 
+                          ? "bg-rose-500" 
+                          : log.approval_status === 'leave_at_gate'
+                          ? "bg-indigo-500"
+                          : "bg-emerald-500"
                       }`} />
 
                       <div className="flex justify-between items-start gap-4">
@@ -653,14 +739,8 @@ export function VisitorLogsView({
                             <span className="text-xs font-black text-slate-800 leading-none">
                               {log.visitor_name}
                             </span>
-                            <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border leading-none ${
-                              hasCheckedOut
-                                ? "bg-slate-100 border-slate-200 text-slate-500"
-                                : hasCheckedIn
-                                ? "bg-blue-50 border-blue-100 text-blue-600"
-                                : "bg-emerald-50 border-emerald-100 text-emerald-600"
-                            }`}>
-                              {hasCheckedOut ? "Checked Out" : hasCheckedIn ? "Checked In" : "Pending Check-In"}
+                            <span className={`text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border leading-none ${badge.class}`}>
+                              {badge.label}
                             </span>
                           </div>
                           <span className="text-[9px] text-slate-400 font-bold mt-1">Date: {log.date}</span>
@@ -693,7 +773,33 @@ export function VisitorLogsView({
                       </div>
 
                       <div className="flex gap-2 justify-end pt-1 select-none">
-                        {!hasCheckedIn && (
+                        {log.approval_status === 'pending' && (
+                          <button
+                            disabled
+                            className="px-3.5 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-400 text-[9.5px] font-black uppercase tracking-wider cursor-not-allowed"
+                          >
+                            Waiting for Resident...
+                          </button>
+                        )}
+                        {log.approval_status === 'rejected' && (
+                          <span className="text-[10px] font-black text-rose-600 uppercase tracking-wider bg-rose-50 border border-rose-100 px-3 py-1 rounded-lg">
+                            Access Blocked
+                          </span>
+                        )}
+                        {log.approval_status === 'leave_at_gate' && (
+                          <button
+                            onClick={() => {
+                              setDeliveryCompany(log.delivery_company || "Delivery");
+                              setPendingDelLogId(log.id);
+                              setShowParcelLog(true);
+                              setActiveTab('delivery');
+                            }}
+                            className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer"
+                          >
+                            Log Parcel
+                          </button>
+                        )}
+                        {log.approval_status === 'approved' && !hasCheckedIn && (
                           <button
                             onClick={() => handleCheckIn(log.id)}
                             className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[9.5px] font-black uppercase tracking-wider cursor-pointer"
