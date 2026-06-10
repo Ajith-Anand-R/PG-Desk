@@ -25,7 +25,7 @@ interface StaffMember {
   role: "Management" | "Kitchen" | "Housekeeping" | "Security";
   photo?: string | null;
   email?: string;
-  status?: "ACTIVE" | "INACTIVE";
+  status?: "ACTIVE" | "INACTIVE" | "PENDING_APPROVAL";
   joinDate?: string;
   salary?: string;
   aadhaar?: string;
@@ -65,7 +65,7 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
           role: s.role as StaffMember["role"],
           photo: s.photo,
           email: s.email || "",
-          status: s.status as "ACTIVE" | "INACTIVE",
+          status: s.status as "ACTIVE" | "INACTIVE" | "PENDING_APPROVAL",
           joinDate: s.join_date,
           salary: s.salary ? String(s.salary) : "",
           aadhaar: s.aadhaar,
@@ -201,14 +201,54 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
     }
   };
 
-  // Filter staff by category and search query
+  // Filter staff by category and search query (only approved staff)
   const filteredStaff = staff.filter((s) => {
+    if (s.status === "PENDING_APPROVAL") return false;
     const matchesCategory = activeCategory === "All" || s.role === activeCategory;
     const matchesSearch = 
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.phone.includes(searchQuery);
     return matchesCategory && matchesSearch;
   });
+
+  const pendingStaff = staff.filter((s) => s.status === "PENDING_APPROVAL");
+
+  const handleApproveStaff = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("staff")
+        .update({ status: "ACTIVE" })
+        .eq("id", Number(id));
+
+      if (error) {
+        alert("Error approving staff: " + error.message);
+      } else {
+        await fetchStaff();
+      }
+    } catch (err: any) {
+      alert("Unexpected error: " + err.message);
+    }
+  };
+
+  const handleRejectStaff = async (id: string) => {
+    const confirmReject = window.confirm("Are you sure you want to reject and delete this request?");
+    if (!confirmReject) return;
+
+    try {
+      const { error } = await supabase
+        .from("staff")
+        .delete()
+        .eq("id", Number(id));
+
+      if (error) {
+        alert("Error rejecting staff: " + error.message);
+      } else {
+        await fetchStaff();
+      }
+    } catch (err: any) {
+      alert("Unexpected error: " + err.message);
+    }
+  };
 
   const categories: { 
     label: RoleFilter; 
@@ -303,6 +343,62 @@ export function StaffView({ onBack, activePgId }: StaffViewProps) {
             </button>
           )}
         </div>
+
+        {/* Pending Approvals Section */}
+        {pendingStaff.length > 0 && (
+          <div className="flex flex-col gap-3 shrink-0">
+            <h3 className="text-xs font-black uppercase text-amber-655 tracking-wider flex items-center gap-1.5 px-1 select-none">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Pending Approvals ({pendingStaff.length})
+            </h3>
+            <div className="flex flex-col gap-3">
+              {pendingStaff.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  className="bg-amber-50/25 rounded-3xl p-4 border border-amber-200/50 shadow-[0_4px_16px_rgba(0,0,0,0.01)] flex items-center justify-between gap-4 relative overflow-hidden"
+                >
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <span className="text-xs font-black text-slate-850 truncate leading-none">
+                        {item.name}
+                      </span>
+                      <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full w-max leading-none mt-1">
+                        Security Guard Request
+                      </span>
+                      <span className="text-[10px] font-semibold text-slate-400 truncate leading-none mt-1">
+                        {item.phone} {item.email ? `• ${item.email}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleApproveStaff(item.id)}
+                      className="h-8 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10px] uppercase tracking-wider flex items-center justify-center shadow-xs cursor-pointer"
+                    >
+                      Approve
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleRejectStaff(item.id)}
+                      className="h-8 px-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 font-extrabold text-[10px] uppercase tracking-wider flex items-center justify-center shadow-2xs hover:bg-rose-100 cursor-pointer"
+                    >
+                      Reject
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Staff List rendering */}
         <div className="flex-1 flex flex-col gap-3">
