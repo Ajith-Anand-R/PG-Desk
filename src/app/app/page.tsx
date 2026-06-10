@@ -196,7 +196,7 @@ export default function Home() {
         .from("tenants")
         .select("*, users(*), rooms(*)")
         .eq("pg_id", pgId)
-        .eq("status", "active");
+        .in("status", ["active", "notice"]);
 
       if (tenantsList) {
         const formattedTenants = tenantsList.map((t: any) => ({
@@ -204,7 +204,7 @@ export default function Home() {
           name: t.users?.name || t.name || "Unknown Tenant",
           roomName: t.rooms?.room_number || "Unassigned",
           rentAmount: Number(t.rooms?.rent || 0),
-          status: t.status as "active" | "left",
+          status: (t.status === "notice" ? "active" : t.status) as "active" | "left",
           joinDate: t.join_date || null
         }));
         setTenants(formattedTenants);
