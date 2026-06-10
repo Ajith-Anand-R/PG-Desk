@@ -105,6 +105,7 @@ export default function Home() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [noticeTenantsCount, setNoticeTenantsCount] = useState(0);
   const [payments, setPayments] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
   const [complaints, setComplaints] = useState<any[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -285,6 +286,19 @@ export default function Home() {
         setVisitorLogs(visitorLogsList);
       } else {
         setVisitorLogs([]);
+      }
+
+      // 9. Fetch Expenses
+      const { data: expensesList } = await supabase
+        .from("expenses")
+        .select("*")
+        .eq("pg_id", pgId)
+        .order("date", { ascending: false });
+
+      if (expensesList) {
+        setExpenses(expensesList);
+      } else {
+        setExpenses([]);
       }
     } catch (error) {
       console.error("Error fetching PG data:", error);
@@ -1356,6 +1370,7 @@ export default function Home() {
                 onAddTenantClick={() => setIsAddTenantOpen(true)}
                 onAddRoomClick={() => setIsAddRoomOpen(true)}
                 payments={payments}
+                expenses={expenses}
                 hasUnreadNotifications={hasUnreadNotifications}
                 noticeTenantsCount={noticeTenantsCount}
                 prebookCount={bookings.filter(b => b.status === "pending").length}

@@ -21,7 +21,7 @@ import {
   AlertTriangle,
   Calendar,
 } from "lucide-react";
-import { Bed, Wrench, CalendarDays, ReceiptText } from "lucide-react";
+import { Bed, Wrench, CalendarDays, ReceiptText, TrendingDown } from "lucide-react";
 
 interface DashboardViewProps {
   onOpenPropertySelector: () => void;
@@ -47,6 +47,7 @@ interface DashboardViewProps {
   onAddRoomClick: () => void;
   onMenuClick: () => void;
   payments: any[];
+  expenses?: any[];
   hasUnreadNotifications?: boolean;
   noticeTenantsCount?: number;
   prebookCount?: number;
@@ -76,6 +77,7 @@ export function DashboardView({
   onAddRoomClick,
   onMenuClick,
   payments = [],
+  expenses = [],
   hasUnreadNotifications = false,
   noticeTenantsCount = 0,
   prebookCount = 0,
@@ -101,10 +103,32 @@ export function DashboardView({
   }, []);
 
   const monthDetails = React.useMemo(() => {
+    const getMonthKey = (dateStr: string | null | undefined): string | null => {
+      if (!dateStr) return null;
+      try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return null;
+        const fullName = d.toLocaleString("en-US", { month: "long" });
+        const year = d.getFullYear();
+        return `${fullName} ${year}`;
+      } catch {
+        return null;
+      }
+    };
+
     const details: Record<string, {
       title: string;
       paymentsCount: number;
       totalRevenue: number;
+      rentCollected: number;
+      rentPending: number;
+      depositCollected: number;
+      salaries: number;
+      repairs: number;
+      billing: number;
+      otherExpenses: number;
+      totalExpenses: number;
+      profit: number;
       payments: {
         tenantName: string;
         room: string;
@@ -112,6 +136,7 @@ export function DashboardView({
         txn: string;
         amount: number;
       }[];
+      expensesList: any[];
     }> = {};
 
     last6Months.forEach(m => {
@@ -119,39 +144,115 @@ export function DashboardView({
         title: m.full,
         paymentsCount: 0,
         totalRevenue: 0,
-        payments: []
+        rentCollected: 0,
+        rentPending: 0,
+        depositCollected: 0,
+        salaries: 0,
+        repairs: 0,
+        billing: 0,
+        otherExpenses: 0,
+        totalExpenses: 0,
+        profit: 0,
+        payments: [],
+        expensesList: []
       };
     });
 
     if (payments && Array.isArray(payments)) {
       payments.forEach(p => {
-        if (p.status !== "paid") return;
-        const matchedMonth = last6Months.find(m => m.key === p.month);
-        if (matchedMonth) {
-          const shortName = matchedMonth.short;
-          const tenantName = p.tenants?.users?.name || p.tenants?.name || "Unknown Tenant";
-          const room = p.tenants?.rooms?.room_number ? `Room ${p.tenants.rooms.room_number}` : "Unassigned";
-          const date = p.payment_date 
-            ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-            : "N/A";
-          const txn = p.reference_code ? `Txn: ${p.reference_code}` : "UPI Payment";
-          const amount = Number(p.amount);
+        const amount = Number(p.amount || 0);
+        
+        if (p.month === "Security Deposit") {
+          const paymentMonthKey = getMonthKey(p.payment_date || p.due_date || p.created_at);
+          const matchedMonth = last6Months.find(m => m.key === paymentMonthKey);
+          if (matchedMonth) {
+            const shortName = matchedMonth.short;
+            if (p.status === "paid") {
+              details[shortName].depositCollected += amount;
+            }
+          }
+        } else {
+          const matchedMonth = last6Months.find(m => m.key === p.month);
+          if (matchedMonth) {
+            const shortName = matchedMonth.short;
+            const tenantName = p.tenants?.users?.name || p.tenants?.name || "Unknown Tenant";
+            const room = p.tenants?.rooms?.room_number ? `Room ${p.tenants.rooms.room_number}` : "Unassigned";
+            const date = p.payment_date 
+              ? new Date(p.payment_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+              : "N/A";
+            const txn = p.reference_code ? `Txn: ${p.reference_code}` : "UPI Payment";
 
-          details[shortName].paymentsCount += 1;
-          details[shortName].totalRevenue += amount;
-          details[shortName].payments.push({
-            tenantName,
-            room,
-            date,
-            txn,
-            amount
-          });
+            if (p.status === "paid") {
+              details[shortName].paymentsCount += 1;
+              details[shortName].rentCollected += amount;
+              details[shortName].totalRevenue += amount;
+              details[shortName].payments.push({
+                tenantName,
+                room,
+                date,
+                txn,
+                amount
+              });
+            } else {
+              details[shortName].rentPending += amount;
+            }
+          }
         }
       });
     }
 
+    if (expenses && Array.isArray(expenses)) {
+      expenses.forEach(item => {
+        const amount = Number(item.amount || 0);
+        const expenseMonthKey = getMonthKey(item.date);
+        const matchedMonth = last6Months.find(m => m.key === expenseMonthKey);
+        
+        if (matchedMonth) {
+          const shortName = matchedMonth.short;
+          
+          if (item.category === "Salaries") {
+            details[shortName].salaries += amount;
+          } else if (item.category === "Maintenance") {
+            details[shortName].repairs += amount;
+          } else if (["Electricity", "Water", "Internet/Wi-Fi"].includes(item.category)) {
+            details[shortName].billing += amount;
+          } else {
+            details[shortName].otherExpenses += amount;
+          }
+          details[shortName].totalExpenses += amount;
+          details[shortName].expensesList.push(item);
+        }
+      });
+    }
+
+    // Compute Net Profit
+    last6Months.forEach(m => {
+      const shortName = m.short;
+      const d = details[shortName];
+      d.profit = (d.rentCollected + d.depositCollected) - d.totalExpenses;
+    });
+
     return details;
-  }, [payments, last6Months]);
+  }, [payments, expenses, last6Months]);
+
+  const selectedMonthData = React.useMemo(() => {
+    if (!selectedMonth) return null;
+    return monthDetails[selectedMonth] || {
+      title: `${selectedMonth} 2026`,
+      paymentsCount: 0,
+      rentCollected: 0,
+      rentPending: 0,
+      depositCollected: 0,
+      salaries: 0,
+      repairs: 0,
+      billing: 0,
+      otherExpenses: 0,
+      totalExpenses: 0,
+      profit: 0,
+      payments: [],
+      expensesList: []
+    };
+  }, [selectedMonth, monthDetails]);
 
   const maxRevenue = React.useMemo(() => {
     const revenues = Object.values(monthDetails).map(d => d.totalRevenue);
@@ -534,7 +635,7 @@ export function DashboardView({
 
       {/* Analytics Month Details Bottom Sheet */}
       <AnimatePresence>
-        {selectedMonth && (
+        {selectedMonth && selectedMonthData && (
           <div className="absolute inset-0 z-50 flex items-end justify-center select-none">
             {/* Backdrop */}
             <motion.div
@@ -551,7 +652,7 @@ export function DashboardView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="relative z-10 bg-white w-full max-w-md rounded-t-[2.2rem] p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[80vh] overflow-hidden"
+              className="relative z-10 bg-white w-full max-w-md rounded-t-[2.2rem] p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[82vh] overflow-hidden"
             >
               {/* Drag Handle Indicator */}
               <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-4 shrink-0" />
@@ -560,91 +661,207 @@ export function DashboardView({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 select-none shrink-0">
                 <div className="flex flex-col">
                   <h3 className="font-black text-slate-850 text-base leading-none">
-                    {monthDetails[selectedMonth]?.title || `${selectedMonth} 2026`}
+                    {selectedMonthData.title} Financial Dashboard
                   </h3>
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mt-1.5 leading-none">
-                    {monthDetails[selectedMonth]?.paymentsCount || 0} payments
+                    Monthly Cashflow Overview
                   </span>
                 </div>
                 
                 <button
                   onClick={() => setSelectedMonth(null)}
-                  className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-450 hover:bg-slate-100 cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-455 hover:bg-slate-100 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Sheet Content Container */}
-              <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-4 pb-4">
-                {/* Total Revenue Box */}
-                <div className="bg-emerald-50/70 border border-emerald-100/60 rounded-2xl p-4 flex items-center justify-between shrink-0">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[9.5px] font-extrabold text-emerald-600 uppercase tracking-widest leading-none">
-                      Total Revenue
-                    </span>
-                    <span className="text-xl font-black text-emerald-700 font-mono tracking-tight mt-1.5 leading-none">
-                      ₹{(monthDetails[selectedMonth]?.totalRevenue || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                </div>
-
-                {/* Payments List */}
-                <div className="flex flex-col gap-3">
-                  {monthDetails[selectedMonth]?.payments.length === 0 ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-350">
-                        <AlertTriangle className="w-5.5 h-5.5" />
+              <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-5 pb-6">
+                {/* 1. Net Profit Card */}
+                {(() => {
+                  const profitVal = selectedMonthData.profit;
+                  const isPositive = profitVal >= 0;
+                  return (
+                    <div className={`rounded-3xl p-5 text-white flex flex-col gap-1 relative overflow-hidden shadow-md ${
+                      isPositive 
+                        ? "bg-gradient-to-br from-emerald-600 to-emerald-800" 
+                        : "bg-gradient-to-br from-rose-600 to-rose-800"
+                    }`}>
+                      <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+                        {isPositive ? <TrendingUp className="w-28 h-28" /> : <TrendingDown className="w-28 h-28" />}
                       </div>
-                      <span className="text-xs font-bold text-slate-400">
-                        No payments received in this month
+                      <span className="text-[9px] font-black uppercase tracking-widest text-white/70 leading-none">
+                        Net Monthly Profit
+                      </span>
+                      <div className="flex items-baseline justify-between mt-2.5">
+                        <span className="text-2xl font-black font-mono tracking-tight leading-none">
+                          ₹{profitVal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        </span>
+                        <span className="text-[10px] font-black bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1 leading-none">
+                          {isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                          {isPositive ? "SURPLUS" : "DEFICIT"}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 2. Key Inflow/Outflow Grid */}
+                {(() => {
+                  const rent = selectedMonthData.rentCollected;
+                  const deposit = selectedMonthData.depositCollected;
+                  const expensesSum = selectedMonthData.totalExpenses;
+                  const totalInflow = rent + deposit;
+                  const expenseRatio = totalInflow > 0 ? Math.min(100, Math.round((expensesSum / totalInflow) * 100)) : 100;
+                  return (
+                    <div className="flex flex-col gap-4">
+                      {/* Grid */}
+                      <div className="grid grid-cols-2 gap-3.5 shrink-0">
+                        <div className="bg-emerald-50/40 border border-emerald-100/40 rounded-2xl p-4 flex flex-col gap-1">
+                          <span className="text-[9.5px] font-black text-emerald-600 uppercase tracking-widest leading-none">
+                            Total Inflow
+                          </span>
+                          <span className="text-base font-black text-emerald-700 font-mono mt-1.5 leading-none">
+                            ₹{totalInflow.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="bg-rose-50/40 border border-rose-100/40 rounded-2xl p-4 flex flex-col gap-1">
+                          <span className="text-[9.5px] font-black text-rose-600 uppercase tracking-widest leading-none">
+                            Total Outflow
+                          </span>
+                          <span className="text-base font-black text-rose-700 font-mono mt-1.5 leading-none">
+                            ₹{expensesSum.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Progress bar ratio */}
+                      <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-3.5 rounded-2xl flex flex-col gap-2 shrink-0">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-slate-450 dark:text-slate-400">
+                          <span>Expenses to Income Ratio</span>
+                          <span className="font-extrabold">{expenseRatio}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-200 dark:bg-slate-850 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all ${
+                              expenseRatio > 85 ? "bg-rose-500" : expenseRatio > 50 ? "bg-amber-500" : "bg-emerald-500"
+                            }`}
+                            style={{ width: `${expenseRatio}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 3. Detailed breakdown group */}
+                <div className="flex flex-col gap-3.5 shrink-0">
+                  <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-0.5">
+                    Inflow Breakdown
+                  </h4>
+                  <div className="flex flex-col gap-2 bg-slate-50/40 border border-slate-200/20 rounded-2xl p-2.5">
+                    {/* Rent Collected */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Coins className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Rent Collected</span>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.rentCollected.toLocaleString("en-IN")}
                       </span>
                     </div>
-                  ) : (
-                    monthDetails[selectedMonth]?.payments.map((pm, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white rounded-2xl p-3.5 border border-slate-200/40 shadow-2xs flex items-center justify-between gap-4 relative overflow-hidden"
-                      >
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
-                        
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          {/* Avatar */}
-                          <div className="w-8.5 h-8.5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 text-[10.5px] font-extrabold">
-                            {pm.tenantName.substring(0, 2).toUpperCase()}
-                          </div>
-                          
-                          <div className="flex flex-col gap-0.5 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-black text-slate-850 truncate leading-none">
-                                {pm.tenantName}
-                              </span>
-                              <span className="text-[8.5px] font-black text-slate-400 bg-slate-50 border border-slate-100 px-1 py-0.5 rounded-sm shrink-0 leading-none">
-                                {pm.room}
-                              </span>
-                            </div>
-                            <span className="text-[9.5px] font-semibold text-slate-400 truncate leading-relaxed mt-0.5 w-max max-w-[200px]">
-                              {pm.txn}
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="flex flex-col items-end gap-1.5 shrink-0 select-none">
-                          <span className="text-[11.5px] font-black text-emerald-600 font-mono leading-none">
-                            ₹{pm.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                          </span>
-                          <span className="text-[8.5px] font-bold text-slate-400/90 leading-none mt-0.5 flex items-center gap-0.5">
-                            <Calendar className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                            <span>{pm.date}</span>
-                          </span>
+                    {/* Deposit Available */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <ReceiptText className="w-4 h-4" />
                         </div>
+                        <span className="text-xs font-bold text-slate-700">Security Deposit</span>
                       </div>
-                    ))
-                  )}
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.depositCollected.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {/* Pending Rent Dues */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Pending Dues</span>
+                      </div>
+                      <span className="text-xs font-black text-amber-600 font-mono">
+                        ₹{selectedMonthData.rentPending.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* 4. Outflow category breakdown */}
+                <div className="flex flex-col gap-3.5 shrink-0">
+                  <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-0.5">
+                    Outflow Breakdown
+                  </h4>
+                  <div className="flex flex-col gap-2 bg-slate-50/40 border border-slate-200/20 rounded-2xl p-2.5">
+                    {/* Salaries */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                          <Users className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Salaries</span>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.salaries.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {/* Billing */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                          <Home className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Utility Billing</span>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.billing.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {/* Repairs */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center shrink-0">
+                          <Wrench className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Repairs & Maintenance</span>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.repairs.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {/* Others */}
+                    <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200/20 rounded-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">Food & Other Expenses</span>
+                      </div>
+                      <span className="text-xs font-black text-slate-800 font-mono">
+                        ₹{selectedMonthData.otherExpenses.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </motion.div>
           </div>
