@@ -48,6 +48,8 @@ interface DashboardViewProps {
   onMenuClick: () => void;
   payments: any[];
   hasUnreadNotifications?: boolean;
+  noticeTenantsCount?: number;
+  prebookCount?: number;
 }
 
 export function DashboardView({
@@ -75,6 +77,8 @@ export function DashboardView({
   onMenuClick,
   payments = [],
   hasUnreadNotifications = false,
+  noticeTenantsCount = 0,
+  prebookCount = 0,
 }: DashboardViewProps) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
@@ -292,7 +296,7 @@ export function DashboardView({
               <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mb-1">
                 <Wrench className="w-4.5 h-4.5" />
               </div>
-              <span className="text-xl font-bold text-amber-500 font-mono tracking-tight">0</span>
+              <span className="text-xl font-bold text-amber-500 font-mono tracking-tight">{noticeTenantsCount}</span>
               <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Notice</span>
             </div>
 
@@ -301,7 +305,7 @@ export function DashboardView({
               <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mb-1">
                 <CalendarDays className="w-4.5 h-4.5" />
               </div>
-              <span className="text-xl font-bold text-blue-500 font-mono tracking-tight">51</span>
+              <span className="text-xl font-bold text-blue-500 font-mono tracking-tight">{prebookCount}</span>
               <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Prebook</span>
             </div>
           </div>

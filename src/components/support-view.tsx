@@ -134,6 +134,15 @@ export function SupportView({
           </motion.button>
 
           <div className="flex items-center gap-2">
+            <motion.a
+              href="https://pg-desk-lyart.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10"
+            >
+              <Globe className="w-5 h-5 text-white" />
+            </motion.a>
             <motion.button
               whileTap={{ scale: 0.9 }}
               className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10"
@@ -519,14 +528,7 @@ export function SupportView({
         <p className="mt-1 font-semibold text-slate-400/80">© 2026 All Rights Reserved.</p>
       </div>
 
-      {/* Floating Action Button (FAB) */}
-      <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-6 right-6 md:absolute md:bottom-6 md:right-6 w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-300/50 cursor-pointer z-40 border border-emerald-500/20"
-      >
-        <Globe className="w-6 h-6 animate-pulse" />
-      </motion.button>
+
 
       {/* Notice Posting Modal overlay */}
       <AnimatePresence>

@@ -108,6 +108,7 @@ export default function Home() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [noticeTenantsCount, setNoticeTenantsCount] = useState(0);
   const [payments, setPayments] = useState<any[]>([]);
   const [complaints, setComplaints] = useState<any[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
@@ -208,6 +209,9 @@ export default function Home() {
           joinDate: t.join_date || null
         }));
         setTenants(formattedTenants);
+        setNoticeTenantsCount(tenantsList.filter((t: any) => t.status === "notice").length);
+      } else {
+        setNoticeTenantsCount(0);
       }
 
       // 3. Fetch PG details & bank details
@@ -1415,6 +1419,8 @@ export default function Home() {
                 onAddRoomClick={() => setIsAddRoomOpen(true)}
                 payments={payments}
                 hasUnreadNotifications={hasUnreadNotifications}
+                noticeTenantsCount={noticeTenantsCount}
+                prebookCount={bookings.filter(b => b.status === "pending").length}
               />
             )}
 
