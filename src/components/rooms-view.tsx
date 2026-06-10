@@ -108,13 +108,19 @@ export function RoomsView({
         const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
 
         if (status === "occupied" || status === "reserved") {
-          // Fetch active, pending, or prebooked tenant for this bed
-          const { data: tenantData } = await supabase
+          // Fetch active, pending, prebooked, or notice tenant for this bed
+          const { data: tenantsForBed } = await supabase
             .from("tenants")
             .select("*, users(*)")
             .eq("bed_id", targetBed.id)
-            .in("status", ["active", "pending", "prebooked"])
-            .maybeSingle();
+            .in("status", ["active", "pending", "prebooked", "notice"]);
+
+          let tenantData = null;
+          if (tenantsForBed && tenantsForBed.length > 0) {
+            tenantData = tenantsForBed.find((t: any) => t.status === "active" || t.status === "notice")
+              || tenantsForBed.find((t: any) => t.status === "prebooked")
+              || tenantsForBed[0];
+          }
 
           if (tenantData) {
             // Fetch payments to find due date
@@ -373,19 +379,19 @@ export function RoomsView({
                  <div className="flex items-center gap-2 mt-1.5">
                   <div className={`w-2 h-2 rounded-full ${
                     selectedBed.status === "occupied" 
-                      ? "bg-rose-500 animate-pulse" 
+                      ? (bedDetails?.tenant?.status === "notice" ? "bg-amber-500 animate-pulse" : "bg-rose-500 animate-pulse")
                       : selectedBed.status === "reserved"
                       ? "bg-amber-500 animate-pulse"
                       : "bg-emerald-500"
                   }`} />
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${
                     selectedBed.status === "occupied" 
-                      ? "text-rose-600" 
+                      ? (bedDetails?.tenant?.status === "notice" ? "text-amber-600" : "text-rose-600")
                       : selectedBed.status === "reserved"
                       ? "text-amber-600"
                       : "text-emerald-600"
                   }`}>
-                    {selectedBed.status}
+                    {selectedBed.status === "occupied" && bedDetails?.tenant?.status === "notice" ? "Occupied (Notice)" : selectedBed.status}
                   </span>
                 </div>
               </div>
@@ -612,9 +618,20 @@ export function RoomsView({
                   {selectedTenant.name}
                 </h4>
                  <div className="flex items-center gap-1.5 mt-1 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-150">
-                  <Shield className={`w-3 h-3 ${selectedTenant.status === "active" ? "text-emerald-600" : "text-amber-500"}`} />
-                  <span className="text-[9px] font-black text-slate-505 uppercase tracking-wider">
-                    {selectedTenant.status === "active" ? "Active Tenant" : "Pending Tenant"}
+                  <Shield className={`w-3 h-3 ${
+                    selectedTenant.status === "active" 
+                      ? "text-emerald-600" 
+                      : selectedTenant.status === "notice"
+                      ? "text-amber-500"
+                      : selectedTenant.status === "prebooked"
+                      ? "text-blue-500"
+                      : "text-amber-500"
+                  }`} />
+                  <span className="text-[9px] font-black text-slate-550 uppercase tracking-wider">
+                    {selectedTenant.status === "active" && "Active Tenant"}
+                    {selectedTenant.status === "notice" && "Notice Active"}
+                    {selectedTenant.status === "prebooked" && "Prebooked Tenant"}
+                    {selectedTenant.status !== "active" && selectedTenant.status !== "notice" && selectedTenant.status !== "prebooked" && "Pending Tenant"}
                   </span>
                 </div>
               </div>
@@ -670,7 +687,7 @@ export function RoomsView({
                 {/* Stay details */}
                 <div className="bg-white rounded-3xl p-4.5 border border-slate-150 flex flex-col gap-3.5 shadow-xs">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                    <Calendar className="w-3.5 h-3.5 text-emerald-650" />
                     Stay Details
                   </span>
                   <div className="flex justify-between items-center text-xs">
@@ -681,6 +698,12 @@ export function RoomsView({
                     <span className="font-semibold text-slate-505">Advance Payment</span>
                     <span className="font-black text-emerald-600 font-mono">{formatCurrency(selectedTenant.deposit)}</span>
                   </div>
+                  {selectedTenant.vacate_date && (
+                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                      <span className="font-semibold text-slate-505">Vacate Date</span>
+                      <span className="font-extrabold text-amber-600">{formatDate(selectedTenant.vacate_date)}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Emergency & parents */}

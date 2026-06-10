@@ -11,7 +11,9 @@ export interface Tenant {
   name: string;
   roomName: string;
   rentAmount: number;
-  status: "active" | "left" | "prebooked";
+  status: "active" | "left" | "prebooked" | "notice";
+  noticeDate?: string | null;
+  vacateDate?: string | null;
   joinDate?: string | null;
   roomId?: string | null;
   bedId?: string | null;

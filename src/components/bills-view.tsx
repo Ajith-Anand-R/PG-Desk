@@ -9,7 +9,7 @@ interface Tenant {
   name: string;
   roomName: string;
   rentAmount: number;
-  status: "active" | "left" | "prebooked";
+  status: "active" | "left" | "prebooked" | "notice";
 }
 
 interface BillsViewProps {
@@ -21,7 +21,7 @@ interface BillsViewProps {
 export function BillsView({ tenants, onBack, onSendReminder }: BillsViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const activeTenants = tenants.filter((t) => t.status === "active");
+  const activeTenants = tenants.filter((t) => t.status === "active" || t.status === "notice");
 
   const filteredTenants = activeTenants.filter(
     (t) =>

@@ -42,6 +42,7 @@ export function BookingsView({
 }: BookingsViewProps) {
   const [bookings, setBookings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [noticeTenants, setNoticeTenants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -90,6 +91,16 @@ export function BookingsView({
 
       if (roomsError) throw roomsError;
       setRooms(roomsData || []);
+
+      // 3. Fetch notice tenants to see if they are vacating beds
+      const { data: noticeTenantsData, error: noticeError } = await supabase
+        .from("tenants")
+        .select("id, bed_id, vacate_date, name")
+        .eq("pg_id", Number(activePgId))
+        .eq("status", "notice");
+
+      if (noticeError) throw noticeError;
+      setNoticeTenants(noticeTenantsData || []);
     } catch (err: any) {
       console.error("Error fetching bookings data:", err);
       setToastMessage("Error: " + err.message);
@@ -111,7 +122,24 @@ export function BookingsView({
     }
     const room = rooms.find(r => String(r.id) === assignedRoomId);
     if (room && room.beds) {
-      const freeBeds = room.beds.filter((b: any) => b.status === "available");
+      // Beds are available if status is 'available' OR if there is an active tenant in notice period
+      const freeBeds = room.beds.map((b: any) => {
+        const noticeTenant = noticeTenants.find((nt: any) => Number(nt.bed_id) === Number(b.id));
+        if (b.status === "available") {
+          return { ...b, displayName: b.bed_number };
+        } else if (noticeTenant) {
+          const formattedVacateDate = noticeTenant.vacate_date 
+            ? new Date(noticeTenant.vacate_date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
+            : "soon";
+          return { 
+            ...b, 
+            isNoticePeriod: true, 
+            displayName: `${b.bed_number} (Vacating on ${formattedVacateDate})` 
+          };
+        }
+        return null;
+      }).filter(Boolean);
+
       setAvailableBeds(freeBeds);
       if (freeBeds.length > 0) {
         setAssignedBedId(String(freeBeds[0].id));
@@ -119,7 +147,7 @@ export function BookingsView({
         setAssignedBedId("");
       }
     }
-  }, [assignedRoomId, rooms]);
+  }, [assignedRoomId, rooms, noticeTenants]);
 
   // Handle toggling approvalMode
   const handleApprovalModeChange = (mode: "active" | "waitlist") => {
@@ -202,13 +230,18 @@ export function BookingsView({
         tenantId = tenant.id;
       }
 
-      // 2. Mark bed as occupied or reserved
-      const { error: bedError } = await supabase
-        .from("beds")
-        .update({ status: bedStatus })
-        .eq("id", Number(assignedBedId));
+      // 2. Mark bed as occupied or reserved (only if it is not currently occupied by someone in notice period)
+      const targetBedRecord = availableBeds.find(b => String(b.id) === assignedBedId);
+      const isCurrentlyOccupied = targetBedRecord && targetBedRecord.status === "occupied";
 
-      if (bedError) throw bedError;
+      if (!isCurrentlyOccupied) {
+        const { error: bedError } = await supabase
+          .from("beds")
+          .update({ status: bedStatus })
+          .eq("id", Number(assignedBedId));
+
+        if (bedError) throw bedError;
+      }
 
       // 2b. Create Security Deposit payment record
       if (existingTenant) {
@@ -593,10 +626,16 @@ export function BookingsView({
                   >
                     <option value="">Select a room</option>
                     {rooms.map((r) => {
-                      const availCount = r.beds ? r.beds.filter((s: any) => s.status === "available").length : 0;
+                      const availCount = r.beds 
+                        ? r.beds.filter((b: any) => {
+                            const isFree = b.status === "available";
+                            const isNotice = noticeTenants.some((nt: any) => Number(nt.bed_id) === Number(b.id));
+                            return isFree || isNotice;
+                          }).length 
+                        : 0;
                       return (
                         <option key={r.id} value={r.id}>
-                          Room {r.room_number} (Floor {r.floor}) — {availCount} free
+                          Room {r.room_number} (Floor {r.floor}) — {availCount} free/notice
                         </option>
                       );
                     })}
@@ -621,7 +660,7 @@ export function BookingsView({
                     ) : (
                       availableBeds.map((b) => (
                         <option key={b.id} value={b.id}>
-                          {b.bed_number}
+                          {b.displayName || b.bed_number}
                         </option>
                       ))
                     )}

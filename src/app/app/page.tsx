@@ -192,8 +192,10 @@ export default function Home() {
           name: t.users?.name || t.name || "Unknown Tenant",
           roomName: t.rooms?.room_number || "Unassigned",
           rentAmount: Number(t.rooms?.rent || 0),
-          status: (t.status === "notice" ? "active" : t.status) as "active" | "left" | "prebooked",
-          joinDate: t.join_date || null
+          status: t.status as "active" | "left" | "prebooked" | "notice",
+          joinDate: t.join_date || null,
+          noticeDate: t.notice_date || null,
+          vacateDate: t.vacate_date || null
         }));
         setTenants(formattedTenants);
         setNoticeTenantsCount(tenantsList.filter((t: any) => t.status === "notice").length);
@@ -473,7 +475,7 @@ export default function Home() {
   );
   const availableBedsCount = totalBeds - occupiedBedsCount;
 
-  const activeTenantsCount = tenants.filter((t) => t.status === "active").length;
+  const activeTenantsCount = tenants.filter((t) => t.status === "active" || t.status === "notice").length;
   const leftTenantsCount = tenants.filter((t) => t.status === "left").length;
 
   const collectedAmountSum = payments
@@ -704,8 +706,31 @@ export default function Home() {
 
     if (bedsList && bedsList[bedIndex]) {
       const targetBed = bedsList[bedIndex];
-      const newStatus = targetBed.status === "available" ? "occupied" : "available";
+      let newStatus = targetBed.status === "available" ? "occupied" : "available";
       
+      if (targetBed.status === "occupied" || targetBed.status === "reserved") {
+        // Mark old occupant(s) as left
+        await supabase
+          .from("tenants")
+          .update({ status: "left", vacate_date: new Date().toISOString().split("T")[0] })
+          .eq("bed_id", targetBed.id)
+          .in("status", ["active", "notice"]);
+
+        // Check if there is a prebooked tenant for this bed
+        const { data: prebookedTenant } = await supabase
+          .from("tenants")
+          .select("id")
+          .eq("bed_id", targetBed.id)
+          .eq("status", "prebooked")
+          .maybeSingle();
+
+        if (prebookedTenant) {
+          newStatus = "reserved";
+        } else {
+          newStatus = "available";
+        }
+      }
+
       await supabase
         .from("beds")
         .update({ status: newStatus })
