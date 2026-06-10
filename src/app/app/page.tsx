@@ -298,6 +298,49 @@ export default function Home() {
     }
   };
 
+  const fetchTenantPoints = async (uid: string) => {
+    try {
+      const { data: tenantDetails } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('user_id', uid)
+        .maybeSingle();
+
+      if (tenantDetails) {
+        const { data: ledgerEntries } = await supabase
+          .from('reward_ledgers')
+          .select('*')
+          .eq('tenant_id', tenantDetails.id)
+          .order('created_at', { ascending: false });
+
+        if (ledgerEntries) {
+          let earned = 0;
+          let redeemed = 0;
+          const txs = ledgerEntries.map((l: any) => {
+            const pts = Math.abs(l.points);
+            if (l.type === 'earn') {
+              earned += pts;
+            } else {
+              redeemed += pts;
+            }
+            return {
+              id: String(l.id),
+              title: l.description,
+              date: new Date(l.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              points: pts,
+              type: l.type as "earn" | "redeem"
+            };
+          });
+          setWalletPoints(earned - redeemed);
+          setWalletRedeemed(redeemed);
+          setWalletTransactions(txs);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching tenant points:", error);
+    }
+  };
+
   const checkUser = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -317,6 +360,10 @@ export default function Home() {
             photo: profile.photo || null,
             role: profile.role
           });
+
+          if (profile.role === 'Tenant') {
+            await fetchTenantPoints(session.user.id);
+          }
 
           // Fetch properties list for this Owner
           const { data: pgsList } = await supabase
@@ -377,6 +424,9 @@ export default function Home() {
             photo: profile.photo || null,
             role: profile.role
           });
+          if (profile.role === 'Tenant') {
+            await fetchTenantPoints(session.user.id);
+          }
           const { data: pgsList } = await supabase
             .from("pgs")
             .select("*")

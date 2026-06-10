@@ -68,6 +68,12 @@ export function MealsManagementView({
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const [dietCounts, setDietCounts] = useState({
+    breakfast: { veg: 0, nonVeg: 0, egg: 0 },
+    lunch: { veg: 0, nonVeg: 0, egg: 0 },
+    dinner: { veg: 0, nonVeg: 0, egg: 0 },
+  });
+
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(null), 3000);
@@ -151,8 +157,60 @@ export function MealsManagementView({
     }
   };
 
+  const fetchDietStats = async () => {
+    if (!activePgId) return;
+    try {
+      const { data, error } = await supabase
+        .from("tenants")
+        .select(`
+          id,
+          status,
+          users (
+            meal_dietary,
+            meal_breakfast,
+            meal_lunch,
+            meal_dinner
+          )
+        `)
+        .eq("pg_id", Number(activePgId))
+        .eq("status", "active");
+
+      if (error) throw error;
+
+      const counts = {
+        breakfast: { veg: 0, nonVeg: 0, egg: 0 },
+        lunch: { veg: 0, nonVeg: 0, egg: 0 },
+        dinner: { veg: 0, nonVeg: 0, egg: 0 }
+      };
+
+      if (data) {
+        data.forEach((tenant: any) => {
+          const rawUser = tenant.users;
+          const user = Array.isArray(rawUser) ? rawUser[0] : rawUser;
+          if (!user) return;
+
+          const diet = (user.meal_dietary || "Veg").toLowerCase();
+          let dietKey: "veg" | "nonVeg" | "egg" = "veg";
+          if (diet === "non-veg" || diet === "nonveg") {
+            dietKey = "nonVeg";
+          } else if (diet === "egg") {
+            dietKey = "egg";
+          }
+
+          if (user.meal_breakfast) counts.breakfast[dietKey]++;
+          if (user.meal_lunch) counts.lunch[dietKey]++;
+          if (user.meal_dinner) counts.dinner[dietKey]++;
+        });
+      }
+      setDietCounts(counts);
+    } catch (err) {
+      console.error("Error fetching diet stats:", err);
+    }
+  };
+
   useEffect(() => {
     fetchMenuData();
+    fetchDietStats();
   }, [activePgId]);
 
   // Update form fields when selected day or weeklyMenu changes
@@ -415,6 +473,102 @@ export function MealsManagementView({
                     <p className="text-sm font-bold text-slate-700 mt-1.5">
                       {activeDayMenu?.dinner}
                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Kitchen Meal Preparation Counts Bento Panel */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200/40 shadow-xs flex flex-col gap-4">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2 uppercase tracking-wide">
+                  <UtensilsCrossed className="w-4 h-4 text-emerald-600" />
+                  Kitchen Prep Counts (Active Tenants)
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {/* Breakfast Prep */}
+                <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/80 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
+                    <Coffee className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Breakfast</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Veg</span>
+                      <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.breakfast.veg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Non-Veg</span>
+                      <span className="bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.breakfast.nonVeg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Egg</span>
+                      <span className="bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.breakfast.egg}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lunch Prep */}
+                <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/80 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
+                    <UtensilsCrossed className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Lunch</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Veg</span>
+                      <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.lunch.veg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Non-Veg</span>
+                      <span className="bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.lunch.nonVeg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Egg</span>
+                      <span className="bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.lunch.egg}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dinner Prep */}
+                <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/80 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
+                    <Flame className="w-3.5 h-3.5 text-indigo-500" />
+                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">Dinner</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Veg</span>
+                      <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.dinner.veg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Non-Veg</span>
+                      <span className="bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.dinner.nonVeg}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                      <span>Egg</span>
+                      <span className="bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md text-[10px]">
+                        {dietCounts.dinner.egg}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
