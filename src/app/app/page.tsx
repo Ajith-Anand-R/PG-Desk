@@ -12,8 +12,6 @@ import {
   Building2, 
   Landmark, 
   Settings, 
-  Wallet, 
-  Gift, 
   FileText, 
   Crown, 
   LogOut, 
@@ -39,8 +37,6 @@ import { ProfileView } from "@/components/profile-view";
 import { SettingsView } from "@/components/settings-view";
 import { ViewProfileView } from "@/components/view-profile-view";
 import { BankDetailsView, BankDetails } from "@/components/bank-details-view";
-import { WalletView, Transaction } from "@/components/wallet-view";
-import { ReferralView } from "@/components/referral-view";
 import { TenantTermsView } from "@/components/tenant-terms-view";
 import { SubscriptionView } from "@/components/subscription-view";
 import { ChangePasswordView } from "@/components/change-password-view";
@@ -60,7 +56,7 @@ import { VacantBedsView } from "@/components/vacant-beds-view";
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "wallet" | "referral" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
 
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
@@ -143,14 +139,6 @@ export default function Home() {
     branchName: ""
   });
 
-  const [walletPoints, setWalletPoints] = useState(1250);
-  const [walletRedeemed, setWalletRedeemed] = useState(350);
-  const [walletTransactions, setWalletTransactions] = useState<Transaction[]>([
-    { id: "tx_1", title: "Referral Bonus", date: "Jun 5, 2026", points: 500, type: "earn" },
-    { id: "tx_2", title: "Rent Payment Cashback", date: "Jun 1, 2026", points: 150, type: "earn" },
-    { id: "tx_3", title: "Early Bird Discount", date: "May 28, 2026", points: 100, type: "earn" },
-    { id: "tx_4", title: "Redeemed Rent Discount", date: "May 15, 2026", points: 350, type: "redeem" }
-  ]);
 
   // Auto-hide toast messages
   useEffect(() => {
@@ -302,48 +290,6 @@ export default function Home() {
     }
   };
 
-  const fetchTenantPoints = async (uid: string) => {
-    try {
-      const { data: tenantDetails } = await supabase
-        .from('tenants')
-        .select('id')
-        .eq('user_id', uid)
-        .maybeSingle();
-
-      if (tenantDetails) {
-        const { data: ledgerEntries } = await supabase
-          .from('reward_ledgers')
-          .select('*')
-          .eq('tenant_id', tenantDetails.id)
-          .order('created_at', { ascending: false });
-
-        if (ledgerEntries) {
-          let earned = 0;
-          let redeemed = 0;
-          const txs = ledgerEntries.map((l: any) => {
-            const pts = Math.abs(l.points);
-            if (l.type === 'earn') {
-              earned += pts;
-            } else {
-              redeemed += pts;
-            }
-            return {
-              id: String(l.id),
-              title: l.description,
-              date: new Date(l.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-              points: pts,
-              type: l.type as "earn" | "redeem"
-            };
-          });
-          setWalletPoints(earned - redeemed);
-          setWalletRedeemed(redeemed);
-          setWalletTransactions(txs);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching tenant points:", error);
-    }
-  };
 
   const checkUser = async () => {
     try {
@@ -365,9 +311,7 @@ export default function Home() {
             role: profile.role
           });
 
-          if (profile.role === 'Tenant') {
-            await fetchTenantPoints(session.user.id);
-          }
+
 
           // Fetch properties list for this Owner
           const { data: pgsList } = await supabase
@@ -428,9 +372,7 @@ export default function Home() {
             photo: profile.photo || null,
             role: profile.role
           });
-          if (profile.role === 'Tenant') {
-            await fetchTenantPoints(session.user.id);
-          }
+
           const { data: pgsList } = await supabase
             .from("pgs")
             .select("*")
@@ -1085,7 +1027,7 @@ export default function Home() {
                       <img src="/logo.png" alt="PG Desk Logo" className="w-11 h-11 rounded-xl object-cover shrink-0" />
                       <div className="flex flex-col min-w-0">
                         <span className="text-slate-800 font-bold text-base truncate">{currentProperty}</span>
-                        <span className="text-slate-400 font-semibold text-[10px] tracking-tight truncate">Code: BVBQEEXU</span>
+                        <span className="text-slate-400 font-semibold text-[10px] tracking-tight truncate">Code: {activePgId || "Loading..."}</span>
                       </div>
                     </div>
                     <button 
@@ -1226,22 +1168,7 @@ export default function Home() {
                           setIsDrawerOpen(false);
                         }} 
                       />
-                      <DrawerItem 
-                        label="Wallet" 
-                        icon={Wallet} 
-                        onClick={() => {
-                          setCurrentView("wallet");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                      <DrawerItem 
-                        label="Referrals" 
-                        icon={Gift} 
-                        onClick={() => {
-                          setCurrentView("referral");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
+
                       <DrawerItem 
                         label="Tenant Terms" 
                         icon={FileText} 
@@ -1557,39 +1484,7 @@ export default function Home() {
               />
             )}
 
-            {currentView === "wallet" && (
-              <WalletView
-                onBack={() => setCurrentView("dashboard")}
-                currentProperty={currentProperty}
-                initialPoints={walletPoints}
-                initialRedeemed={walletRedeemed}
-                initialTransactions={walletTransactions}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onRedeemPoints={(pts, msg) => {
-                  setWalletPoints((prev) => prev - pts);
-                  setWalletRedeemed((prev) => prev + pts);
-                  // Add transaction
-                  const newTx: Transaction = {
-                    id: `tx_${Date.now()}`,
-                    title: `Redeemed ${msg.replace("Successfully redeemed ", "")}`,
-                    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                    points: pts,
-                    type: "redeem"
-                  };
-                  setWalletTransactions((prev) => [newTx, ...prev]);
-                  setToastMessage(msg);
-                }}
-              />
-            )}
 
-            {currentView === "referral" && (
-              <ReferralView
-                onBack={() => setCurrentView("dashboard")}
-                onNavigateToSupport={() => setCurrentView("support")}
-                currentProperty={currentProperty}
-                onMenuClick={() => setIsDrawerOpen(true)}
-              />
-            )}
 
             {currentView === "tenant-terms" && (
               <TenantTermsView

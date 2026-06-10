@@ -837,7 +837,7 @@
       "label": "ViewType",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L63",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "app_page_viewtype",
       "community": 9,
@@ -847,7 +847,7 @@
       "label": "getNotificationTimeAndGroup()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L65",
+      "source_location": "L61",
       "_origin": "ast",
       "id": "app_page_getnotificationtimeandgroup",
       "community": 9,
@@ -857,7 +857,7 @@
       "label": "Home()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L99",
+      "source_location": "L95",
       "_origin": "ast",
       "id": "app_page_home",
       "community": 9,
@@ -867,7 +867,7 @@
       "label": "TabButtonProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1871",
+      "source_location": "L1823",
       "_origin": "ast",
       "id": "app_page_tabbuttonprops",
       "community": 9,
@@ -877,7 +877,7 @@
       "label": "TabButton()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1878",
+      "source_location": "L1830",
       "_origin": "ast",
       "id": "app_page_tabbutton",
       "community": 9,
@@ -887,7 +887,7 @@
       "label": "DrawerItemProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1910",
+      "source_location": "L1862",
       "_origin": "ast",
       "id": "app_page_draweritemprops",
       "community": 9,
@@ -897,7 +897,7 @@
       "label": "DrawerItem()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L1918",
+      "source_location": "L1870",
       "_origin": "ast",
       "id": "app_page_draweritem",
       "community": 9,
@@ -1120,7 +1120,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_bank_details_view",
-      "community": 9,
+      "community": 19,
       "norm_label": "bank-details-view.tsx"
     },
     {
@@ -1130,7 +1130,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "components_bank_details_view_bankdetails",
-      "community": 9,
+      "community": 19,
       "norm_label": "bankdetails"
     },
     {
@@ -1140,7 +1140,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "components_bank_details_view_bankdetailsviewprops",
-      "community": 9,
+      "community": 19,
       "norm_label": "bankdetailsviewprops"
     },
     {
@@ -1150,7 +1150,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "components_bank_details_view_bankdetailsview",
-      "community": 9,
+      "community": 19,
       "norm_label": "bankdetailsview()"
     },
     {
@@ -1327,7 +1327,7 @@
       "label": "DashboardView()",
       "file_type": "code",
       "source_file": "src/components/dashboard-view.tsx",
-      "source_location": "L52",
+      "source_location": "L55",
       "_origin": "ast",
       "id": "components_dashboard_view_dashboardview",
       "community": 28,
@@ -1630,7 +1630,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_receipts_view",
-      "community": 19,
+      "community": 9,
       "norm_label": "receipts-view.tsx"
     },
     {
@@ -1640,7 +1640,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "components_receipts_view_receiptitem",
-      "community": 19,
+      "community": 9,
       "norm_label": "receiptitem"
     },
     {
@@ -1650,7 +1650,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "components_receipts_view_dueitem",
-      "community": 19,
+      "community": 9,
       "norm_label": "dueitem"
     },
     {
@@ -1660,7 +1660,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "components_receipts_view_receiptsviewprops",
-      "community": 19,
+      "community": 9,
       "norm_label": "receiptsviewprops"
     },
     {
@@ -1670,38 +1670,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "components_receipts_view_receiptsview",
-      "community": 19,
+      "community": 9,
       "norm_label": "receiptsview()"
-    },
-    {
-      "label": "referral-view.tsx",
-      "file_type": "code",
-      "source_file": "src/components/referral-view.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_referral_view",
-      "community": 35,
-      "norm_label": "referral-view.tsx"
-    },
-    {
-      "label": "ReferralViewProps",
-      "file_type": "code",
-      "source_file": "src/components/referral-view.tsx",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "components_referral_view_referralviewprops",
-      "community": 35,
-      "norm_label": "referralviewprops"
-    },
-    {
-      "label": "ReferralView()",
-      "file_type": "code",
-      "source_file": "src/components/referral-view.tsx",
-      "source_location": "L33",
-      "_origin": "ast",
-      "id": "components_referral_view_referralview",
-      "community": 35,
-      "norm_label": "referralview()"
     },
     {
       "label": "register-view.tsx",
@@ -1807,7 +1777,7 @@
       "label": "RoomCardProps",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L687",
+      "source_location": "L749",
       "_origin": "ast",
       "id": "components_rooms_view_roomcardprops",
       "community": 10,
@@ -1817,7 +1787,7 @@
       "label": "RoomCard()",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L693",
+      "source_location": "L755",
       "_origin": "ast",
       "id": "components_rooms_view_roomcard",
       "community": 10,
@@ -2190,7 +2160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_view_profile_view",
-      "community": 9,
+      "community": 26,
       "norm_label": "view-profile-view.tsx"
     },
     {
@@ -2200,7 +2170,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_view_profile_view_viewprofileviewprops",
-      "community": 9,
+      "community": 26,
       "norm_label": "viewprofileviewprops"
     },
     {
@@ -2210,7 +2180,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "components_view_profile_view_viewprofileview",
-      "community": 9,
+      "community": 26,
       "norm_label": "viewprofileview()"
     },
     {
@@ -2227,7 +2197,7 @@
       "label": "VisitorLogsViewProps",
       "file_type": "code",
       "source_file": "src/components/visitor-logs-view.tsx",
-      "source_location": "L26",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "components_visitor_logs_view_visitorlogsviewprops",
       "community": 1,
@@ -2237,51 +2207,11 @@
       "label": "VisitorLogsView()",
       "file_type": "code",
       "source_file": "src/components/visitor-logs-view.tsx",
-      "source_location": "L35",
+      "source_location": "L40",
       "_origin": "ast",
       "id": "components_visitor_logs_view_visitorlogsview",
       "community": 1,
       "norm_label": "visitorlogsview()"
-    },
-    {
-      "label": "wallet-view.tsx",
-      "file_type": "code",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_wallet_view",
-      "community": 26,
-      "norm_label": "wallet-view.tsx"
-    },
-    {
-      "label": "Transaction",
-      "file_type": "code",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L24",
-      "_origin": "ast",
-      "id": "components_wallet_view_transaction",
-      "community": 26,
-      "norm_label": "transaction"
-    },
-    {
-      "label": "WalletViewProps",
-      "file_type": "code",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L32",
-      "_origin": "ast",
-      "id": "components_wallet_view_walletviewprops",
-      "community": 26,
-      "norm_label": "walletviewprops"
-    },
-    {
-      "label": "WalletView()",
-      "file_type": "code",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L42",
-      "_origin": "ast",
-      "id": "components_wallet_view_walletview",
-      "community": 26,
-      "norm_label": "walletview()"
     },
     {
       "label": "supabase.ts",
@@ -2702,7 +2632,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L127",
-      "community": 11,
+      "community": 2,
       "norm_label": "step 2 - detect files",
       "id": "graphify_skill_step_2_detect_files"
     },
@@ -2711,7 +2641,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L164",
-      "community": 11,
+      "community": 2,
       "norm_label": "step 2.5 - video and audio (only if video files detected)",
       "id": "graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected"
     },
@@ -2720,7 +2650,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L168",
-      "community": 11,
+      "community": 2,
       "norm_label": "step 3 - extract entities and relationships",
       "id": "graphify_skill_step_3_extract_entities_and_relationships"
     },
@@ -2729,7 +2659,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L185",
-      "community": 11,
+      "community": 2,
       "norm_label": "part a - structural extraction for code files",
       "id": "graphify_skill_part_a_structural_extraction_for_code_files"
     },
@@ -2738,7 +2668,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L211",
-      "community": 11,
+      "community": 2,
       "norm_label": "part b - semantic extraction (parallel subagents)",
       "id": "graphify_skill_part_b_semantic_extraction_parallel_subagents"
     },
@@ -2747,7 +2677,7 @@
       "file_type": "document",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L270",
-      "community": 11,
+      "community": 2,
       "norm_label": "then for chunk n: $chunkpath = join-path $projectroot \"graphify-out\\.graphifychunk0n.json\"",
       "id": "graphify_skill_then_for_chunk_n_chunkpath_join_path_projectroot_graphify_out_graphifychunk0n_json"
     },
@@ -2756,7 +2686,7 @@
       "file_type": "concept",
       "source_file": ".claude/skills/graphify/SKILL.md",
       "source_location": "L356",
-      "community": 11,
+      "community": 2,
       "norm_label": "part c - merge ast + semantic into final extraction",
       "id": "graphify_skill_part_c_merge_ast_semantic_into_final_extraction"
     },
@@ -4772,28 +4702,6 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_app_page_tsx_app_page",
-      "target": "components_referral_view"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/app/page.tsx",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_app_page_tsx_app_page",
-      "target": "components_referral_view_referralview"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/app/page.tsx",
       "source_location": "L33",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5030,39 +4938,6 @@
       "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
       "target": "components_visitor_logs_view_visitorlogsview"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/app/page.tsx",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_app_page_tsx_app_page",
-      "target": "components_wallet_view"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/app/page.tsx",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_app_page_tsx_app_page",
-      "target": "components_wallet_view_transaction"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/app/app/page.tsx",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "src_app_app_page_tsx_app_page",
-      "target": "components_wallet_view_walletview"
     },
     {
       "relation": "imports_from",
@@ -5866,26 +5741,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/components/referral-view.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_referral_view",
-      "target": "components_referral_view_referralview"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/referral-view.tsx",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_referral_view",
-      "target": "components_referral_view_referralviewprops"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "src/components/register-view.tsx",
       "source_location": "L13",
       "weight": 1.0,
@@ -6504,36 +6359,6 @@
       "confidence_score": 1.0,
       "source": "components_visitor_logs_view",
       "target": "lib_supabase_supabase"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L24",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_wallet_view",
-      "target": "components_wallet_view_transaction"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L42",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_wallet_view",
-      "target": "components_wallet_view_walletview"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/components/wallet-view.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "components_wallet_view",
-      "target": "components_wallet_view_walletviewprops"
     },
     {
       "relation": "contains",
@@ -7777,5 +7602,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "02d1b91798f930125c73a23dbd21caf42cfe9ff7"
+  "built_at_commit": "3a7fa0e4c783b0a27ebd54db63b685a1d9cce4ce"
 }

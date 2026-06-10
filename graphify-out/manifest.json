@@ -50,8 +50,8 @@
     "semantic_hash": "101e859114e5d1a5fdebeaf504c674c8"
   },
   "src/app/app/page.tsx": {
-    "mtime": 1781033001.9160793,
-    "ast_hash": "80a8ce04a3f30698497390664d9157a6",
+    "mtime": 1781124792.4483664,
+    "ast_hash": "5abe0c8cca865c1b30a9979b1b1bc3bd",
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
@@ -75,14 +75,14 @@
     "semantic_hash": "08067a5916d48a67a680a1a67dc53981"
   },
   "src/components/bills-view.tsx": {
-    "mtime": 1780787047.777927,
-    "ast_hash": "8efca2538422919e3aca47cb4f3494cd",
-    "semantic_hash": "8efca2538422919e3aca47cb4f3494cd"
+    "mtime": 1781123807.9020638,
+    "ast_hash": "6c0469b883217c14d9934b179976aaaf",
+    "semantic_hash": ""
   },
   "src/components/bookings-view.tsx": {
-    "mtime": 1780931335.0407622,
-    "ast_hash": "2a2ee5704799f4a59655e444fd054431",
-    "semantic_hash": "2a2ee5704799f4a59655e444fd054431"
+    "mtime": 1781124389.310853,
+    "ast_hash": "884b3e5fa7093cb7dfc55ff68389d81b",
+    "semantic_hash": ""
   },
   "src/components/change-password-view.tsx": {
     "mtime": 1780821528.7888336,
@@ -95,8 +95,8 @@
     "semantic_hash": "6c731499abbb485186e6647b7f8f86a7"
   },
   "src/components/dashboard-view.tsx": {
-    "mtime": 1781033006.0238516,
-    "ast_hash": "7d5377a40a2a92075863ba98f22b1f62",
+    "mtime": 1781120764.5892127,
+    "ast_hash": "f9f912e92828bdd0d50f1de38456d3f7",
     "semantic_hash": ""
   },
   "src/components/expenses-view.tsx": {
@@ -115,9 +115,9 @@
     "semantic_hash": "cb5b07e7d6f6efdae65339244463b55b"
   },
   "src/components/meals-management-view.tsx": {
-    "mtime": 1780931318.2953565,
-    "ast_hash": "390bccd5a1ff06529fa37a27e3739ba3",
-    "semantic_hash": "390bccd5a1ff06529fa37a27e3739ba3"
+    "mtime": 1781101295.0294738,
+    "ast_hash": "e8cdb574f0938d4a65204daa7744c106",
+    "semantic_hash": ""
   },
   "src/components/notifications-view.tsx": {
     "mtime": 1780937947.9541345,
@@ -144,11 +144,6 @@
     "ast_hash": "b514939421e69ecf0c3270a4f8d56d3c",
     "semantic_hash": ""
   },
-  "src/components/referral-view.tsx": {
-    "mtime": 1780787101.4134426,
-    "ast_hash": "9c943fe5d9f77939ad61d886dad48f20",
-    "semantic_hash": "9c943fe5d9f77939ad61d886dad48f20"
-  },
   "src/components/register-view.tsx": {
     "mtime": 1780938450.1799107,
     "ast_hash": "35e2cb14e5a77253626dab89790f38e0",
@@ -160,8 +155,8 @@
     "semantic_hash": "e02d2797f46837bb2654233e198f6bd3"
   },
   "src/components/rooms-view.tsx": {
-    "mtime": 1781033491.3372276,
-    "ast_hash": "afb76d99080ae9addc428a8d9ff3d02e",
+    "mtime": 1781123685.524902,
+    "ast_hash": "8bde8036973240b2c8268cb3d6e7cbdf",
     "semantic_hash": ""
   },
   "src/components/settings-view.tsx": {
@@ -170,8 +165,8 @@
     "semantic_hash": "8424254f64fd237d8b832ce4961acc45"
   },
   "src/components/staff-view.tsx": {
-    "mtime": 1781008425.7369926,
-    "ast_hash": "196dfe4725a5ebce23add59ec902914c",
+    "mtime": 1781120225.640377,
+    "ast_hash": "090dd1c4cd065a1ca5c6beec28901f80",
     "semantic_hash": ""
   },
   "src/components/subscription-view.tsx": {
@@ -180,8 +175,8 @@
     "semantic_hash": "daf8257b9bb2331dcaf64f96fa05c2c4"
   },
   "src/components/support-view.tsx": {
-    "mtime": 1781033010.199169,
-    "ast_hash": "2cb50b5d418d2ea0e1e7a0c331036706",
+    "mtime": 1781121123.8084404,
+    "ast_hash": "4cd107cd256b73bd86866d7b5f532e0d",
     "semantic_hash": ""
   },
   "src/components/tenant-terms-view.tsx": {
@@ -190,9 +185,9 @@
     "semantic_hash": "f57d13a9cc6649e8b5b77783a09774ed"
   },
   "src/components/ui/bed-icon.tsx": {
-    "mtime": 1780764300.9948585,
-    "ast_hash": "5e00a1cb9eb2b2a198c71ef765d35739",
-    "semantic_hash": "5e00a1cb9eb2b2a198c71ef765d35739"
+    "mtime": 1781123626.3854117,
+    "ast_hash": "06648688cdca78e0cfa21c64f9bdbf9a",
+    "semantic_hash": ""
   },
   "src/components/ui/bottom-sheet.tsx": {
     "mtime": 1780786792.2089243,
@@ -220,14 +215,9 @@
     "semantic_hash": "51ce3b5f386b790dddca73a95929b6c3"
   },
   "src/components/visitor-logs-view.tsx": {
-    "mtime": 1781033014.903114,
-    "ast_hash": "2101657475fa10fa5bb433843c819533",
+    "mtime": 1781117786.2150156,
+    "ast_hash": "af880ced56214216fe9546d197b01894",
     "semantic_hash": ""
-  },
-  "src/components/wallet-view.tsx": {
-    "mtime": 1780821542.833985,
-    "ast_hash": "66e16b8e8ab06d9c73d03750e9604ff3",
-    "semantic_hash": "66e16b8e8ab06d9c73d03750e9604ff3"
   },
   "src/lib/supabase.ts": {
     "mtime": 1780834716.0963442,
@@ -235,8 +225,8 @@
     "semantic_hash": "25b5103c4a08b4f368d4fdd106fc000b"
   },
   "src/lib/types.ts": {
-    "mtime": 1781011868.3825247,
-    "ast_hash": "407f4f78c3c73eef742b6b22199d42cc",
+    "mtime": 1781123634.0875442,
+    "ast_hash": "4bb3a870c8c26ffa356550de2420af88",
     "semantic_hash": ""
   },
   "src/lib/utils.ts": {
