@@ -13,7 +13,6 @@ import {
   Landmark, 
   Settings, 
   FileText, 
-  Crown, 
   LogOut, 
   Home as HomeIcon, 
   QrCode,
@@ -38,7 +37,7 @@ import { SettingsView } from "@/components/settings-view";
 import { ViewProfileView } from "@/components/view-profile-view";
 import { BankDetailsView, BankDetails } from "@/components/bank-details-view";
 import { TenantTermsView } from "@/components/tenant-terms-view";
-import { SubscriptionView } from "@/components/subscription-view";
+
 import { ChangePasswordView } from "@/components/change-password-view";
 import { PropertyQrModal } from "@/components/property-qr-modal";
 import { NotificationsView, NotificationItem } from "@/components/notifications-view";
@@ -56,7 +55,7 @@ import { VacantBedsView } from "@/components/vacant-beds-view";
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "subscription" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
 
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
@@ -1179,20 +1178,7 @@ export default function Home() {
                       />
                     </div>
 
-                    {/* UPGRADE PLAN Section */}
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Upgrade Plan</span>
-                      <DrawerItem 
-                        label="Subscription" 
-                        icon={Crown} 
-                        variant="orange"
-                        active={currentView === "subscription"}
-                        onClick={() => {
-                          setCurrentView("subscription");
-                          setIsDrawerOpen(false);
-                        }} 
-                      />
-                    </div>
+
 
                     {/* HELP & SUPPORT Section */}
                     <div className="flex flex-col gap-1.5">
@@ -1493,16 +1479,7 @@ export default function Home() {
               />
             )}
 
-            {currentView === "subscription" && (
-              <SubscriptionView
-                onBack={() => setCurrentView("dashboard")}
-                onMenuClick={() => setIsDrawerOpen(true)}
-                onProceedToPayment={(planName, price) => {
-                  setCurrentView("dashboard");
-                  setToastMessage(`Payment of ₹${price} for ${planName} processed successfully!`);
-                }}
-              />
-            )}
+
 
             {currentView === "notifications" && (
               <NotificationsView
