@@ -56,6 +56,11 @@ export function BookingsView({
     return today.toISOString().split("T")[0];
   });
 
+  const [approvalMode, setApprovalMode] = useState<"active" | "waitlist">("active");
+  const [cancellationBooking, setCancellationBooking] = useState<any | null>(null);
+  const [refundInitiated, setRefundInitiated] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(null), 3000);
@@ -116,6 +121,18 @@ export function BookingsView({
     }
   }, [assignedRoomId, rooms]);
 
+  // Handle toggling approvalMode
+  const handleApprovalModeChange = (mode: "active" | "waitlist") => {
+    setApprovalMode(mode);
+    if (mode === "active") {
+      setJoinDate(new Date().toISOString().split("T")[0]);
+    } else {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setJoinDate(tomorrow.toISOString().split("T")[0]);
+    }
+  };
+
   const handleApproveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBooking || !assignedRoomId || !assignedBedId) return;
@@ -137,27 +154,53 @@ export function BookingsView({
       const tenantStatus = isFuture ? "prebooked" : "active";
       const bedStatus = isFuture ? "reserved" : "occupied";
 
-      // 1. Create tenant record with invite token
-      const { data: tenant, error: tenantError } = await supabase
+      // Check if tenant record already exists (e.g. from signup)
+      const { data: existingTenant, error: existingTenantErr } = await supabase
         .from("tenants")
-        .insert({
-          pg_id: pgIdVal,
-          name: selectedBooking.name.trim(),
-          email: selectedBooking.email.trim(),
-          phone: selectedBooking.phone.trim(),
-          room_id: Number(assignedRoomId),
-          bed_id: Number(assignedBedId),
-          deposit: 5000, // standard deposit
-          status: tenantStatus,
-          invite_token: inviteToken,
-          invite_expires_at: inviteExpiresAt,
-          user_id: null,
-          join_date: joinDate
-        })
-        .select()
-        .single();
+        .select("id")
+        .or(`email.eq.${selectedBooking.email.trim()},phone.eq.${selectedBooking.phone.trim()}`)
+        .maybeSingle();
 
-      if (tenantError) throw tenantError;
+      let tenantId: number;
+
+      if (existingTenant) {
+        // Update existing tenant
+        const { error: updateTenantErr } = await supabase
+          .from("tenants")
+          .update({
+            room_id: Number(assignedRoomId),
+            bed_id: Number(assignedBedId),
+            status: tenantStatus,
+            join_date: joinDate
+          })
+          .eq("id", existingTenant.id);
+
+        if (updateTenantErr) throw updateTenantErr;
+        tenantId = existingTenant.id;
+      } else {
+        // Create new tenant record with invite token
+        const { data: tenant, error: tenantError } = await supabase
+          .from("tenants")
+          .insert({
+            pg_id: pgIdVal,
+            name: selectedBooking.name.trim(),
+            email: selectedBooking.email.trim(),
+            phone: selectedBooking.phone.trim(),
+            room_id: Number(assignedRoomId),
+            bed_id: Number(assignedBedId),
+            deposit: 5000, // standard deposit
+            status: tenantStatus,
+            invite_token: inviteToken,
+            invite_expires_at: inviteExpiresAt,
+            user_id: null,
+            join_date: joinDate
+          })
+          .select()
+          .single();
+
+        if (tenantError) throw tenantError;
+        tenantId = tenant.id;
+      }
 
       // 2. Mark bed as occupied or reserved
       const { error: bedError } = await supabase
@@ -168,20 +211,37 @@ export function BookingsView({
       if (bedError) throw bedError;
 
       // 2b. Create Security Deposit payment record
-      const { error: depositError } = await supabase.from("payments").insert({
-        tenant_id: tenant.id,
-        pg_id: pgIdVal,
-        amount: 5000,
-        month: "Security Deposit",
-        status: "pending",
-        due_date: joinDate
-      });
+      if (existingTenant) {
+        // Create a paid Security Deposit payment record of 1000 since they paid upfront during signup
+        const { error: depositError } = await supabase.from("payments").insert({
+          tenant_id: tenantId,
+          pg_id: pgIdVal,
+          amount: 1000,
+          month: "Security Deposit",
+          status: "paid",
+          due_date: new Date().toISOString().split("T")[0],
+          payment_date: new Date().toISOString().split("T")[0],
+          payment_method: "UPI"
+        });
 
-      if (depositError) throw depositError;
+        if (depositError) throw depositError;
+      } else {
+        // Create standard pending Security Deposit payment record of 5000
+        const { error: depositError } = await supabase.from("payments").insert({
+          tenant_id: tenantId,
+          pg_id: pgIdVal,
+          amount: 5000,
+          month: "Security Deposit",
+          status: "pending",
+          due_date: joinDate
+        });
+
+        if (depositError) throw depositError;
+      }
 
       // 3. Create initial rent payment
       const { error: paymentError } = await supabase.from("payments").insert({
-        tenant_id: tenant.id,
+        tenant_id: tenantId,
         pg_id: pgIdVal,
         amount: 6500, // standard rent
         month: new Date(joinDate).toLocaleDateString("en-US", { month: "long", year: "numeric" }),
@@ -203,7 +263,11 @@ export function BookingsView({
 
       if (bookingError) throw bookingError;
 
-      alert(`Booking approved! Share this Invite Token with the tenant:\n\nToken: ${inviteToken}\nExpires: 7 days`);
+      if (!existingTenant) {
+        alert(`Booking approved! Share this Invite Token with the tenant:\n\nToken: ${inviteToken}\nExpires: 7 days`);
+      } else {
+        alert(`Booking approved! Tenant already registered and their check-in is set to: ${joinDate}`);
+      }
 
       setToastMessage(`Booking for ${selectedBooking.name} approved!`);
       setSelectedBooking(null);
@@ -218,21 +282,36 @@ export function BookingsView({
     }
   };
 
-  const handleRejectBooking = async (bookingId: number) => {
-    if (!confirm("Are you sure you want to reject this booking?")) return;
+  const handleCancelConfirm = async () => {
+    if (!cancellationBooking) return;
+    setIsCancelling(true);
     try {
-      const { error } = await supabase
+      // 1. Update booking status to rejected
+      const { error: bookingErr } = await supabase
         .from("bookings")
         .update({ status: "rejected" })
-        .eq("id", bookingId);
+        .eq("id", cancellationBooking.id);
 
-      if (error) throw error;
+      if (bookingErr) throw bookingErr;
 
-      setToastMessage("Booking request rejected.");
+      // 2. Delete tenant record (if any) to clean up
+      const { error: tenantErr } = await supabase
+        .from("tenants")
+        .delete()
+        .or(`email.eq.${cancellationBooking.email.trim()},phone.eq.${cancellationBooking.phone.trim()}`);
+
+      if (tenantErr) {
+        console.warn("Could not delete matching tenant record:", tenantErr);
+      }
+
+      setToastMessage("Booking request cancelled & deposit marked refunded.");
+      setCancellationBooking(null);
       await fetchData();
     } catch (err: any) {
-      console.error("Error rejecting booking:", err);
-      setToastMessage("Error: " + err.message);
+      console.error("Error cancelling booking:", err);
+      setToastMessage("Cancellation Failed: " + err.message);
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -397,7 +476,10 @@ export function BookingsView({
                   {isPending && (
                     <div className="flex gap-2 justify-end select-none">
                       <button
-                        onClick={() => handleRejectBooking(booking.id)}
+                        onClick={() => {
+                          setCancellationBooking(booking);
+                          setRefundInitiated(false);
+                        }}
                         className="px-3.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100/40 text-[9.5px] font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                       >
                         Reject
@@ -444,10 +526,41 @@ export function BookingsView({
                 </button>
               </div>
 
-              <form onSubmit={handleApproveSubmit} className="flex flex-col gap-4">
+              <form onSubmit={handleApproveSubmit} className="flex flex-col gap-4 text-left">
                 <div className="flex flex-col gap-1.5 bg-slate-50 p-3 rounded-xl text-xs font-semibold text-slate-500">
                   <p>Name: <span className="font-bold text-slate-800">{selectedBooking.name}</span></p>
                   <p>Contact: <span className="font-bold text-slate-800">{selectedBooking.phone}</span></p>
+                </div>
+
+                {/* Approval Mode Selection */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    Approval Mode
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleApprovalModeChange("active")}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                        approvalMode === "active"
+                          ? "bg-emerald-650 border-emerald-650 text-white shadow-xs"
+                          : "border-slate-200 hover:bg-slate-50 text-slate-650"
+                      }`}
+                    >
+                      Active (Immediate Check-in)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApprovalModeChange("waitlist")}
+                      className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                        approvalMode === "waitlist"
+                          ? "bg-amber-600 border-amber-600 text-white shadow-xs"
+                          : "border-slate-200 hover:bg-slate-50 text-slate-650"
+                      }`}
+                    >
+                      Waitlist (Deferred Check-in)
+                    </button>
+                  </div>
                 </div>
 
                 {/* Check-In Date */}
@@ -460,7 +573,8 @@ export function BookingsView({
                     id="joinDate"
                     value={joinDate}
                     onChange={(e) => setJoinDate(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white"
+                    disabled={approvalMode === "active"}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white disabled:bg-slate-100 disabled:text-slate-500"
                     required
                   />
                 </div>
@@ -531,6 +645,97 @@ export function BookingsView({
                   )}
                 </motion.button>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancellation & Refund Warning Modal */}
+      <AnimatePresence>
+        {cancellationBooking && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setCancellationBooking(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-10 bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 select-none">
+                <h3 className="font-black text-rose-600 text-base flex items-center gap-1.5">
+                  <AlertTriangle className="size-5 text-rose-500" />
+                  Refund & Cancel
+                </h3>
+                <button
+                  onClick={() => setCancellationBooking(null)}
+                  className="p-1 rounded-full hover:bg-slate-50 text-slate-400 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="text-xs space-y-2.5">
+                <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-905 text-rose-700 dark:text-rose-455 p-3 rounded-xl font-semibold leading-relaxed">
+                  <strong>Refund Required:</strong> This prospect paid a ₹1,000 security deposit when creating their resident account. Cancelling this request requires a full refund.
+                </div>
+
+                <div className="bg-slate-50 p-3 rounded-xl space-y-2 font-semibold text-slate-650 border border-slate-100">
+                  <p>Prospect: <span className="font-bold text-slate-800">{cancellationBooking.name}</span></p>
+                  <p>Contact: <span className="font-bold text-slate-800">{cancellationBooking.phone}</span></p>
+                  <p>Amount: <span className="font-bold text-rose-600 font-mono text-sm">₹1,000.00</span></p>
+                </div>
+              </div>
+
+              {/* UPI Refund Link */}
+              <div className="flex flex-col gap-3">
+                <a
+                  href={`upi://pay?pa=${cancellationBooking.phone.replace(/[^0-9]/g, '')}@upi&pn=${encodeURIComponent(cancellationBooking.name)}&am=1000&cu=INR&tn=${encodeURIComponent("Deposit Refund")}`}
+                  onClick={() => setRefundInitiated(true)}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-4 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer text-xs tracking-wider uppercase text-center select-none"
+                >
+                  <QrCode className="size-4 shrink-0" />
+                  Pay Refund via UPI (₹1,000)
+                </a>
+
+                {refundInitiated && (
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 p-2.5 rounded-xl justify-center leading-none border border-emerald-100">
+                    <Check className="size-4" />
+                    Refund Initiated
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2.5 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setCancellationBooking(null)}
+                  className="flex-1 py-3 border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-xl active:scale-95 text-xs transition-all cursor-pointer"
+                >
+                  Go Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelConfirm}
+                  disabled={!refundInitiated || isCancelling}
+                  className={`flex-1 py-3 text-white font-black rounded-xl active:scale-95 text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    refundInitiated 
+                      ? 'bg-rose-600 hover:bg-rose-700' 
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-transparent'
+                  }`}
+                >
+                  {isCancelling ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    "Confirm Cancel"
+                  )}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
