@@ -10,7 +10,6 @@ import {
   Clock,
   UserCheck,
   Building2,
-  QrCode,
   Bell,
   ChevronDown,
   Menu,
@@ -580,8 +579,6 @@ export function VisitorLogsView({
           >
             <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span className="truncate">{propertyName}</span>
-            <div className="h-4 w-px bg-slate-200" />
-            <QrCode className="w-4 h-4 text-slate-400 shrink-0" />
             <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
           </motion.button>
 

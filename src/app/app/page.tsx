@@ -15,7 +15,6 @@ import {
   FileText, 
   LogOut, 
   Home as HomeIcon, 
-  QrCode,
   Coffee,
   CalendarRange,
   Users2,
@@ -39,7 +38,7 @@ import { BankDetailsView, BankDetails } from "@/components/bank-details-view";
 import { TenantTermsView } from "@/components/tenant-terms-view";
 
 import { ChangePasswordView } from "@/components/change-password-view";
-import { PropertyQrModal } from "@/components/property-qr-modal";
+
 import { NotificationsView, NotificationItem } from "@/components/notifications-view";
 import { RemindersView } from "@/components/reminders-view";
 import { BillsView } from "@/components/bills-view";
@@ -95,7 +94,6 @@ function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "To
 export default function Home() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isPropertySelectorOpen, setIsPropertySelectorOpen] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [currentProperty, setCurrentProperty] = useState("Loading...");
   const [showSplash, setShowSplash] = useState(true);
   const [receiptsInitialTab, setReceiptsInitialTab] = useState<"dues" | "receipts">("receipts");
@@ -1091,15 +1089,6 @@ export default function Home() {
                         <span className="text-slate-400 font-semibold text-[10px] tracking-tight truncate">Code: {activePgId || "Loading..."}</span>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => { 
-                        setIsDrawerOpen(false); 
-                        setIsQrModalOpen(true); 
-                      }} 
-                      className="w-10 h-10 border border-slate-200/80 rounded-xl flex items-center justify-center bg-white shadow-xs shrink-0 cursor-pointer hover:bg-slate-50 active:scale-95 transition-transform"
-                    >
-                      <QrCode className="w-5 h-5 text-emerald-600" />
-                    </button>
                   </div>
 
                   {/* Drawer Scrollable Content */}
@@ -1678,12 +1667,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Property QR Code Modal */}
-      <PropertyQrModal
-        isOpen={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-        propertyName={currentProperty}
-      />
+
 
       {/* Property Selector Bottom Sheet */}
       <PropertySelector

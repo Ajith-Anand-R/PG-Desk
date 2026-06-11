@@ -11,7 +11,6 @@ import {
   Check,
   X,
   Building2,
-  QrCode,
   Bell,
   ChevronDown,
   Info,
@@ -19,7 +18,8 @@ import {
   Menu,
   CheckCircle,
   HelpCircle,
-  AlertTriangle
+  AlertTriangle,
+  Smartphone
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -382,8 +382,6 @@ export function BookingsView({
           >
             <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span className="truncate">{propertyName}</span>
-            <div className="h-4 w-px bg-slate-200" />
-            <QrCode className="w-4 h-4 text-slate-400 shrink-0" />
             <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
           </motion.button>
 
@@ -738,7 +736,7 @@ export function BookingsView({
                   onClick={() => setRefundInitiated(true)}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-4 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer text-xs tracking-wider uppercase text-center select-none"
                 >
-                  <QrCode className="size-4 shrink-0" />
+                  <Smartphone className="size-4 shrink-0" />
                   Pay Refund via UPI (₹1,000)
                 </a>
 
