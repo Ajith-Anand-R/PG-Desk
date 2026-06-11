@@ -463,6 +463,21 @@ export function RoomsView({
                                 View Details
                               </motion.button>
                             </div>
+
+                            {/* Invite Token Info */}
+                            {bedDetails.tenant.user_id === null && (
+                              <div className="flex flex-col gap-1.5 mt-1 bg-violet-50/50 border border-violet-100 p-3 rounded-2xl">
+                                <span className="text-[9px] font-extrabold text-violet-600 uppercase tracking-wider">Unregistered - Invite Token</span>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-xs font-black text-violet-750 bg-violet-100/60 px-2.5 py-0.5 rounded border border-violet-200/50 select-all">
+                                    {bedDetails.tenant.invite_token}
+                                  </span>
+                                  <span className="text-[9px] font-extrabold text-slate-400">
+                                    Expires: {formatDate(bedDetails.tenant.invite_expires_at)}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Payment status */}
@@ -747,6 +762,26 @@ export function RoomsView({
                     </span>
                   </div>
                 </div>
+
+                {/* Invite Token Info */}
+                {selectedTenant.user_id === null && (
+                  <div className="bg-violet-50/50 border border-violet-150 p-4.5 rounded-3xl flex flex-col gap-3 shadow-xs">
+                    <span className="text-[10px] font-extrabold text-violet-650 uppercase tracking-widest flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-violet-650" />
+                      Registration Invite Link / Token
+                    </span>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-semibold text-slate-550">Invite Token</span>
+                      <span className="font-mono font-black text-violet-750 bg-violet-100/60 px-2.5 py-0.5 rounded border border-violet-200/50 select-all">
+                        {selectedTenant.invite_token}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                      <span className="font-semibold text-slate-550">Expires At</span>
+                      <span className="font-extrabold text-slate-700">{formatDate(selectedTenant.invite_expires_at)}</span>
+                    </div>
+                  </div>
+                )}
 
               </div>
 
