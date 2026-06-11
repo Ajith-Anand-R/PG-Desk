@@ -22,6 +22,8 @@ import {
   Smartphone
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import * as Sentry from "@sentry/nextjs";
+
 
 interface BookingsViewProps {
   onBack: () => void;
@@ -309,6 +311,7 @@ export function BookingsView({
       await fetchData();
     } catch (err: any) {
       console.error("Error approving booking:", err);
+      Sentry.captureException(err);
       setToastMessage("Approval Failed: " + err.message);
     } finally {
       setIsSubmitting(false);
@@ -342,6 +345,7 @@ export function BookingsView({
       await fetchData();
     } catch (err: any) {
       console.error("Error cancelling booking:", err);
+      Sentry.captureException(err);
       setToastMessage("Cancellation Failed: " + err.message);
     } finally {
       setIsCancelling(false);

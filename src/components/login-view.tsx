@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Building } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import * as Sentry from "@sentry/nextjs";
+
 
 interface LoginViewProps {
   onLogin: () => void;
@@ -34,16 +36,23 @@ export function LoginView({ onLogin, onRegisterClick }: LoginViewProps) {
     setIsLoading(true);
     setLoginMethod("email");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: password.trim(),
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
 
-    setIsLoading(false);
-    if (error) {
-      setToastMessage(error.message);
-    } else {
-      onLogin();
+      setIsLoading(false);
+      if (error) {
+        Sentry.captureException(new Error(`Login failed: ${error.message}`));
+        setToastMessage(error.message);
+      } else {
+        onLogin();
+      }
+    } catch (err) {
+      setIsLoading(false);
+      Sentry.captureException(err);
+      setToastMessage(err instanceof Error ? err.message : "An error occurred during login");
     }
   };
 
@@ -51,16 +60,23 @@ export function LoginView({ onLogin, onRegisterClick }: LoginViewProps) {
     setIsLoading(true);
     setLoginMethod("google");
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/app",
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/app",
+        },
+      });
 
-    if (error) {
+      if (error) {
+        setIsLoading(false);
+        Sentry.captureException(new Error(`Google login OAuth error: ${error.message}`));
+        setToastMessage(error.message);
+      }
+    } catch (err) {
       setIsLoading(false);
-      setToastMessage(error.message);
+      Sentry.captureException(err);
+      setToastMessage(err instanceof Error ? err.message : "Google login failed");
     }
   };
 

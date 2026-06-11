@@ -4,6 +4,8 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Camera, Building, Upload, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import * as Sentry from "@sentry/nextjs";
+
 
 interface RegisterViewProps {
   onLoginClick: () => void;
@@ -43,32 +45,39 @@ export function RegisterView({ onLoginClick, onRegisterSuccess }: RegisterViewPr
 
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: password.trim(),
-      options: {
-        data: {
-          name: name.trim(),
-          role: "Owner",
-          phone: phone.trim(),
-          photo: photo,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: {
+          data: {
+            name: name.trim(),
+            role: "Owner",
+            phone: phone.trim(),
+            photo: photo,
+          },
         },
-      },
-    });
+      });
 
-    setIsLoading(false);
-    if (error) {
-      setToastMessage(error.message);
-    } else {
-      setToastMessage("Account created successfully!");
-      setTimeout(() => {
-        onRegisterSuccess({
-          name: name.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          photo,
-        });
-      }, 1000);
+      setIsLoading(false);
+      if (error) {
+        Sentry.captureException(new Error(`Registration failed: ${error.message}`));
+        setToastMessage(error.message);
+      } else {
+        setToastMessage("Account created successfully!");
+        setTimeout(() => {
+          onRegisterSuccess({
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            photo,
+          });
+        }, 1000);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      Sentry.captureException(err);
+      setToastMessage(err instanceof Error ? err.message : "An error occurred during registration");
     }
   };
 

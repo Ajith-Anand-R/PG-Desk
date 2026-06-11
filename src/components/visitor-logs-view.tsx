@@ -26,6 +26,8 @@ import {
   Trash2
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import * as Sentry from "@sentry/nextjs";
+
 
 interface VisitorLogsViewProps {
   onBack: () => void;
@@ -130,6 +132,7 @@ export function VisitorLogsView({
 
     } catch (err: any) {
       console.error("Error fetching gate data:", err);
+      Sentry.captureException(err);
       setToastMessage("Error: " + err.message);
     } finally {
       setIsLoading(false);
@@ -197,6 +200,7 @@ export function VisitorLogsView({
       setToastMessage("Visitor Checked-In successfully!");
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Check-in failed: " + err.message);
     }
   };
@@ -220,6 +224,7 @@ export function VisitorLogsView({
       setToastMessage("Visitor Checked-Out successfully!");
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Check-out failed: " + err.message);
     }
   };
@@ -354,6 +359,7 @@ export function VisitorLogsView({
       setVehicleNo("");
       setWalkinPhoto(null);
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Walk-in registration failed: " + err.message);
     }
   };
@@ -391,6 +397,7 @@ export function VisitorLogsView({
       setIsAwaitingDeliveryApproval(true);
       subscribeToApproval(data.id, true);
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Delivery registration failed: " + err.message);
     }
   };
@@ -429,6 +436,7 @@ export function VisitorLogsView({
       setActiveTab('parcels');
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Parcel logging failed: " + err.message);
     }
   };
@@ -456,6 +464,7 @@ export function VisitorLogsView({
       setInputOtp("");
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Handover failed: " + err.message);
     }
   };
@@ -493,6 +502,7 @@ export function VisitorLogsView({
       setToastMessage(`${staff.name} Clocked In!`);
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Clock In failed: " + err.message);
     }
   };
@@ -531,6 +541,7 @@ export function VisitorLogsView({
       setToastMessage(`${staff.name} Clocked Out!`);
       await fetchData();
     } catch (err: any) {
+      Sentry.captureException(err);
       setToastMessage("Clock Out failed: " + err.message);
     }
   };

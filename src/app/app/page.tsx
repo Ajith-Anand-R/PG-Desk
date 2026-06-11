@@ -55,6 +55,8 @@ import { PastTenantsView } from "@/components/past-tenants-view";
 // Removed SuperAdminView import
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import * as Sentry from "@sentry/nextjs";
+
 
 type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds" | "deposit-notice" | "past-tenants";
 
@@ -997,59 +999,71 @@ export default function Home() {
   };
 
   const handleCollectRent = async (dueId: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
-    const { data: profile } = await supabase
-      .from("users")
-      .select("pg_id")
-      .eq("id", session.user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from("users")
+        .select("pg_id")
+        .eq("id", session.user.id)
+        .single();
 
-    if (!profile?.pg_id) return;
+      if (!profile?.pg_id) return;
 
-    const { error } = await supabase
-      .from("payments")
-      .update({
-        status: "paid",
-        payment_date: new Date().toISOString().split("T")[0],
-        payment_method: "UPI",
-        reference_code: `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
-      })
-      .eq("id", dueId)
-      .eq("pg_id", profile.pg_id);
+      const { error } = await supabase
+        .from("payments")
+        .update({
+          status: "paid",
+          payment_date: new Date().toISOString().split("T")[0],
+          payment_method: "UPI",
+          reference_code: `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
+        })
+        .eq("id", dueId)
+        .eq("pg_id", profile.pg_id);
 
-    if (error) {
-      setToastMessage(error.message);
-    } else {
-      setToastMessage("Rent collected successfully!");
-      await fetchPgData(profile.pg_id);
+      if (error) {
+        Sentry.captureException(new Error(`Collect rent error: ${error.message}`));
+        setToastMessage(error.message);
+      } else {
+        setToastMessage("Rent collected successfully!");
+        await fetchPgData(profile.pg_id);
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      setToastMessage(err instanceof Error ? err.message : "Error collecting rent");
     }
   };
 
   const handleUpdateComplaintStatus = async (complaintId: string, newStatus: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
-    const { data: profile } = await supabase
-      .from("users")
-      .select("pg_id")
-      .eq("id", session.user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from("users")
+        .select("pg_id")
+        .eq("id", session.user.id)
+        .single();
 
-    if (!profile?.pg_id) return;
+      if (!profile?.pg_id) return;
 
-    const { error } = await supabase
-      .from("complaints")
-      .update({ status: newStatus })
-      .eq("id", Number(complaintId))
-      .eq("pg_id", profile.pg_id);
+      const { error } = await supabase
+        .from("complaints")
+        .update({ status: newStatus })
+        .eq("id", Number(complaintId))
+        .eq("pg_id", profile.pg_id);
 
-    if (error) {
-      setToastMessage(error.message);
-    } else {
-      setToastMessage("Complaint status updated successfully!");
-      await fetchPgData(profile.pg_id);
+      if (error) {
+        Sentry.captureException(new Error(`Update complaint status error: ${error.message}`));
+        setToastMessage(error.message);
+      } else {
+        setToastMessage("Complaint status updated successfully!");
+        await fetchPgData(profile.pg_id);
+      }
+    } catch (err) {
+      Sentry.captureException(err);
+      setToastMessage(err instanceof Error ? err.message : "Error updating complaint status");
     }
   };
 
