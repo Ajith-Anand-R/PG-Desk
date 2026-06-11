@@ -33,6 +33,7 @@ interface DashboardViewProps {
   onNavigateToReceipts: (tab: "dues" | "receipts") => void;
   onNavigateToVacantBeds: () => void;
   onNavigateToVisitors: () => void;
+  onNavigateToPastTenants: () => void;
   pendingDuesAmount: number;
   pendingDuesCount: number;
   currentProperty: string;
@@ -63,6 +64,7 @@ export function DashboardView({
   onNavigateToReceipts,
   onNavigateToVacantBeds,
   onNavigateToVisitors,
+  onNavigateToPastTenants,
   pendingDuesAmount,
   pendingDuesCount,
   currentProperty,
@@ -458,7 +460,10 @@ export function DashboardView({
             </div>
 
             {/* Left Tenants */}
-            <div className="bg-white rounded-2xl shadow-xs border border-slate-100/80 p-4 flex items-center justify-between relative overflow-hidden group hover:shadow-sm transition-shadow">
+            <div 
+              onClick={onNavigateToPastTenants}
+              className="bg-white rounded-2xl shadow-xs border border-slate-100/80 p-4 flex items-center justify-between relative overflow-hidden group hover:shadow-sm transition-shadow cursor-pointer"
+            >
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-400" />
               <div>
                 <span className="text-xl font-bold text-slate-800 font-mono tracking-tight">{leftTenants}</span>

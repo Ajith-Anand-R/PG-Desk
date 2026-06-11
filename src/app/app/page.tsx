@@ -51,11 +51,12 @@ import { ExpensesView } from "@/components/expenses-view";
 import { InventoryView } from "@/components/inventory-view";
 import { VacantBedsView } from "@/components/vacant-beds-view";
 import { DepositNoticeView } from "@/components/deposit-notice-view";
+import { PastTenantsView } from "@/components/past-tenants-view";
 // Removed SuperAdminView import
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds" | "deposit-notice";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds" | "deposit-notice" | "past-tenants";
 
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
@@ -1430,6 +1431,7 @@ export default function Home() {
                 }}
                 onNavigateToVacantBeds={() => setCurrentView("vacant-beds")}
                 onNavigateToVisitors={() => setCurrentView("visitors")}
+                onNavigateToPastTenants={() => setCurrentView("past-tenants")}
                 pendingDuesAmount={pendingDuesAmount}
                 pendingDuesCount={pendingDuesCount}
                 onMenuClick={() => setIsDrawerOpen(true)}
@@ -1711,6 +1713,14 @@ export default function Home() {
                     await fetchPgData(activePgId);
                   }
                 }}
+              />
+            )}
+
+            {currentView === "past-tenants" && (
+              <PastTenantsView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                tenants={tenants}
               />
             )}
 
