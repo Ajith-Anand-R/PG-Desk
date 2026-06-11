@@ -331,7 +331,7 @@ export function RoomsView({
 
             const totalBedsOnFloor = floorRooms.reduce((acc, r) => acc + r.capacity, 0);
             const occupiedBedsOnFloor = floorRooms.reduce(
-              (acc, r) => acc + r.beds.filter((status) => status === "occupied").length,
+              (acc, r) => acc + r.beds.filter((status) => status !== "available").length,
               0
             );
 
@@ -398,14 +398,14 @@ export function RoomsView({
                   <div className={`w-2 h-2 rounded-full ${
                     selectedBed.status === "occupied" 
                       ? (bedDetails?.tenant?.status === "notice" ? "bg-amber-500 animate-pulse" : "bg-rose-500 animate-pulse")
-                      : selectedBed.status === "reserved"
+                      : (selectedBed.status === "reserved" || selectedBed.status === "notice")
                       ? "bg-amber-500 animate-pulse"
                       : "bg-emerald-500"
                   }`} />
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${
                     selectedBed.status === "occupied" 
                       ? (bedDetails?.tenant?.status === "notice" ? "text-amber-600" : "text-rose-600")
-                      : selectedBed.status === "reserved"
+                      : (selectedBed.status === "reserved" || selectedBed.status === "notice")
                       ? "text-amber-600"
                       : "text-emerald-600"
                   }`}>

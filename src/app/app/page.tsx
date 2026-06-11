@@ -545,7 +545,7 @@ export default function Home() {
   const activePgId = properties.find((p) => p.name === currentProperty)?.code;
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
   const occupiedBedsCount = rooms.reduce(
-    (acc, r) => acc + r.beds.filter((status) => status === "occupied").length,
+    (acc, r) => acc + r.beds.filter((status) => status === "occupied" || status === "notice").length,
     0
   );
   const availableBedsCount = totalBeds - occupiedBedsCount;
@@ -1446,6 +1446,7 @@ export default function Home() {
                 onNavigateToVacantBeds={() => setCurrentView("vacant-beds")}
                 onNavigateToVisitors={() => setCurrentView("visitors")}
                 onNavigateToPastTenants={() => setCurrentView("past-tenants")}
+                onNavigateToDepositNotice={() => setCurrentView("deposit-notice")}
                 pendingDuesAmount={pendingDuesAmount}
                 pendingDuesCount={pendingDuesCount}
                 onMenuClick={() => setIsDrawerOpen(true)}

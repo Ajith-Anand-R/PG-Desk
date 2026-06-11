@@ -34,6 +34,7 @@ interface DashboardViewProps {
   onNavigateToVacantBeds: () => void;
   onNavigateToVisitors: () => void;
   onNavigateToPastTenants: () => void;
+  onNavigateToDepositNotice: () => void;
   pendingDuesAmount: number;
   pendingDuesCount: number;
   currentProperty: string;
@@ -65,6 +66,7 @@ export function DashboardView({
   onNavigateToVacantBeds,
   onNavigateToVisitors,
   onNavigateToPastTenants,
+  onNavigateToDepositNotice,
   pendingDuesAmount,
   pendingDuesCount,
   currentProperty,
@@ -392,13 +394,16 @@ export function DashboardView({
             </div>
 
             {/* Notice */}
-            <div className="flex flex-col items-center justify-center px-1">
-              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mb-1">
-                <Wrench className="w-4.5 h-4.5" />
+            <button
+              onClick={onNavigateToDepositNotice}
+              className="flex flex-col items-center justify-center px-1 hover:bg-slate-50 rounded-xl transition-all cursor-pointer select-none focus:outline-hidden"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mb-1 border border-amber-100/50">
+                <Clock className="w-4.5 h-4.5" />
               </div>
               <span className="text-xl font-bold text-amber-500 font-mono tracking-tight">{noticeTenantsCount}</span>
               <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Notice</span>
-            </div>
+            </button>
 
             {/* Prebook */}
             <div className="flex flex-col items-center justify-center px-1">
