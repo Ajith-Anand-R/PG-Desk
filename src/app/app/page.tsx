@@ -185,7 +185,7 @@ export default function Home() {
         .from("tenants")
         .select("*, users(*), rooms(*)")
         .eq("pg_id", pgId)
-        .in("status", ["active", "notice", "prebooked"]);
+        .in("status", ["active", "notice", "prebooked", "left"]);
 
       if (tenantsList) {
         const formattedTenants = tenantsList.map((t: any) => ({
