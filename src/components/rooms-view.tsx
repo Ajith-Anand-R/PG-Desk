@@ -13,7 +13,9 @@ import {
   Phone, 
   Shield, 
   Mail, 
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  Clock
 } from "lucide-react";
 import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
@@ -43,7 +45,7 @@ export function RoomsView({
     roomId: string;
     roomName: string;
     bedIndex: number;
-    status: "available" | "occupied" | "reserved";
+    status: "available" | "occupied" | "reserved" | "notice";
   } | null>(null);
 
   const [bedDetails, setBedDetails] = useState<{
@@ -56,10 +58,26 @@ export function RoomsView({
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
 
+  // Helper to calculate days remaining for notice period
+  const getDaysRemaining = (vacateDateStr?: string | null) => {
+    if (!vacateDateStr) return null;
+    const vacateDate = new Date(vacateDateStr);
+    vacateDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffTime = vacateDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
   // Dynamic calculations
   const totalBeds = rooms.reduce((acc, r) => acc + r.capacity, 0);
   const occupiedBedsCount = rooms.reduce(
-    (acc, r) => acc + r.beds.filter((status) => status === "occupied").length,
+    (acc, r) => acc + r.beds.filter((status) => status === "occupied" || status === "notice").length,
+    0
+  );
+  const noticeBedsCount = rooms.reduce(
+    (acc, r) => acc + r.beds.filter((status) => status === "notice").length,
     0
   );
   const availableBedsCount = totalBeds - occupiedBedsCount;
@@ -77,7 +95,7 @@ export function RoomsView({
   // Group rooms by floor dynamically
   const targetFloors = selectedFloor === "All" ? floors : [selectedFloor];
 
-  const handleBedClick = async (room: Room, bedIndex: number, status: "available" | "occupied" | "reserved") => {
+  const handleBedClick = async (room: Room, bedIndex: number, status: "available" | "occupied" | "reserved" | "notice") => {
     setSelectedBed({
       roomId: room.id,
       roomName: room.name,
@@ -107,7 +125,7 @@ export function RoomsView({
 
         const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
 
-        if (status === "occupied" || status === "reserved") {
+        if (status === "occupied" || status === "reserved" || status === "notice") {
           // Fetch active, pending, prebooked, or notice tenant for this bed
           const { data: tenantsForBed } = await supabase
             .from("tenants")
@@ -245,7 +263,7 @@ export function RoomsView({
       <div className="px-5 -mt-6 z-20 grid grid-cols-3 gap-2.5 relative">
         <StatCard type="available" value={availableBedsCount} />
         <StatCard type="occupied" value={occupiedBedsCount} />
-        <StatCard type="notice" value={0} />
+        <StatCard type="notice" value={noticeBedsCount} />
       </div>
 
       {/* Controls: Search and Filters */}
@@ -421,9 +439,35 @@ export function RoomsView({
                       </span>
                     </div>
 
-                    {(selectedBed.status === "occupied" || selectedBed.status === "reserved") ? (
+                    {(selectedBed.status === "occupied" || selectedBed.status === "reserved" || selectedBed.status === "notice") ? (
                       bedDetails?.tenant ? (
                         <>
+                          {/* Notice Period Banner */}
+                          {bedDetails.tenant.status === "notice" && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4.5 flex flex-col gap-2">
+                              <div className="flex items-center gap-2 text-amber-800 font-extrabold text-xs">
+                                <Clock className="w-4.5 h-4.5 text-amber-600 animate-pulse" />
+                                Resident serving notice period
+                              </div>
+                              <div className="text-[11px] text-amber-705 font-semibold leading-relaxed">
+                                This bed is scheduled to become vacant on{" "}
+                                <span className="font-extrabold text-amber-900">
+                                  {formatDate(bedDetails.tenant.vacateDate)}
+                                </span>.
+                                <div className="mt-2 flex items-center">
+                                  <span className="bg-amber-100 border border-amber-200 text-amber-850 px-2.5 py-0.5 rounded-lg font-black text-[9.5px] uppercase tracking-wider">
+                                    {(() => {
+                                      const daysLeft = getDaysRemaining(bedDetails.tenant.vacateDate);
+                                      if (daysLeft === null) return "N/A";
+                                      if (daysLeft < 0) return "Overdue";
+                                      return `${daysLeft} days left`;
+                                    })()}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Occupied Tenant Section */}
                           <div className="flex flex-col gap-2">
                             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">
@@ -564,23 +608,32 @@ export function RoomsView({
                         </motion.button>
                       )}
 
-                      <motion.button
-                        whileTap={{ scale: 0.96 }}
-                        onClick={handleToggleBedStatus}
-                        className={`w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
-                          selectedBed.status === "occupied"
-                            ? "bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                      {selectedBed.status === "notice" ? (
+                        <button
+                          disabled
+                          className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider text-center text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed select-none"
+                        >
+                          Bed Locked (Notice Period Active)
+                        </button>
+                      ) : (
+                        <motion.button
+                          whileTap={{ scale: 0.96 }}
+                          onClick={handleToggleBedStatus}
+                          className={`w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
+                            selectedBed.status === "occupied"
+                              ? "bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                              : selectedBed.status === "reserved"
+                              ? "bg-slate-500 hover:bg-slate-600 shadow-md shadow-slate-900/10"
+                              : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
+                          }`}
+                        >
+                          {selectedBed.status === "occupied" 
+                            ? "Mark Bed Available" 
                             : selectedBed.status === "reserved"
-                            ? "bg-slate-500 hover:bg-slate-600 shadow-md shadow-slate-900/10"
-                            : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
-                        }`}
-                      >
-                        {selectedBed.status === "occupied" 
-                          ? "Mark Bed Available" 
-                          : selectedBed.status === "reserved"
-                          ? "Cancel Reservation (Mark Available)"
-                          : "Assign / Mark Occupied"}
-                      </motion.button>
+                            ? "Cancel Reservation (Mark Available)"
+                            : "Assign / Mark Occupied"}
+                        </motion.button>
+                      )}
                     </div>
                   </>
                 )}
@@ -807,11 +860,11 @@ export function RoomsView({
 interface RoomCardProps {
   room: Room;
   onToggleBed: (index: number) => void;
-  onBedClick: (room: Room, index: number, status: "available" | "occupied" | "reserved") => void;
+  onBedClick: (room: Room, index: number, status: "available" | "occupied" | "reserved" | "notice") => void;
 }
 
 function RoomCard({ room, onToggleBed, onBedClick }: RoomCardProps) {
-  const occupiedCount = room.beds.filter((status) => status === "occupied" || status === "reserved").length;
+  const occupiedCount = room.beds.filter((status) => status === "occupied" || status === "reserved" || status === "notice").length;
   const isFull = occupiedCount === room.capacity;
 
   return (

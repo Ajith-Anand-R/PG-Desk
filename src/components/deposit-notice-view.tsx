@@ -140,6 +140,20 @@ export function DepositNoticeView({
   };
 
   const handleCheckoutTenant = async (tenant: Tenant) => {
+    const getLocalDateString = () => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    const todayStr = getLocalDateString();
+    if (tenant.vacateDate && tenant.vacateDate > todayStr) {
+      alert(`Cannot checkout resident yet. The notice period is active until ${new Date(tenant.vacateDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}.`);
+      return;
+    }
+
     const refundStatusText = tenant.refundEligible 
       ? `Eligible for a ₹${tenant.deposit?.toLocaleString()} refund.` 
       : "Security deposit is FORFEITED.";

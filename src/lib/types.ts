@@ -3,7 +3,7 @@ export interface Room {
   name: string;
   floor: number;
   capacity: number;
-  beds: ("available" | "occupied" | "reserved")[];
+  beds: ("available" | "occupied" | "reserved" | "notice")[];
 }
 
 export interface Tenant {

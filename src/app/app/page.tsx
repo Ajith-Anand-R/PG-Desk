@@ -161,7 +161,57 @@ export default function Home() {
   // Load session and user data from Supabase
   const fetchPgData = async (pgId: number | string) => {
     try {
-      // 1. Fetch Rooms & Beds
+      // 0. Auto-checkout tenants whose notice period has ended
+      const getLocalDateString = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
+      const todayStr = getLocalDateString();
+      const { data: expiredNotices } = await supabase
+        .from("tenants")
+        .select("id, bed_id")
+        .eq("pg_id", pgId)
+        .eq("status", "notice")
+        .lte("vacate_date", todayStr);
+
+      if (expiredNotices && expiredNotices.length > 0) {
+        for (const tenant of expiredNotices) {
+          // Mark tenant as left
+          await supabase
+            .from("tenants")
+            .update({ status: "left" })
+            .eq("id", tenant.id);
+
+          // Update bed status to available (or reserved if prebooked is waiting)
+          if (tenant.bed_id) {
+            const { data: prebooked } = await supabase
+              .from("tenants")
+              .select("id")
+              .eq("bed_id", tenant.bed_id)
+              .eq("status", "prebooked")
+              .maybeSingle();
+
+            const newStatus = prebooked ? "reserved" : "available";
+            await supabase
+              .from("beds")
+              .update({ status: newStatus })
+              .eq("id", tenant.bed_id);
+          }
+        }
+      }
+
+      // 1. Fetch Tenants first to use for room formatting
+      const { data: tenantsList } = await supabase
+        .from("tenants")
+        .select("*, users(*), rooms(*)")
+        .eq("pg_id", pgId)
+        .in("status", ["active", "notice", "prebooked", "left"]);
+
+      // 2. Fetch Rooms & Beds
       const { data: roomsList } = await supabase
         .from("rooms")
         .select("*, beds(*)")
@@ -175,17 +225,19 @@ export default function Home() {
           capacity: r.capacity,
           beds: (r.beds || [])
             .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
-            .map((b: any) => b.status as "available" | "occupied" | "reserved")
+            .map((b: any) => {
+              // Check if there is an active tenant on notice on this bed
+              const tenantOnNotice = tenantsList?.find(
+                (t: any) => t.bed_id === b.id && t.status === "notice"
+              );
+              if (tenantOnNotice) {
+                return "notice" as const;
+              }
+              return b.status as "available" | "occupied" | "reserved" | "notice";
+            })
         }));
         setRooms(formattedRooms);
       }
-
-      // 2. Fetch Tenants
-      const { data: tenantsList } = await supabase
-        .from("tenants")
-        .select("*, users(*), rooms(*)")
-        .eq("pg_id", pgId)
-        .in("status", ["active", "notice", "prebooked", "left"]);
 
       if (tenantsList) {
         const formattedTenants = tenantsList.map((t: any) => ({

@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 
 interface BedIconProps {
-  status: "available" | "occupied" | "reserved";
+  status: "available" | "occupied" | "reserved" | "notice";
   onClick?: () => void;
 }
 
@@ -20,6 +20,8 @@ export function BedIcon({ status, onClick }: BedIconProps) {
           ? "bg-emerald-500 text-white shadow-[0_3px_8px_rgba(16,185,129,0.22)]"
           : status === "reserved"
           ? "bg-amber-500 text-white shadow-[0_3px_8px_rgba(245,158,11,0.22)]"
+          : status === "notice"
+          ? "bg-amber-50 text-amber-600 border-2 border-dashed border-amber-400 shadow-[0_3px_8px_rgba(245,158,11,0.12)] animate-pulse"
           : "bg-slate-100 text-slate-400 border border-slate-200/50"
       }`}
     >
