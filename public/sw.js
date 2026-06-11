@@ -1,99 +1,168 @@
-const CACHE_NAME = "pg-desk-cache-v5";
-const ASSETS = [
-  "/",
-  "/app",
-  "/manifest.json",
-  "/logo.png"
+const CACHE_VERSION = 'pgdesk-v7';
+const STATIC_CACHE = `${CACHE_VERSION}-static`;
+const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
+const FONT_CACHE = `${CACHE_VERSION}-fonts`;
+const IMAGE_CACHE = `${CACHE_VERSION}-images`;
+
+const STATIC_ASSETS = [
+  '/manifest.json',
+  '/logo.png'
 ];
 
-// Install Event
-self.addEventListener("install", (event) => {
+const MAX_DYNAMIC_CACHE = 60;
+const MAX_IMAGE_CACHE = 40;
+
+// Install: pre-cache critical static assets
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("[Service Worker] Caching static assets");
-      return cache.addAll(ASSETS).catch((err) => {
-        console.warn("[Service Worker] Cache addAll warning:", err);
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('[SW] Pre-cache warning:', err);
       });
     })
   );
   self.skipWaiting();
 });
 
-// Activate Event
-self.addEventListener("activate", (event) => {
+// Activate: purge old caches
+self.addEventListener('activate', (event) => {
+  const allowedCaches = [STATIC_CACHE, DYNAMIC_CACHE, FONT_CACHE, IMAGE_CACHE];
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    caches.keys().then((keys) =>
+      Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log("[Service Worker] Deleting old cache:", key);
+          if (!allowedCaches.includes(key)) {
             return caches.delete(key);
           }
         })
-      );
-    })
+      )
+    )
   );
   self.clients.claim();
 });
 
-// Fetch Event
-self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+// Trim cache to max entries (FIFO)
+async function trimCache(cacheName, maxItems) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxItems) {
+    await cache.delete(keys[0]);
+    return trimCache(cacheName, maxItems);
+  }
+}
 
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  
   const url = new URL(event.request.url);
-
-  // Bypass service worker caching in development (localhost) to prevent blank pages and HMR issues
-  if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
-    return; // Let the browser handle the request normally from network
+  
+  // Skip localhost entirely — no caching during development
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    return;
+  }
+  
+  if (!event.request.url.startsWith(self.location.origin) && 
+      url.hostname !== 'fonts.googleapis.com' && 
+      url.hostname !== 'fonts.gstatic.com') {
+    return;
   }
 
-  // Network-First strategy for navigation requests and other dynamic resources
-  if (event.request.mode === "navigate" || url.pathname.startsWith("/app") || url.pathname === "/") {
+  // Skip Next.js RSC data fetches
+  if (url.pathname.startsWith('/_next/data/') || url.searchParams.has('_rsc')) {
+    return;
+  }
+
+  // Strategy 1: Navigation — Network-first with offline app shell fallback
+  if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => cache.put(event.request, clone));
           }
-          return networkResponse;
+          return response;
         })
-        .catch(() => {
-          // Fallback to cache if network fails (offline)
-          return caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
+        .catch(() =>
+          caches.match(event.request).then((cached) => {
+            if (cached) return cached;
+            return caches.match('/app').then((appShell) => appShell || caches.match('/'));
+          })
+        )
+    );
+    return;
+  }
+
+  // Strategy 2: Google Fonts — Cache-first, long-lived
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith(
+      caches.open(FONT_CACHE).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((response) => {
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
             }
-            // If the specific request is not in cache, fallback to the cached app shell or index
-            return caches.match("/app").then((appShell) => appShell || caches.match("/"));
+            return response;
           });
         })
+      )
     );
     return;
   }
 
-  // Cache-First strategy for static assets (icons, manifest)
-  if (ASSETS.includes(url.pathname)) {
+  // Strategy 3: Next.js static assets — Cache-first (hashed, immutable)
+  if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(event.request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        });
-      })
+      caches.open(STATIC_CACHE).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((response) => {
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          });
+        })
+      )
     );
     return;
   }
 
-  // Default: Network only
+  // Strategy 4: Images — Cache-first with eviction limit
+  if (event.request.destination === 'image' || /\.(png|jpg|jpeg|webp|svg|gif|ico)$/i.test(url.pathname)) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then((cache) =>
+        cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((response) => {
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
+              trimCache(IMAGE_CACHE, MAX_IMAGE_CACHE);
+            }
+            return response;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Strategy 5: Stale-while-revalidate for everything else
+  event.respondWith(
+    caches.open(DYNAMIC_CACHE).then((cache) =>
+      cache.match(event.request).then((cached) => {
+        const networkFetch = fetch(event.request)
+          .then((response) => {
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
+              trimCache(DYNAMIC_CACHE, MAX_DYNAMIC_CACHE);
+            }
+            return response;
+          })
+          .catch(() => cached);
+        return cached || networkFetch;
+      })
+    )
+  );
 });
