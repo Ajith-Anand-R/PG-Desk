@@ -5,11 +5,13 @@ import "./globals.css";
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",  // Prevent FOIT (Flash of Invisible Text)
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -55,14 +57,17 @@ export default function RootLayout({
                   navigator.serviceWorker.register('/sw.js', {
                     scope: '/',
                     updateViaCache: 'none'
-                  }).then(
-                    function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    },
-                    function(err) {
-                      console.log('ServiceWorker registration failed: ', err);
-                    }
-                  );
+                  }).then(function(reg) {
+                    console.log('SW registered:', reg.scope);
+                    // Check for updates every hour
+                    setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+                  }).catch(function(err) {
+                    console.log('SW registration failed:', err);
+                  });
+                  // Auto-reload when new SW takes over
+                  navigator.serviceWorker.addEventListener('controllerchange', function() {
+                    window.location.reload();
+                  });
                 });
               }
             `
