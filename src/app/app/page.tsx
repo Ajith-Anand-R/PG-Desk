@@ -51,11 +51,12 @@ import { VisitorLogsView } from "@/components/visitor-logs-view";
 import { ExpensesView } from "@/components/expenses-view";
 import { InventoryView } from "@/components/inventory-view";
 import { VacantBedsView } from "@/components/vacant-beds-view";
+import { DepositNoticeView } from "@/components/deposit-notice-view";
 // Removed SuperAdminView import
 import { Room, Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 
-type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds";
+type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile" | "settings" | "view-profile" | "bank-details" | "tenant-terms" | "change-password" | "notifications" | "reminders" | "bills" | "staff" | "receipts" | "meals" | "bookings" | "visitors" | "expenses" | "inventory" | "vacant-beds" | "deposit-notice";
 
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
@@ -196,7 +197,15 @@ export default function Home() {
           status: t.status as "active" | "left" | "prebooked" | "notice",
           joinDate: t.join_date || null,
           noticeDate: t.notice_date || null,
-          vacateDate: t.vacate_date || null
+          vacateDate: t.vacate_date || null,
+          roomId: t.room_id ? String(t.room_id) : null,
+          bedId: t.bed_id ? String(t.bed_id) : null,
+          deposit: t.deposit ? Number(t.deposit) : 0,
+          aadhaarNumber: t.aadhaar_number || null,
+          emergencyContact: t.emergency_contact || null,
+          email: t.email || null,
+          phone: t.users?.phone || t.phone || null,
+          refundEligible: t.refund_eligible ?? false
         }));
         setTenants(formattedTenants);
         setNoticeTenantsCount(tenantsList.filter((t: any) => t.status === "notice").length);
@@ -1169,6 +1178,15 @@ export default function Home() {
                           setIsDrawerOpen(false);
                         }} 
                       />
+                      <DrawerItem 
+                        label="Security & Deposits" 
+                        icon={Shield} 
+                        active={currentView === "deposit-notice"} 
+                        onClick={() => {
+                          setCurrentView("deposit-notice");
+                          setIsDrawerOpen(false);
+                        }} 
+                      />
                     </div>
 
                     {/* ACCOUNT Section */}
@@ -1619,11 +1637,25 @@ export default function Home() {
               />
             )}
 
-            {currentView === "vacant-beds" && (
+             {currentView === "vacant-beds" && (
               <VacantBedsView
                 onBack={() => setCurrentView("dashboard")}
                 propertyName={currentProperty}
                 rooms={rooms}
+              />
+            )}
+
+            {currentView === "deposit-notice" && (
+              <DepositNoticeView
+                onBack={() => setCurrentView("dashboard")}
+                propertyName={currentProperty}
+                activePgId={activePgId}
+                tenants={tenants}
+                onRefresh={async () => {
+                  if (activePgId) {
+                    await fetchPgData(activePgId);
+                  }
+                }}
               />
             )}
 

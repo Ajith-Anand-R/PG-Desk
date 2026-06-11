@@ -22,4 +22,5 @@ export interface Tenant {
   emergencyContact?: string | null;
   email?: string | null;
   phone?: string | null;
+  refundEligible?: boolean | null;
 }
