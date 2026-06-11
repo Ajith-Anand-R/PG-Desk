@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Compress responses with gzip/brotli
@@ -22,8 +23,9 @@ const nextConfig: NextConfig = {
   },
 
   turbopack: {
-    root: process.cwd(),
+    root: path.resolve(process.cwd(), ".."),
   },
+
 
   // Custom headers for immutable caching
   async headers() {
