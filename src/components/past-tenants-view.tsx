@@ -45,11 +45,22 @@ export function PastTenantsView({
 
   // Filter past tenants (status = "left")
   const pastTenantsList = tenants.filter(t => {
-    const isPast = t.status === "left";
+    if (t.status !== "left") return false;
+    const getLocalDateString = () => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const todayStr = getLocalDateString();
+    if (t.vacateDate && t.vacateDate > todayStr) {
+      return false;
+    }
     const matchesSearch = 
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       (t.phone && t.phone.includes(searchQuery));
-    return isPast && matchesSearch;
+    return matchesSearch;
   });
 
   const formatAadhaar = (num?: string | null) => {

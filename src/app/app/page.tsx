@@ -551,7 +551,21 @@ export default function Home() {
   const availableBedsCount = totalBeds - occupiedBedsCount;
 
   const activeTenantsCount = tenants.filter((t) => t.status === "active" || t.status === "notice").length;
-  const leftTenantsCount = tenants.filter((t) => t.status === "left").length;
+  const leftTenantsCount = tenants.filter((t) => {
+    if (t.status !== "left") return false;
+    const getLocalDateString = () => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const todayStr = getLocalDateString();
+    if (t.vacateDate && t.vacateDate > todayStr) {
+      return false;
+    }
+    return true;
+  }).length;
 
   const collectedAmountSum = payments
     .filter((p) => p.status === "paid")
