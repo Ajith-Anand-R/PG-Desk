@@ -23,6 +23,8 @@ import {
 import { Tenant } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { calculateNoticeDays } from "@/lib/utils";
+
 
 interface DepositNoticeViewProps {
   onBack: () => void;
@@ -240,11 +242,7 @@ export function DepositNoticeView({
 
   // Helper: calculate notice duration
   const getNoticeDays = (noticeDate: string | null | undefined, vacateDate: string | null | undefined) => {
-    if (!noticeDate || !vacateDate) return "N/A";
-    const start = new Date(noticeDate);
-    const end = new Date(vacateDate);
-    const diff = end.getTime() - start.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return calculateNoticeDays(noticeDate, vacateDate);
   };
 
   return (

@@ -5,6 +5,7 @@ const FONT_CACHE = `${CACHE_VERSION}-fonts`;
 const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
 const STATIC_ASSETS = [
+  '/app',
   '/manifest.json',
   '/logo.png'
 ];

@@ -21,6 +21,8 @@ import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
 import { Room } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import { getDaysRemaining as utilsGetDaysRemaining } from "@/lib/utils";
+
 
 interface RoomsViewProps {
   onBack: () => void;
@@ -60,14 +62,7 @@ export function RoomsView({
 
   // Helper to calculate days remaining for notice period
   const getDaysRemaining = (vacateDateStr?: string | null) => {
-    if (!vacateDateStr) return null;
-    const vacateDate = new Date(vacateDateStr);
-    vacateDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diffTime = vacateDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return utilsGetDaysRemaining(vacateDateStr);
   };
 
   // Dynamic calculations
@@ -106,24 +101,26 @@ export function RoomsView({
     setLoadingDetails(true);
 
     try {
-      // 1. Fetch beds for this room to resolve bed_id
-      const { data: bedsList } = await supabase
-        .from("beds")
-        .select("*")
-        .eq("room_id", room.id)
-        .order("bed_number", { ascending: true });
-
-      if (bedsList && bedsList[bedIndex]) {
-        const targetBed = bedsList[bedIndex];
-        
-        // 2. Fetch room rent info
-        const { data: roomInfo } = await supabase
+      // Fetch beds for this room and room rent info in parallel
+      const [bedsRes, roomRes] = await Promise.all([
+        supabase
+          .from("beds")
+          .select("*")
+          .eq("room_id", room.id)
+          .order("bed_number", { ascending: true }),
+        supabase
           .from("rooms")
           .select("rent")
           .eq("id", room.id)
-          .single();
+          .single()
+      ]);
 
-        const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
+      const bedsList = bedsRes.data;
+      const roomInfo = roomRes.data;
+      const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
+
+      if (bedsList && bedsList[bedIndex]) {
+        const targetBed = bedsList[bedIndex];
 
         if (status === "occupied" || status === "reserved" || status === "notice") {
           // Fetch active, pending, prebooked, or notice tenant for this bed
