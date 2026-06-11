@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { QueryProvider } from "@/providers/QueryProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -48,7 +49,9 @@ export default function RootLayout({
       className={`${outfit.variable} ${geistMono.variable} antialiased`}
     >
       <body className="bg-slate-50/50 text-slate-900 min-h-[100dvh] font-sans">
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `
