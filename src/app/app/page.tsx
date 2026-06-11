@@ -153,6 +153,7 @@ export default function Home() {
   const [tenantName, setTenantName] = useState("");
   const [tenantRoomId, setTenantRoomId] = useState("");
   const [tenantRent, setTenantRent] = useState("");
+  const [tenantDeposit, setTenantDeposit] = useState("");
 
   // New Room form state
   const [roomName, setRoomName] = useState("");
@@ -766,7 +767,7 @@ export default function Home() {
   // Add a tenant submission handler
   const handleAddTenantSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantName.trim() || !tenantRoomId || !tenantRent) return;
+    if (!tenantName.trim() || !tenantRoomId || !tenantRent || !tenantDeposit) return;
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
@@ -814,7 +815,7 @@ export default function Home() {
         email: `${tenantName.toLowerCase().replace(/\s+/g, "")}@placeholder.com`,
         room_id: tenantRoomId,
         bed_id: availableBed.id,
-        deposit: Number(tenantRent),
+        deposit: Number(tenantDeposit),
         status: "active",
         invite_token: inviteToken,
         invite_expires_at: inviteExpiresAt,
@@ -834,7 +835,7 @@ export default function Home() {
       .update({ status: "occupied" })
       .eq("id", availableBed.id);
 
-    // 4. Create an initial pending payment due
+    // 4. Create an initial pending payment due (Rent)
     await supabase.from("payments").insert({
       tenant_id: tenant.id,
       pg_id: pgId,
@@ -844,12 +845,25 @@ export default function Home() {
       due_date: new Date().toISOString().split("T")[0]
     });
 
+    // 4b. Create initial pending payment for Security Deposit
+    if (Number(tenantDeposit) > 0) {
+      await supabase.from("payments").insert({
+        tenant_id: tenant.id,
+        pg_id: pgId,
+        amount: Number(tenantDeposit),
+        month: "Security Deposit",
+        status: "pending",
+        due_date: new Date().toISOString().split("T")[0]
+      });
+    }
+
     await fetchPgData(pgId);
 
     // Reset Form & Close
     setTenantName("");
     setTenantRoomId("");
     setTenantRent("");
+    setTenantDeposit("");
     setIsAddTenantOpen(false);
     alert(`Tenant boarded successfully! Share this Invite Token with them:\n\nToken: ${inviteToken}\nExpires: 7 days`);
     setToastMessage(`Tenant "${tenantName}" boarded successfully!`);
@@ -1757,6 +1771,21 @@ export default function Home() {
                     value={tenantRent}
                     onChange={(e) => setTenantRent(e.target.value)}
                     placeholder="e.g. 7000"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="tenantDeposit" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Security Deposit (₹)
+                  </label>
+                  <input
+                    id="tenantDeposit"
+                    type="number"
+                    value={tenantDeposit}
+                    onChange={(e) => setTenantDeposit(e.target.value)}
+                    placeholder="e.g. 10000"
                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
                     required
                   />

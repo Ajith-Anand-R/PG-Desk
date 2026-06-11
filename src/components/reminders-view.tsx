@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Plus, Trash2, Calendar, Clock, BellRing } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface ReminderItem {
   id: string;
@@ -20,26 +21,98 @@ export function RemindersView({ onBack }: RemindersViewProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleAddReminder = (e: React.FormEvent) => {
+  // Fetch reminders on mount
+  useEffect(() => {
+    async function loadReminders() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from("reminders")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: true });
+
+        if (error) throw error;
+        if (data) {
+          setReminders(
+            data.map((r: any) => ({
+              id: r.id.toString(),
+              title: r.title,
+              date: r.date,
+              description: r.description || "",
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to load reminders:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadReminders();
+  }, []);
+
+  const handleAddReminder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !date || !description.trim()) return;
 
-    const newReminder: ReminderItem = {
-      id: `rem_${Date.now()}`,
-      title: title.trim(),
-      date,
-      description: description.trim(),
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("You must be logged in to add reminders.");
+        return;
+      }
 
-    setReminders((prev) => [newReminder, ...prev]);
-    setTitle("");
-    setDate("");
-    setDescription("");
+      const { data, error } = await supabase
+        .from("reminders")
+        .insert({
+          user_id: user.id,
+          title: title.trim(),
+          date,
+          description: description.trim(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const newReminder: ReminderItem = {
+          id: data.id.toString(),
+          title: data.title,
+          date: data.date,
+          description: data.description || "",
+        };
+        setReminders((prev) => [newReminder, ...prev]);
+        setTitle("");
+        setDate("");
+        setDescription("");
+      }
+    } catch (err: any) {
+      console.error("Failed to add reminder:", err);
+      alert(err.message || "Failed to add reminder.");
+    }
   };
 
-  const handleDeleteReminder = (id: string) => {
-    setReminders((prev) => prev.filter((r) => r.id !== id));
+  const handleDeleteReminder = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("reminders")
+        .delete()
+        .eq("id", parseInt(id));
+
+      if (error) throw error;
+
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+    } catch (err: any) {
+      console.error("Failed to delete reminder:", err);
+      alert(err.message || "Failed to delete reminder.");
+    }
   };
 
   return (
@@ -141,7 +214,15 @@ export function RemindersView({ onBack }: RemindersViewProps) {
           <h3 className="font-extrabold text-slate-800 text-base px-1">Upcoming Reminders</h3>
 
           <AnimatePresence mode="popLayout">
-            {reminders.length === 0 ? (
+            {loading ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white rounded-[2rem] p-8 border border-slate-200/40 shadow-xs flex flex-col items-center justify-center text-center gap-3 py-12"
+              >
+                <div className="text-xs font-semibold text-slate-400">Loading reminders...</div>
+              </motion.div>
+            ) : reminders.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
@@ -40,16 +41,23 @@ export function ChangePasswordView({
 
   const isValid = hasEightChars && hasSpecialOrNumber && passwordsMatch;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
 
     setIsUpdating(true);
-    // Mock network call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        alert(error.message);
+      } else {
+        onPasswordChanged();
+      }
+    } catch (err: any) {
+      alert(err.message || "An unexpected error occurred.");
+    } finally {
       setIsUpdating(false);
-      onPasswordChanged();
-    }, 1800);
+    }
   };
 
   // Compute password strength rating
