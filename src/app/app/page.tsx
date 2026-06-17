@@ -238,6 +238,20 @@ export default function Home() {
               if (tenantOnNotice) {
                 return "notice" as const;
               }
+              // Check if there is an active tenant on this bed
+              const activeTenant = tenantsList?.find(
+                (t: any) => t.bed_id === b.id && t.status === "active"
+              );
+              if (activeTenant) {
+                return "occupied" as const;
+              }
+              // Check if there is a prebooked tenant on this bed
+              const prebookedTenant = tenantsList?.find(
+                (t: any) => t.bed_id === b.id && t.status === "prebooked"
+              );
+              if (prebookedTenant) {
+                return "reserved" as const;
+              }
               return b.status as "available" | "occupied" | "reserved" | "notice";
             })
         }));
@@ -865,9 +879,18 @@ export default function Home() {
 
     if (!roomDetails) return;
 
+    // Fetch active/prebooked tenants in this room to prevent double-assigning beds
+    const { data: activeTenants } = await supabase
+      .from("tenants")
+      .select("bed_id")
+      .eq("room_id", tenantRoomId)
+      .in("status", ["active", "notice", "prebooked"]);
+
+    const activeBedIds = (activeTenants || []).map((t: any) => t.bed_id);
+
     const availableBed = (roomDetails.beds || [])
       .filter((b: any) => !b.deleted_at)
-      .find((b: any) => b.status === "available");
+      .find((b: any) => b.status === "available" && !activeBedIds.includes(b.id));
     if (!availableBed) {
       alert("This room is already at full capacity!");
       return;
