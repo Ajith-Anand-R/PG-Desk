@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  Bed, 
-  HelpCircle, 
-  X, 
-  User, 
-  Building, 
-  Building2, 
-  Landmark, 
-  Settings, 
-  FileText, 
-  LogOut, 
-  Home as HomeIcon, 
+import {
+  LayoutDashboard,
+  Bed,
+  HelpCircle,
+  X,
+  User,
+  Building,
+  Building2,
+  Landmark,
+  Settings,
+  FileText,
+  LogOut,
+  Home as HomeIcon,
   Coffee,
   CalendarRange,
   Users2,
@@ -63,15 +63,15 @@ type ViewType = "dashboard" | "rooms" | "support" | "create-property" | "profile
 function getNotificationTimeAndGroup(date: Date): { time: string; dateGroup: "Today" | "Yesterday" | "Earlier"; timestamp: number } {
   const now = new Date();
   const timestamp = date.getTime();
-  
+
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  
+
   const eventDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  
+
   const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
-  
+
   if (eventDate.getTime() === today.getTime()) {
     return {
       time: timeStr,
@@ -172,7 +172,7 @@ export default function Home() {
         const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       };
-      
+
       const todayStr = getLocalDateString();
       const { data: expiredNotices } = await supabase
         .from("tenants")
@@ -399,7 +399,7 @@ export default function Home() {
 
           if (pgsList && pgsList.length > 0) {
             setProperties(pgsList.map(p => ({ name: p.name, code: String(p.id) })));
-            
+
             let activePg = pgsList.find(p => p.id === profile.pg_id);
             if (!activePg) {
               activePg = pgsList[0];
@@ -476,12 +476,12 @@ export default function Home() {
     setCurrentProperty(name);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
-    
+
     const { data: pgsList } = await supabase
       .from("pgs")
       .select("*")
       .eq("owner_id", session.user.id);
-      
+
     if (pgsList) {
       const selectedPg = pgsList.find(p => p.name === name);
       if (selectedPg) {
@@ -489,7 +489,7 @@ export default function Home() {
           .from("users")
           .update({ pg_id: selectedPg.id })
           .eq("id", session.user.id);
-        
+
         await fetchPgData(selectedPg.id);
         setToastMessage(`Switched to property "${name}"`);
       }
@@ -651,7 +651,7 @@ export default function Home() {
           date.setHours(10, 30, 0, 0);
         }
         const formatted = getNotificationTimeAndGroup(date);
-        
+
         list.push({
           id: `pay-paid-${p.id}`,
           type: "payment",
@@ -665,7 +665,7 @@ export default function Home() {
           date.setHours(9, 0, 0, 0);
         }
         const formatted = getNotificationTimeAndGroup(date);
-        
+
         list.push({
           id: `pay-due-${p.id}`,
           type: "payment",
@@ -700,7 +700,7 @@ export default function Home() {
     complaints.forEach((c) => {
       const date = new Date(c.created_at || Date.now());
       const formatted = getNotificationTimeAndGroup(date);
-      
+
       if (c.status === "resolved") {
         list.push({
           id: `comp-res-${c.id}`,
@@ -798,7 +798,7 @@ export default function Home() {
     if (bedsList && bedsList[bedIndex]) {
       const targetBed = bedsList[bedIndex];
       let newStatus = targetBed.status === "available" ? "occupied" : "available";
-      
+
       if (targetBed.status === "occupied" || targetBed.status === "reserved") {
         // Mark old occupant(s) as left
         await supabase
@@ -1177,145 +1177,145 @@ export default function Home() {
                     {/* DASHBOARD Section */}
                     <div className="flex flex-col gap-1.5">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Dashboard</span>
-                      <DrawerItem 
-                        label="Dashboard" 
-                        icon={HomeIcon} 
-                        active={currentView === "dashboard"} 
+                      <DrawerItem
+                        label="Dashboard"
+                        icon={HomeIcon}
+                        active={currentView === "dashboard"}
                         onClick={() => {
                           setCurrentView("dashboard");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Create Property" 
-                        icon={Building} 
+                      <DrawerItem
+                        label="Create Property"
+                        icon={Building}
                         onClick={() => {
                           setCurrentView("create-property");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
                     </div>
 
                     {/* SERVICES Section */}
                     <div className="flex flex-col gap-1.5">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Services</span>
-                      <DrawerItem 
-                        label="Meals Menu" 
-                        icon={Coffee} 
-                        active={currentView === "meals"} 
+                      <DrawerItem
+                        label="Meals Menu"
+                        icon={Coffee}
+                        active={currentView === "meals"}
                         onClick={() => {
                           setCurrentView("meals");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Booking Requests" 
-                        icon={CalendarRange} 
-                        active={currentView === "bookings"} 
+                      <DrawerItem
+                        label="Booking Requests"
+                        icon={CalendarRange}
+                        active={currentView === "bookings"}
                         onClick={() => {
                           setCurrentView("bookings");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Visitor Logs" 
-                        icon={Users2} 
-                        active={currentView === "visitors"} 
+                      <DrawerItem
+                        label="Visitor Logs"
+                        icon={Users2}
+                        active={currentView === "visitors"}
                         onClick={() => {
                           setCurrentView("visitors");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Staff Registry" 
-                        icon={Briefcase} 
-                        active={currentView === "staff"} 
+                      <DrawerItem
+                        label="Staff Registry"
+                        icon={Briefcase}
+                        active={currentView === "staff"}
                         onClick={() => {
                           setCurrentView("staff");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Expenses Tracker" 
-                        icon={TrendingDown} 
-                        active={currentView === "expenses"} 
+                      <DrawerItem
+                        label="Expenses Tracker"
+                        icon={TrendingDown}
+                        active={currentView === "expenses"}
                         onClick={() => {
                           setCurrentView("expenses");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Inventory & Assets" 
-                        icon={Package} 
-                        active={currentView === "inventory"} 
+                      <DrawerItem
+                        label="Inventory & Assets"
+                        icon={Package}
+                        active={currentView === "inventory"}
                         onClick={() => {
                           setCurrentView("inventory");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Vacant Beds" 
-                        icon={Bed} 
-                        active={currentView === "vacant-beds"} 
+                      <DrawerItem
+                        label="Vacant Beds"
+                        icon={Bed}
+                        active={currentView === "vacant-beds"}
                         onClick={() => {
                           setCurrentView("vacant-beds");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Security & Deposits" 
-                        icon={Shield} 
-                        active={currentView === "deposit-notice"} 
+                      <DrawerItem
+                        label="Security & Deposits"
+                        icon={Shield}
+                        active={currentView === "deposit-notice"}
                         onClick={() => {
                           setCurrentView("deposit-notice");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
                     </div>
 
                     {/* ACCOUNT Section */}
                     <div className="flex flex-col gap-1.5">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Account</span>
-                      <DrawerItem 
-                        label="Profile" 
-                        icon={User} 
+                      <DrawerItem
+                        label="Profile"
+                        icon={User}
                         onClick={() => {
                           setCurrentView("profile");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Property Details" 
-                        icon={Building2} 
+                      <DrawerItem
+                        label="Property Details"
+                        icon={Building2}
                         onClick={() => {
                           setIsDrawerOpen(false);
                           setToastMessage("Property details opened!");
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Bank Details" 
-                        icon={Landmark} 
+                      <DrawerItem
+                        label="Bank Details"
+                        icon={Landmark}
                         onClick={() => {
                           setCurrentView("bank-details");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
-                      <DrawerItem 
-                        label="Settings" 
-                        icon={Settings} 
+                      <DrawerItem
+                        label="Settings"
+                        icon={Settings}
                         onClick={() => {
                           setCurrentView("settings");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
 
-                      <DrawerItem 
-                        label="Tenant Terms" 
-                        icon={FileText} 
+                      <DrawerItem
+                        label="Tenant Terms"
+                        icon={FileText}
                         onClick={() => {
                           setCurrentView("tenant-terms");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
                     </div>
 
@@ -1324,14 +1324,14 @@ export default function Home() {
                     {/* HELP & SUPPORT Section */}
                     <div className="flex flex-col gap-1.5">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Help & Support</span>
-                      <DrawerItem 
-                        label="Support" 
-                        icon={HelpCircle} 
-                        active={currentView === "support"} 
+                      <DrawerItem
+                        label="Support"
+                        icon={HelpCircle}
+                        active={currentView === "support"}
                         onClick={() => {
                           setCurrentView("support");
                           setIsDrawerOpen(false);
-                        }} 
+                        }}
                       />
                     </div>
 
@@ -1355,16 +1355,16 @@ export default function Home() {
                     {/* OTHER Section */}
                     <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-100">
                       <span className="text-slate-400 text-[10px] font-bold tracking-wider px-3 uppercase">Other</span>
-                      <DrawerItem 
-                        label="Logout" 
-                        icon={LogOut} 
+                      <DrawerItem
+                        label="Logout"
+                        icon={LogOut}
                         variant="red"
                         onClick={async () => {
                           setIsDrawerOpen(false);
                           setToastMessage("Logging out...");
                           await supabase.auth.signOut();
                           setIsLoggedIn(false);
-                        }} 
+                        }}
                       />
                     </div>
                   </div>
@@ -1415,8 +1415,8 @@ export default function Home() {
         ) : !isLoggedIn ? (
           /* Authentication Screens (Login / Register) */
           authMode === "login" ? (
-            <LoginView 
-              onLogin={() => setIsLoggedIn(true)} 
+            <LoginView
+              onLogin={() => setIsLoggedIn(true)}
               onRegisterClick={() => setAuthMode("register")}
             />
           ) : (
@@ -1723,7 +1723,7 @@ export default function Home() {
               />
             )}
 
-             {currentView === "vacant-beds" && (
+            {currentView === "vacant-beds" && (
               <VacantBedsView
                 onBack={() => setCurrentView("dashboard")}
                 propertyName={currentProperty}
@@ -1987,9 +1987,8 @@ function TabButton({ active, label, icon: Icon, onClick }: TabButtonProps) {
       className="flex flex-col items-center justify-center gap-1.5 relative py-1 cursor-pointer group"
     >
       <div
-        className={`w-12 h-8 rounded-full flex items-center justify-center relative transition-colors ${
-          active ? "text-emerald-600 bg-emerald-50/70" : "text-slate-400 group-hover:text-slate-600"
-        }`}
+        className={`w-12 h-8 rounded-full flex items-center justify-center relative transition-colors ${active ? "text-emerald-600 bg-emerald-50/70" : "text-slate-400 group-hover:text-slate-600"
+          }`}
       >
         {active && (
           <motion.div
@@ -2001,9 +2000,8 @@ function TabButton({ active, label, icon: Icon, onClick }: TabButtonProps) {
         <Icon className="w-5 h-5" />
       </div>
       <span
-        className={`text-[10px] font-bold tracking-tight select-none ${
-          active ? "text-emerald-700" : "text-slate-400/90 font-semibold"
-        }`}
+        className={`text-[10px] font-bold tracking-tight select-none ${active ? "text-emerald-700" : "text-slate-400/90 font-semibold"
+          }`}
       >
         {label}
       </span>
@@ -2022,7 +2020,7 @@ interface DrawerItemProps {
 
 function DrawerItem({ label, icon: Icon, active, onClick, variant = "default" }: DrawerItemProps) {
   let itemClass = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all select-none text-left ";
-  
+
   if (active) {
     itemClass += "bg-emerald-600 text-white shadow-sm shadow-emerald-200/50";
   } else {
@@ -2031,21 +2029,20 @@ function DrawerItem({ label, icon: Icon, active, onClick, variant = "default" }:
     } else if (variant === "red") {
       itemClass += "text-rose-600 hover:bg-rose-50/60";
     } else {
-        itemClass += "text-slate-600 hover:bg-slate-50/70 hover:text-slate-800";
+      itemClass += "text-slate-600 hover:bg-slate-50/70 hover:text-slate-800";
     }
   }
 
   return (
     <button onClick={onClick} className={itemClass}>
-      <Icon className={`w-4 h-4 shrink-0 ${
-        active 
-          ? "text-white" 
-          : variant === "orange" 
-            ? "text-amber-500" 
-            : variant === "red" 
-              ? "text-rose-500" 
+      <Icon className={`w-4 h-4 shrink-0 ${active
+          ? "text-white"
+          : variant === "orange"
+            ? "text-amber-500"
+            : variant === "red"
+              ? "text-rose-500"
               : "text-slate-400"
-      }`} />
+        }`} />
       <span className="flex-1 truncate">{label}</span>
     </button>
   );
