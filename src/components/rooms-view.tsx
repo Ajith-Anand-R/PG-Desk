@@ -15,7 +15,8 @@ import {
   Mail, 
   AlertCircle,
   AlertTriangle,
-  Clock
+  Clock,
+  Trash2
 } from "lucide-react";
 import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
@@ -30,6 +31,7 @@ interface RoomsViewProps {
   rooms: Room[];
   onToggleBed: (roomId: string, bedIndex: number) => void;
   onAddRoomClick: () => void;
+  onRefresh?: () => void;
 }
 
 export function RoomsView({
@@ -38,6 +40,7 @@ export function RoomsView({
   rooms,
   onToggleBed,
   onAddRoomClick,
+  onRefresh,
 }: RoomsViewProps) {
   const [selectedFloor, setSelectedFloor] = useState<number | "All">("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -195,6 +198,127 @@ export function RoomsView({
     }
   };
 
+  const handleDeleteFloor = async (floorNum: number) => {
+    const floorRooms = rooms.filter((r) => r.floor === floorNum);
+    const hasOccupied = floorRooms.some((r) => r.beds.some((status) => status !== "available"));
+    if (hasOccupied) {
+      alert("Cannot delete floor with occupied or reserved beds. Please check out all tenants first.");
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete Floor ${floorNum} and all its rooms?`)) {
+      return;
+    }
+    try {
+      const roomIds = floorRooms.map(r => Number(r.id));
+      if (roomIds.length > 0) {
+        // Soft delete beds in rooms on this floor
+        const { error: bedsErr } = await supabase
+          .from("beds")
+          .update({ deleted_at: new Date().toISOString() })
+          .in("room_id", roomIds);
+        if (bedsErr) throw bedsErr;
+
+        // Soft delete rooms on this floor
+        const { error: roomsErr } = await supabase
+          .from("rooms")
+          .update({ deleted_at: new Date().toISOString() })
+          .in("id", roomIds);
+        if (roomsErr) throw roomsErr;
+      }
+      if (onRefresh) onRefresh();
+    } catch (err: any) {
+      console.error("Error deleting floor:", err);
+      alert(err.message || "Failed to delete floor.");
+    }
+  };
+
+  const handleAddBed = async (roomId: string) => {
+    try {
+      // Get current non-deleted beds count to calculate next bed number
+      const { data: bedsList } = await supabase
+        .from("beds")
+        .select("bed_number")
+        .eq("room_id", Number(roomId))
+        .is("deleted_at", null);
+
+      const nextBedNum = (bedsList?.length || 0) + 1;
+
+      const { error: bedErr } = await supabase.from("beds").insert({
+        room_id: Number(roomId),
+        bed_number: `Bed ${nextBedNum}`,
+        status: "available"
+      });
+      if (bedErr) throw bedErr;
+
+      const { data: roomInfo } = await supabase
+        .from("rooms")
+        .select("capacity")
+        .eq("id", Number(roomId))
+        .single();
+      if (roomInfo) {
+        const newCapacity = Number(roomInfo.capacity) + 1;
+        await supabase
+          .from("rooms")
+          .update({ capacity: newCapacity })
+          .eq("id", Number(roomId));
+      }
+
+      if (onRefresh) onRefresh();
+    } catch (err: any) {
+      console.error("Error adding bed:", err);
+      alert(err.message || "Failed to add bed.");
+    }
+  };
+
+  const handleDeleteBed = async () => {
+    if (!selectedBed) return;
+    if (selectedBed.status !== "available") {
+      alert("Cannot delete an occupied or reserved bed. Please check out the tenant first.");
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete Bed ${bedLetter} from Room ${selectedBed.roomName}?`)) {
+      return;
+    }
+    try {
+      const { data: bedsList } = await supabase
+        .from("beds")
+        .select("id")
+        .eq("room_id", Number(selectedBed.roomId))
+        .is("deleted_at", null)
+        .order("bed_number", { ascending: true });
+
+      if (bedsList && bedsList[selectedBed.bedIndex]) {
+        const targetBedId = bedsList[selectedBed.bedIndex].id;
+        const { error } = await supabase
+          .from("beds")
+          .update({ deleted_at: new Date().toISOString() })
+          .eq("id", targetBedId);
+
+        if (error) throw error;
+
+        const { data: roomInfo } = await supabase
+          .from("rooms")
+          .select("capacity")
+          .eq("id", Number(selectedBed.roomId))
+          .single();
+        if (roomInfo) {
+          const newCapacity = Math.max(0, Number(roomInfo.capacity) - 1);
+          await supabase
+            .from("rooms")
+            .update({ capacity: newCapacity })
+            .eq("id", Number(selectedBed.roomId));
+        }
+
+        setSelectedBed(null);
+        setBedDetails(null);
+        if (onRefresh) onRefresh();
+      }
+    } catch (err: any) {
+      console.error("Error deleting bed:", err);
+      alert(err.message || "Failed to delete bed.");
+    }
+  };
+
   const formatAadhaar = (num?: string) => {
     if (!num) return "N/A";
     const cleaned = num.replace(/\s+/g, "");
@@ -339,6 +463,13 @@ export function RoomsView({
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <h2 className="font-extrabold text-slate-800 text-xs tracking-tight">Floor {floorNum}</h2>
+                    <button
+                      onClick={() => handleDeleteFloor(floorNum)}
+                      className="p-1 rounded-md hover:bg-rose-50 text-rose-500 transition-colors cursor-pointer"
+                      title="Delete Floor"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                   <span className="text-[10px] font-black text-slate-400 bg-slate-100/80 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
                     {occupiedBedsOnFloor}/{totalBedsOnFloor} Beds Taken
@@ -353,6 +484,7 @@ export function RoomsView({
                       room={room}
                       onToggleBed={(bedIdx) => onToggleBed(room.id, bedIdx)}
                       onBedClick={handleBedClick}
+                      onAddBed={handleAddBed}
                     />
                   ))}
                 </div>
@@ -613,23 +745,35 @@ export function RoomsView({
                           Bed Locked (Notice Period Active)
                         </button>
                       ) : (
-                        <motion.button
-                          whileTap={{ scale: 0.96 }}
-                          onClick={handleToggleBedStatus}
-                          className={`w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
-                            selectedBed.status === "occupied"
-                              ? "bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                        <div className="flex flex-col gap-2 w-full">
+                          <motion.button
+                            whileTap={{ scale: 0.96 }}
+                            onClick={handleToggleBedStatus}
+                            className={`w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-white ${
+                              selectedBed.status === "occupied"
+                                ? "bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-900/10"
+                                : selectedBed.status === "reserved"
+                                ? "bg-slate-500 hover:bg-slate-600 shadow-md shadow-slate-900/10"
+                                : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
+                            }`}
+                          >
+                            {selectedBed.status === "occupied" 
+                              ? "Mark Bed Available" 
                               : selectedBed.status === "reserved"
-                              ? "bg-slate-500 hover:bg-slate-600 shadow-md shadow-slate-900/10"
-                              : "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-900/10"
-                          }`}
-                        >
-                          {selectedBed.status === "occupied" 
-                            ? "Mark Bed Available" 
-                            : selectedBed.status === "reserved"
-                            ? "Cancel Reservation (Mark Available)"
-                            : "Assign / Mark Occupied"}
-                        </motion.button>
+                              ? "Cancel Reservation (Mark Available)"
+                              : "Assign / Mark Occupied"}
+                          </motion.button>
+
+                          {selectedBed.status === "available" && (
+                            <motion.button
+                              whileTap={{ scale: 0.96 }}
+                              onClick={handleDeleteBed}
+                              className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-rose-600 border border-rose-200 bg-rose-50/50 hover:bg-rose-50 transition-colors shadow-2xs"
+                            >
+                              Delete Bed
+                            </motion.button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </>
@@ -858,9 +1002,10 @@ interface RoomCardProps {
   room: Room;
   onToggleBed: (index: number) => void;
   onBedClick: (room: Room, index: number, status: "available" | "occupied" | "reserved" | "notice") => void;
+  onAddBed: (roomId: string) => void;
 }
 
-function RoomCard({ room, onToggleBed, onBedClick }: RoomCardProps) {
+function RoomCard({ room, onToggleBed, onBedClick, onAddBed }: RoomCardProps) {
   const occupiedCount = room.beds.filter((status) => status === "occupied" || status === "reserved" || status === "notice").length;
   const isFull = occupiedCount === room.capacity;
 
@@ -876,7 +1021,19 @@ function RoomCard({ room, onToggleBed, onBedClick }: RoomCardProps) {
     >
       {/* Header */}
       <div className="flex justify-between items-center select-none">
-        <span className="font-extrabold text-slate-800 text-xs tracking-tight">{room.name}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-extrabold text-slate-800 text-xs tracking-tight">{room.name}</span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddBed(room.id);
+            }}
+            className="px-1.5 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-100/50 transition-colors text-[9px] font-black uppercase tracking-wider cursor-pointer"
+            title="Add Bed"
+          >
+            + Bed
+          </button>
+        </div>
         <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
           isFull
             ? "bg-slate-100 text-slate-500 border-slate-200/50"

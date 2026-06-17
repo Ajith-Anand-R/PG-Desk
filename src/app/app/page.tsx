@@ -218,15 +218,17 @@ export default function Home() {
       const { data: roomsList } = await supabase
         .from("rooms")
         .select("*, beds(*)")
-        .eq("pg_id", pgId);
+        .eq("pg_id", pgId)
+        .is("deleted_at", null);
 
       if (roomsList) {
         const formattedRooms = roomsList.map((r: any) => ({
           id: String(r.id),
           name: r.room_number,
           floor: r.floor,
-          capacity: r.capacity,
+          capacity: (r.beds || []).filter((b: any) => !b.deleted_at).length,
           beds: (r.beds || [])
+            .filter((b: any) => !b.deleted_at)
             .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
             .map((b: any) => {
               // Check if there is an active tenant on notice on this bed
@@ -858,11 +860,14 @@ export default function Home() {
       .select("*, beds(*)")
       .eq("id", tenantRoomId)
       .eq("pg_id", pgId)
+      .is("deleted_at", null)
       .single();
 
     if (!roomDetails) return;
 
-    const availableBed = (roomDetails.beds || []).find((b: any) => b.status === "available");
+    const availableBed = (roomDetails.beds || [])
+      .filter((b: any) => !b.deleted_at)
+      .find((b: any) => b.status === "available");
     if (!availableBed) {
       alert("This room is already at full capacity!");
       return;
@@ -1488,6 +1493,7 @@ export default function Home() {
                 rooms={rooms}
                 onToggleBed={handleToggleBed}
                 onAddRoomClick={() => setIsAddRoomOpen(true)}
+                onRefresh={() => activePgId && fetchPgData(activePgId)}
               />
             )}
 
