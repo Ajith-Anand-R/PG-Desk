@@ -272,11 +272,13 @@ export function RoomsView({
 
   const handleDeleteBed = async () => {
     if (!selectedBed) return;
-    if (selectedBed.status !== "available") {
-      alert("Cannot delete an occupied or reserved bed. Please check out the tenant first.");
-      return;
+    const isOccupiedOrReserved = selectedBed.status !== "available";
+    let confirmMsg = `Are you sure you want to delete Bed ${bedLetter} from Room ${selectedBed.roomName}?`;
+    if (isOccupiedOrReserved) {
+      const tenantName = bedDetails?.tenant?.name || "a resident";
+      confirmMsg = `WARNING: This bed is currently occupied/reserved by ${tenantName}. Deleting the bed will automatically check out the resident. Are you sure you want to proceed?`;
     }
-    if (!confirm(`Are you sure you want to delete Bed ${bedLetter} from Room ${selectedBed.roomName}?`)) {
+    if (!confirm(confirmMsg)) {
       return;
     }
     try {
@@ -289,6 +291,17 @@ export function RoomsView({
 
       if (bedsList && bedsList[selectedBed.bedIndex]) {
         const targetBedId = bedsList[selectedBed.bedIndex].id;
+
+        // 1. If occupied/reserved/notice, mark occupant(s) as left
+        if (isOccupiedOrReserved) {
+          await supabase
+            .from("tenants")
+            .update({ status: "left", vacate_date: new Date().toISOString().split("T")[0] })
+            .eq("bed_id", targetBedId)
+            .in("status", ["active", "notice", "prebooked"]);
+        }
+
+        // 2. Soft delete bed
         const { error } = await supabase
           .from("beds")
           .update({ deleted_at: new Date().toISOString() })
@@ -296,6 +309,7 @@ export function RoomsView({
 
         if (error) throw error;
 
+        // 3. Decrement room capacity
         const { data: roomInfo } = await supabase
           .from("rooms")
           .select("capacity")
@@ -738,12 +752,21 @@ export function RoomsView({
                       )}
 
                       {selectedBed.status === "notice" ? (
-                        <button
-                          disabled
-                          className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider text-center text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed select-none"
-                        >
-                          Bed Locked (Notice Period Active)
-                        </button>
+                        <div className="flex flex-col gap-2 w-full">
+                          <button
+                            disabled
+                            className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider text-center text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed select-none animate-none"
+                          >
+                            Bed Locked (Notice Period Active)
+                          </button>
+                          <motion.button
+                            whileTap={{ scale: 0.96 }}
+                            onClick={handleDeleteBed}
+                            className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-rose-600 border border-rose-200 bg-rose-50/50 hover:bg-rose-50 transition-colors shadow-2xs"
+                          >
+                            Delete Bed
+                          </motion.button>
+                        </div>
                       ) : (
                         <div className="flex flex-col gap-2 w-full">
                           <motion.button
@@ -764,15 +787,13 @@ export function RoomsView({
                               : "Assign / Mark Occupied"}
                           </motion.button>
 
-                          {selectedBed.status === "available" && (
-                            <motion.button
-                              whileTap={{ scale: 0.96 }}
-                              onClick={handleDeleteBed}
-                              className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-rose-600 border border-rose-200 bg-rose-50/50 hover:bg-rose-50 transition-colors shadow-2xs"
-                            >
-                              Delete Bed
-                            </motion.button>
-                          )}
+                          <motion.button
+                            whileTap={{ scale: 0.96 }}
+                            onClick={handleDeleteBed}
+                            className="w-full font-extrabold py-3.5 rounded-2xl text-[10.5px] uppercase tracking-wider cursor-pointer text-center text-rose-600 border border-rose-200 bg-rose-50/50 hover:bg-rose-50 transition-colors shadow-2xs"
+                          >
+                            Delete Bed
+                          </motion.button>
                         </div>
                       )}
                     </div>
