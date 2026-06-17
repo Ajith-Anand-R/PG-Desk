@@ -44,6 +44,7 @@ export function BookingsView({
 }: BookingsViewProps) {
   const [bookings, setBookings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [activeTenants, setActiveTenants] = useState<any[]>([]);
   const [noticeTenants, setNoticeTenants] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -85,24 +86,32 @@ export function BookingsView({
       if (bookingsError) throw bookingsError;
       setBookings(bookingsData || []);
 
-      // 2. Fetch rooms with available beds
+      // 2. Fetch rooms with available beds (filtering out soft-deleted rooms)
       const { data: roomsData, error: roomsError } = await supabase
         .from("rooms")
         .select("*, beds(*)")
-        .eq("pg_id", Number(activePgId));
+        .eq("pg_id", Number(activePgId))
+        .is("deleted_at", null);
 
       if (roomsError) throw roomsError;
-      setRooms(roomsData || []);
+      
+      // Filter out soft-deleted beds
+      const filteredRooms = (roomsData || []).map((r: any) => ({
+        ...r,
+        beds: (r.beds || []).filter((b: any) => !b.deleted_at)
+      }));
+      setRooms(filteredRooms);
 
-      // 3. Fetch notice tenants to see if they are vacating beds
-      const { data: noticeTenantsData, error: noticeError } = await supabase
+      // 3. Fetch active/notice/prebooked tenants to prevent double-assigning beds
+      const { data: activeTenantsData, error: tenantsError } = await supabase
         .from("tenants")
-        .select("id, bed_id, vacate_date, name")
+        .select("id, bed_id, status, vacate_date, name")
         .eq("pg_id", Number(activePgId))
-        .eq("status", "notice");
+        .in("status", ["active", "notice", "prebooked"]);
 
-      if (noticeError) throw noticeError;
-      setNoticeTenants(noticeTenantsData || []);
+      if (tenantsError) throw tenantsError;
+      setActiveTenants(activeTenantsData || []);
+      setNoticeTenants((activeTenantsData || []).filter((t: any) => t.status === "notice"));
     } catch (err: any) {
       console.error("Error fetching bookings data:", err);
       setToastMessage("Error: " + err.message);
@@ -124,9 +133,19 @@ export function BookingsView({
     }
     const room = rooms.find(r => String(r.id) === assignedRoomId);
     if (room && room.beds) {
+      // Find beds that are occupied by active or prebooked tenants
+      const activeBedIds = activeTenants
+        .filter((t: any) => t.status === "active" || t.status === "prebooked")
+        .map((t: any) => Number(t.bed_id));
+
       // Beds are available if status is 'available' OR if there is an active tenant in notice period
+      // AND the bed is not currently occupied by an active/prebooked tenant
       const freeBeds = room.beds.map((b: any) => {
         const noticeTenant = noticeTenants.find((nt: any) => Number(nt.bed_id) === Number(b.id));
+        const isOccupiedByActive = activeBedIds.includes(Number(b.id));
+
+        if (isOccupiedByActive) return null;
+
         if (b.status === "available") {
           return { ...b, displayName: b.bed_number };
         } else if (noticeTenant) {
@@ -149,7 +168,7 @@ export function BookingsView({
         setAssignedBedId("");
       }
     }
-  }, [assignedRoomId, rooms, noticeTenants]);
+  }, [assignedRoomId, rooms, noticeTenants, activeTenants]);
 
   // Handle toggling approvalMode
   const handleApprovalModeChange = (mode: "active" | "waitlist") => {
@@ -169,6 +188,21 @@ export function BookingsView({
     setIsSubmitting(true);
     try {
       const pgIdVal = Number(activePgId);
+
+      // Concurrency/Double-Booking Safety Guard Check
+      const { data: alreadyOccupied } = await supabase
+        .from("tenants")
+        .select("id")
+        .eq("bed_id", Number(assignedBedId))
+        .in("status", ["active", "notice", "prebooked"])
+        .maybeSingle();
+
+      if (alreadyOccupied) {
+        alert("This bed has just been booked or occupied by another tenant. Please select a different room/bed.");
+        setIsSubmitting(false);
+        await fetchData();
+        return;
+      }
 
       const inviteToken = "INV-" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const expiryDate = new Date();
@@ -628,10 +662,13 @@ export function BookingsView({
                   >
                     <option value="">Select a room</option>
                     {rooms.map((r) => {
+                      const activeBedIds = activeTenants
+                        .filter((t: any) => t.status === "active" || t.status === "prebooked")
+                        .map((t: any) => Number(t.bed_id));
                       const availCount = r.beds 
                         ? r.beds.filter((b: any) => {
-                            const isFree = b.status === "available";
-                            const isNotice = noticeTenants.some((nt: any) => Number(nt.bed_id) === Number(b.id));
+                            const isFree = b.status === "available" && !activeBedIds.includes(Number(b.id));
+                            const isNotice = noticeTenants.some((nt: any) => Number(nt.bed_id) === Number(b.id) && !activeBedIds.includes(Number(b.id)));
                             return isFree || isNotice;
                           }).length 
                         : 0;

@@ -988,6 +988,12 @@ export default function Home() {
     // Hardcode basic rent for V1, or we can prompt for it
     const rent = 7000;
 
+    // Check for duplicate room name/number
+    if (rooms.some(r => r.name.trim().toLowerCase() === roomName.trim().toLowerCase())) {
+      alert(`Room "${roomName.trim()}" already exists in this property!`);
+      return;
+    }
+
     // 1. Insert room
     const { data: room, error: roomError } = await supabase
       .from("rooms")
