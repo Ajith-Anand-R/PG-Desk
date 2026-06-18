@@ -233,21 +233,21 @@ export default function Home() {
             .map((b: any) => {
               // Check if there is an active tenant on notice on this bed
               const tenantOnNotice = tenantsList?.find(
-                (t: any) => t.bed_id === b.id && t.status === "notice"
+                (t: any) => Number(t.bed_id) === Number(b.id) && t.status === "notice"
               );
               if (tenantOnNotice) {
                 return "notice" as const;
               }
               // Check if there is an active tenant on this bed
               const activeTenant = tenantsList?.find(
-                (t: any) => t.bed_id === b.id && t.status === "active"
+                (t: any) => Number(t.bed_id) === Number(b.id) && t.status === "active"
               );
               if (activeTenant) {
                 return "occupied" as const;
               }
               // Check if there is a prebooked tenant on this bed
               const prebookedTenant = tenantsList?.find(
-                (t: any) => t.bed_id === b.id && t.status === "prebooked"
+                (t: any) => Number(t.bed_id) === Number(b.id) && t.status === "prebooked"
               );
               if (prebookedTenant) {
                 return "reserved" as const;
@@ -886,11 +886,11 @@ export default function Home() {
       .eq("room_id", tenantRoomId)
       .in("status", ["active", "notice", "prebooked"]);
 
-    const activeBedIds = (activeTenants || []).map((t: any) => t.bed_id);
+    const activeBedIds = (activeTenants || []).map((t: any) => Number(t.bed_id));
 
     const availableBed = (roomDetails.beds || [])
       .filter((b: any) => !b.deleted_at)
-      .find((b: any) => b.status === "available" && !activeBedIds.includes(b.id));
+      .find((b: any) => b.status === "available" && !activeBedIds.includes(Number(b.id)));
     if (!availableBed) {
       alert("This room is already at full capacity!");
       return;
