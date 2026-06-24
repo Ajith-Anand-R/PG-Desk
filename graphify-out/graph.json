@@ -1047,7 +1047,7 @@
       "label": "TabButtonProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L2042",
+      "source_location": "L2047",
       "_origin": "ast",
       "id": "app_page_tabbuttonprops",
       "community": 9,
@@ -1057,7 +1057,7 @@
       "label": "TabButton()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L2049",
+      "source_location": "L2054",
       "_origin": "ast",
       "id": "app_page_tabbutton",
       "community": 9,
@@ -1067,7 +1067,7 @@
       "label": "DrawerItemProps",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L2079",
+      "source_location": "L2084",
       "_origin": "ast",
       "id": "app_page_draweritemprops",
       "community": 9,
@@ -1077,7 +1077,7 @@
       "label": "DrawerItem()",
       "file_type": "code",
       "source_file": "src/app/app/page.tsx",
-      "source_location": "L2087",
+      "source_location": "L2092",
       "_origin": "ast",
       "id": "app_page_draweritem",
       "community": 9,
@@ -2047,7 +2047,7 @@
       "label": "RoomCardProps",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L1022",
+      "source_location": "L1002",
       "_origin": "ast",
       "id": "components_rooms_view_roomcardprops",
       "community": 10,
@@ -2057,7 +2057,7 @@
       "label": "RoomCard()",
       "file_type": "code",
       "source_file": "src/components/rooms-view.tsx",
-      "source_location": "L1029",
+      "source_location": "L1009",
       "_origin": "ast",
       "id": "components_rooms_view_roomcard",
       "community": 10,
@@ -2527,7 +2527,7 @@
       "label": "Tenant",
       "file_type": "code",
       "source_file": "src/lib/types.ts",
-      "source_location": "L9",
+      "source_location": "L10",
       "_origin": "ast",
       "id": "lib_types_tenant",
       "community": 10,
@@ -4308,9 +4308,9 @@
       "source_file": "package.json",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "package_dependencies",
-      "target": "package_dependencies_sentry_nextjs",
-      "confidence_score": 1.0
+      "target": "package_dependencies_sentry_nextjs"
     },
     {
       "relation": "contains",
@@ -4358,9 +4358,9 @@
       "source_file": "package.json",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "package_dependencies",
-      "target": "package_dependencies_tanstack_react_query",
-      "confidence_score": 1.0
+      "target": "package_dependencies_tanstack_react_query"
     },
     {
       "relation": "contains",
@@ -4368,9 +4368,9 @@
       "source_file": "package.json",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "package_dependencies",
-      "target": "package_dependencies_tanstack_react_virtual",
-      "confidence_score": 1.0
+      "target": "package_dependencies_tanstack_react_virtual"
     },
     {
       "relation": "contains",
@@ -4508,9 +4508,9 @@
       "source_file": "public/manifest.json",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_categories",
-      "confidence_score": 1.0
+      "target": "public_manifest_categories"
     },
     {
       "relation": "contains",
@@ -4558,9 +4558,9 @@
       "source_file": "public/manifest.json",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_launch_handler",
-      "confidence_score": 1.0
+      "target": "public_manifest_launch_handler"
     },
     {
       "relation": "contains",
@@ -4588,9 +4588,9 @@
       "source_file": "public/manifest.json",
       "source_location": "L13",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_prefer_related_applications",
-      "confidence_score": 1.0
+      "target": "public_manifest_prefer_related_applications"
     },
     {
       "relation": "contains",
@@ -4638,9 +4638,9 @@
       "source_file": "public/manifest.json",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_manifest_launch_handler",
-      "target": "public_manifest_launch_handler_client_mode",
-      "confidence_score": 1.0
+      "target": "public_manifest_launch_handler_client_mode"
     },
     {
       "relation": "contains",
@@ -4648,9 +4648,9 @@
       "source_file": "public/sw.js",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_cacheable_tables",
-      "confidence_score": 1.0
+      "target": "public_sw_cacheable_tables"
     },
     {
       "relation": "contains",
@@ -4658,9 +4658,9 @@
       "source_file": "public/sw.js",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_isapicachefresh",
-      "confidence_score": 1.0
+      "target": "public_sw_isapicachefresh"
     },
     {
       "relation": "contains",
@@ -4668,9 +4668,9 @@
       "source_file": "public/sw.js",
       "source_location": "L27",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_iscacheableapirequest",
-      "confidence_score": 1.0
+      "target": "public_sw_iscacheableapirequest"
     },
     {
       "relation": "contains",
@@ -4678,9 +4678,9 @@
       "source_file": "public/sw.js",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_stampresponse",
-      "confidence_score": 1.0
+      "target": "public_sw_stampresponse"
     },
     {
       "relation": "contains",
@@ -4688,9 +4688,9 @@
       "source_file": "public/sw.js",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_static_assets",
-      "confidence_score": 1.0
+      "target": "public_sw_static_assets"
     },
     {
       "relation": "contains",
@@ -4698,9 +4698,9 @@
       "source_file": "public/sw.js",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "public_sw",
-      "target": "public_sw_trimcache",
-      "confidence_score": 1.0
+      "target": "public_sw_trimcache"
     },
     {
       "relation": "imports_from",
@@ -4709,9 +4709,9 @@
       "source_file": "src/instrumentation.ts",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_instrumentation_register",
-      "target": "sentry_edge_config",
-      "confidence_score": 1.0
+      "target": "sentry_edge_config"
     },
     {
       "relation": "imports_from",
@@ -4720,9 +4720,9 @@
       "source_file": "src/instrumentation.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_instrumentation_register",
-      "target": "sentry_server_config",
-      "confidence_score": 1.0
+      "target": "sentry_server_config"
     },
     {
       "relation": "contains",
@@ -4730,9 +4730,9 @@
       "source_file": "src/app/api/sentry-example-api/route.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_api_route",
-      "target": "sentry_example_api_route_get",
-      "confidence_score": 1.0
+      "target": "sentry_example_api_route_get"
     },
     {
       "relation": "contains",
@@ -4740,9 +4740,9 @@
       "source_file": "src/app/api/sentry-example-api/route.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_api_route",
-      "target": "sentry_example_api_route_sentryexampleapierror",
-      "confidence_score": 1.0
+      "target": "sentry_example_api_route_sentryexampleapierror"
     },
     {
       "relation": "method",
@@ -4750,9 +4750,9 @@
       "source_file": "src/app/api/sentry-example-api/route.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_api_route_sentryexampleapierror",
-      "target": "sentry_example_api_route_sentryexampleapierror_constructor",
-      "confidence_score": 1.0
+      "target": "sentry_example_api_route_sentryexampleapierror_constructor"
     },
     {
       "relation": "contains",
@@ -4974,9 +4974,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_deposit_notice_view",
-      "confidence_score": 1.0
+      "target": "components_deposit_notice_view"
     },
     {
       "relation": "imports",
@@ -4985,9 +4985,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_deposit_notice_view_depositnoticeview",
-      "confidence_score": 1.0
+      "target": "components_deposit_notice_view_depositnoticeview"
     },
     {
       "relation": "imports_from",
@@ -5117,9 +5117,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_past_tenants_view",
-      "confidence_score": 1.0
+      "target": "components_past_tenants_view"
     },
     {
       "relation": "imports",
@@ -5128,9 +5128,9 @@
       "source_file": "src/app/app/page.tsx",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_app_page_tsx_app_page",
-      "target": "components_past_tenants_view_pasttenantsview",
-      "confidence_score": 1.0
+      "target": "components_past_tenants_view_pasttenantsview"
     },
     {
       "relation": "imports_from",
@@ -5534,9 +5534,9 @@
       "source_file": "src/app/global-error.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_global_error",
-      "target": "app_global_error_globalerror",
-      "confidence_score": 1.0
+      "target": "app_global_error_globalerror"
     },
     {
       "relation": "contains",
@@ -5595,9 +5595,9 @@
       "source_file": "src/app/layout.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_layout",
-      "target": "providers_queryprovider",
-      "confidence_score": 1.0
+      "target": "providers_queryprovider"
     },
     {
       "relation": "imports",
@@ -5606,9 +5606,9 @@
       "source_file": "src/app/layout.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_layout",
-      "target": "providers_queryprovider_queryprovider",
-      "confidence_score": 1.0
+      "target": "providers_queryprovider_queryprovider"
     },
     {
       "relation": "contains",
@@ -5636,9 +5636,9 @@
       "source_file": "src/app/sentry-example-page/page.tsx",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_page_page",
-      "target": "sentry_example_page_page_page",
-      "confidence_score": 1.0
+      "target": "sentry_example_page_page_page"
     },
     {
       "relation": "contains",
@@ -5646,9 +5646,9 @@
       "source_file": "src/app/sentry-example-page/page.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_page_page",
-      "target": "sentry_example_page_page_sentryexamplefrontenderror",
-      "confidence_score": 1.0
+      "target": "sentry_example_page_page_sentryexamplefrontenderror"
     },
     {
       "relation": "method",
@@ -5656,9 +5656,9 @@
       "source_file": "src/app/sentry-example-page/page.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "sentry_example_page_page_sentryexamplefrontenderror",
-      "target": "sentry_example_page_page_sentryexamplefrontenderror_constructor",
-      "confidence_score": 1.0
+      "target": "sentry_example_page_page_sentryexamplefrontenderror_constructor"
     },
     {
       "relation": "contains",
@@ -5919,9 +5919,9 @@
       "source_file": "src/components/change-password-view.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_change_password_view",
-      "target": "lib_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase"
     },
     {
       "relation": "imports",
@@ -5930,9 +5930,9 @@
       "source_file": "src/components/change-password-view.tsx",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_change_password_view",
-      "target": "lib_supabase_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase_supabase"
     },
     {
       "relation": "contains",
@@ -5980,9 +5980,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "components_deposit_notice_view_depositnoticeview",
-      "confidence_score": 1.0
+      "target": "components_deposit_notice_view_depositnoticeview"
     },
     {
       "relation": "contains",
@@ -5990,9 +5990,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "components_deposit_notice_view_depositnoticeviewprops",
-      "confidence_score": 1.0
+      "target": "components_deposit_notice_view_depositnoticeviewprops"
     },
     {
       "relation": "imports_from",
@@ -6001,9 +6001,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase"
     },
     {
       "relation": "imports",
@@ -6012,9 +6012,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_supabase_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase_supabase"
     },
     {
       "relation": "imports_from",
@@ -6023,9 +6023,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_types",
-      "confidence_score": 1.0
+      "target": "lib_types"
     },
     {
       "relation": "imports",
@@ -6034,9 +6034,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_types_tenant",
-      "confidence_score": 1.0
+      "target": "lib_types_tenant"
     },
     {
       "relation": "imports_from",
@@ -6045,9 +6045,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_utils",
-      "confidence_score": 1.0
+      "target": "lib_utils"
     },
     {
       "relation": "imports",
@@ -6056,9 +6056,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "lib_utils_calculatenoticedays",
-      "confidence_score": 1.0
+      "target": "lib_utils_calculatenoticedays"
     },
     {
       "relation": "imports_from",
@@ -6067,9 +6067,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "ui_bottom_sheet",
-      "confidence_score": 1.0
+      "target": "ui_bottom_sheet"
     },
     {
       "relation": "imports",
@@ -6078,9 +6078,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view",
-      "target": "ui_bottom_sheet_bottomsheet",
-      "confidence_score": 1.0
+      "target": "ui_bottom_sheet_bottomsheet"
     },
     {
       "relation": "references",
@@ -6089,9 +6089,9 @@
       "source_file": "src/components/deposit-notice-view.tsx",
       "source_location": "L33",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_deposit_notice_view_depositnoticeviewprops",
-      "target": "lib_types_tenant",
-      "confidence_score": 1.0
+      "target": "lib_types_tenant"
     },
     {
       "relation": "contains",
@@ -6327,9 +6327,9 @@
       "source_file": "src/components/past-tenants-view.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_past_tenants_view",
-      "target": "components_past_tenants_view_pasttenantsview",
-      "confidence_score": 1.0
+      "target": "components_past_tenants_view_pasttenantsview"
     },
     {
       "relation": "contains",
@@ -6337,9 +6337,9 @@
       "source_file": "src/components/past-tenants-view.tsx",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_past_tenants_view",
-      "target": "components_past_tenants_view_pasttenantsviewprops",
-      "confidence_score": 1.0
+      "target": "components_past_tenants_view_pasttenantsviewprops"
     },
     {
       "relation": "imports_from",
@@ -6348,9 +6348,9 @@
       "source_file": "src/components/past-tenants-view.tsx",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_past_tenants_view",
-      "target": "lib_types",
-      "confidence_score": 1.0
+      "target": "lib_types"
     },
     {
       "relation": "imports",
@@ -6359,9 +6359,9 @@
       "source_file": "src/components/past-tenants-view.tsx",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_past_tenants_view",
-      "target": "lib_types_tenant",
-      "confidence_score": 1.0
+      "target": "lib_types_tenant"
     },
     {
       "relation": "references",
@@ -6370,9 +6370,9 @@
       "source_file": "src/components/past-tenants-view.tsx",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_past_tenants_view_pasttenantsviewprops",
-      "target": "lib_types_tenant",
-      "confidence_score": 1.0
+      "target": "lib_types_tenant"
     },
     {
       "relation": "contains",
@@ -6565,9 +6565,9 @@
       "source_file": "src/components/reminders-view.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_reminders_view",
-      "target": "lib_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase"
     },
     {
       "relation": "imports",
@@ -6576,9 +6576,9 @@
       "source_file": "src/components/reminders-view.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_reminders_view",
-      "target": "lib_supabase_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase_supabase"
     },
     {
       "relation": "contains",
@@ -6671,9 +6671,9 @@
       "source_file": "src/components/rooms-view.tsx",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_rooms_view",
-      "target": "lib_utils",
-      "confidence_score": 1.0
+      "target": "lib_utils"
     },
     {
       "relation": "imports",
@@ -6682,9 +6682,9 @@
       "source_file": "src/components/rooms-view.tsx",
       "source_location": "L25",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "components_rooms_view",
-      "target": "lib_utils_getdaysremaining",
-      "confidence_score": 1.0
+      "target": "lib_utils_getdaysremaining"
     },
     {
       "relation": "imports_from",
@@ -7138,9 +7138,9 @@
       "source_file": "src/instrumentation.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_instrumentation",
-      "target": "src_instrumentation_register",
-      "confidence_score": 1.0
+      "target": "src_instrumentation_register"
     },
     {
       "relation": "contains",
@@ -7179,9 +7179,9 @@
       "source_file": "src/lib/utils.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils_test",
-      "target": "lib_utils",
-      "confidence_score": 1.0
+      "target": "lib_utils"
     },
     {
       "relation": "imports",
@@ -7190,9 +7190,9 @@
       "source_file": "src/lib/utils.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils_test",
-      "target": "lib_utils_calculatenoticedays",
-      "confidence_score": 1.0
+      "target": "lib_utils_calculatenoticedays"
     },
     {
       "relation": "imports",
@@ -7201,9 +7201,9 @@
       "source_file": "src/lib/utils.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils_test",
-      "target": "lib_utils_cn",
-      "confidence_score": 1.0
+      "target": "lib_utils_cn"
     },
     {
       "relation": "imports",
@@ -7212,9 +7212,9 @@
       "source_file": "src/lib/utils.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils_test",
-      "target": "lib_utils_getdaysremaining",
-      "confidence_score": 1.0
+      "target": "lib_utils_getdaysremaining"
     },
     {
       "relation": "contains",
@@ -7222,9 +7222,9 @@
       "source_file": "src/lib/utils.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils",
-      "target": "lib_utils_calculatenoticedays",
-      "confidence_score": 1.0
+      "target": "lib_utils_calculatenoticedays"
     },
     {
       "relation": "contains",
@@ -7242,9 +7242,9 @@
       "source_file": "src/lib/utils.ts",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_utils",
-      "target": "lib_utils_getdaysremaining",
-      "confidence_score": 1.0
+      "target": "lib_utils_getdaysremaining"
     },
     {
       "relation": "contains",
@@ -7252,9 +7252,9 @@
       "source_file": "src/providers/QueryProvider.tsx",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "providers_queryprovider",
-      "target": "providers_queryprovider_makequeryclient",
-      "confidence_score": 1.0
+      "target": "providers_queryprovider_makequeryclient"
     },
     {
       "relation": "contains",
@@ -7262,9 +7262,9 @@
       "source_file": "src/providers/QueryProvider.tsx",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "providers_queryprovider",
-      "target": "providers_queryprovider_queryprovider",
-      "confidence_score": 1.0
+      "target": "providers_queryprovider_queryprovider"
     },
     {
       "relation": "contains",
@@ -8468,5 +8468,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "4dbadbf99c85e3ad21314a664b1f1ccbc287ab1d"
+  "built_at_commit": "21983e96ac728a12db108d63e556d362f21c933e"
 }

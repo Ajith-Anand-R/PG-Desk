@@ -260,7 +260,11 @@ export default function Home() {
                 return "reserved" as const;
               }
               return b.status as "available" | "occupied" | "reserved" | "notice";
-            })
+            }),
+          bedIds: (r.beds || [])
+            .filter((b: any) => !b.deleted_at)
+            .sort((a: any, b: any) => a.bed_number.localeCompare(b.bed_number))
+            .map((b: any) => String(b.id))
         }));
         setRooms(formattedRooms);
       }
@@ -816,6 +820,7 @@ export default function Home() {
       .from("beds")
       .select("*")
       .eq("room_id", roomId)
+      .is("deleted_at", null)
       .order("bed_number", { ascending: true });
 
     if (bedsList && bedsList[bedIndex]) {

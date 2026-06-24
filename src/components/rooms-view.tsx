@@ -104,41 +104,32 @@ export function RoomsView({
     setLoadingDetails(true);
 
     try {
-      // Fetch beds for this room and room rent info in parallel
-      const [bedsRes, roomRes] = await Promise.all([
-        supabase
-          .from("beds")
-          .select("*")
-          .eq("room_id", room.id)
-          .order("bed_number", { ascending: true }),
-        supabase
-          .from("rooms")
-          .select("rent")
-          .eq("id", room.id)
-          .single()
-      ]);
+      const targetBedId = room.bedIds?.[bedIndex];
+      if (!targetBedId) throw new Error("Bed ID not found.");
 
-      const bedsList = bedsRes.data;
-      const roomInfo = roomRes.data;
+      // Fetch room rent info
+      const { data: roomInfo } = await supabase
+        .from("rooms")
+        .select("rent")
+        .eq("id", room.id)
+        .single();
+
       const rentAmount = roomInfo ? Number(roomInfo.rent) : 0;
 
-      if (bedsList && bedsList[bedIndex]) {
-        const targetBed = bedsList[bedIndex];
+      if (status === "occupied" || status === "reserved" || status === "notice") {
+        // Fetch active, pending, prebooked, or notice tenant for this bed
+        const { data: tenantsForBed } = await supabase
+          .from("tenants")
+          .select("*, users(*)")
+          .eq("bed_id", targetBedId)
+          .in("status", ["active", "pending", "prebooked", "notice"]);
 
-        if (status === "occupied" || status === "reserved" || status === "notice") {
-          // Fetch active, pending, prebooked, or notice tenant for this bed
-          const { data: tenantsForBed } = await supabase
-            .from("tenants")
-            .select("*, users(*)")
-            .eq("bed_id", targetBed.id)
-            .in("status", ["active", "pending", "prebooked", "notice"]);
-
-          let tenantData = null;
-          if (tenantsForBed && tenantsForBed.length > 0) {
-            tenantData = tenantsForBed.find((t: any) => t.status === "active" || t.status === "notice")
-              || tenantsForBed.find((t: any) => t.status === "prebooked")
-              || tenantsForBed[0];
-          }
+        let tenantData = null;
+        if (tenantsForBed && tenantsForBed.length > 0) {
+          tenantData = tenantsForBed.find((t: any) => t.status === "active" || t.status === "notice")
+            || tenantsForBed.find((t: any) => t.status === "prebooked")
+            || tenantsForBed[0];
+        }
 
           if (tenantData) {
             // Fetch payments to find due date
@@ -179,7 +170,6 @@ export function RoomsView({
             rentAmount,
           });
         }
-      }
     } catch (err) {
       console.error("Error fetching bed details:", err);
     } finally {
@@ -282,51 +272,44 @@ export function RoomsView({
       return;
     }
     try {
-      const { data: bedsList } = await supabase
-        .from("beds")
-        .select("id")
-        .eq("room_id", Number(selectedBed.roomId))
-        .is("deleted_at", null)
-        .order("bed_number", { ascending: true });
+      const room = rooms.find((r) => r.id === selectedBed.roomId);
+      const targetBedId = room?.bedIds?.[selectedBed.bedIndex];
+      if (!targetBedId) throw new Error("Bed ID not found.");
 
-      if (bedsList && bedsList[selectedBed.bedIndex]) {
-        const targetBedId = bedsList[selectedBed.bedIndex].id;
-
-        // 1. If occupied/reserved/notice, mark occupant(s) as left
-        if (isOccupiedOrReserved) {
-          await supabase
-            .from("tenants")
-            .update({ status: "left", vacate_date: new Date().toISOString().split("T")[0] })
-            .eq("bed_id", targetBedId)
-            .in("status", ["active", "notice", "prebooked"]);
-        }
-
-        // 2. Soft delete bed
-        const { error } = await supabase
-          .from("beds")
-          .update({ deleted_at: new Date().toISOString() })
-          .eq("id", targetBedId);
-
-        if (error) throw error;
-
-        // 3. Decrement room capacity
-        const { data: roomInfo } = await supabase
-          .from("rooms")
-          .select("capacity")
-          .eq("id", Number(selectedBed.roomId))
-          .single();
-        if (roomInfo) {
-          const newCapacity = Math.max(0, Number(roomInfo.capacity) - 1);
-          await supabase
-            .from("rooms")
-            .update({ capacity: newCapacity })
-            .eq("id", Number(selectedBed.roomId));
-        }
-
-        setSelectedBed(null);
-        setBedDetails(null);
-        if (onRefresh) onRefresh();
+      // 1. If occupied/reserved/notice, mark occupant(s) as left
+      if (isOccupiedOrReserved) {
+        await supabase
+          .from("tenants")
+          .update({ status: "left", vacate_date: new Date().toISOString().split("T")[0] })
+          .eq("bed_id", targetBedId)
+          .in("status", ["active", "notice", "prebooked"]);
       }
+
+      // 2. Soft delete bed
+      const { error } = await supabase
+        .from("beds")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", targetBedId);
+
+      if (error) throw error;
+
+      // 3. Decrement room capacity
+      const { data: roomInfo } = await supabase
+        .from("rooms")
+        .select("capacity")
+        .eq("id", Number(selectedBed.roomId))
+        .single();
+      if (roomInfo) {
+        const newCapacity = Math.max(0, Number(roomInfo.capacity) - 1);
+        await supabase
+          .from("rooms")
+          .update({ capacity: newCapacity })
+          .eq("id", Number(selectedBed.roomId));
+      }
+
+      setSelectedBed(null);
+      setBedDetails(null);
+      if (onRefresh) onRefresh();
     } catch (err: any) {
       console.error("Error deleting bed:", err);
       alert(err.message || "Failed to delete bed.");
@@ -723,16 +706,13 @@ export function RoomsView({
                               if (tErr) throw tErr;
 
                               // 2. Update bed status to occupied
-                              const { data: bedsList } = await supabase
-                                .from("beds")
-                                .select("id")
-                                .eq("room_id", selectedBed.roomId)
-                                .order("bed_number", { ascending: true });
-                              if (bedsList && bedsList[selectedBed.bedIndex]) {
+                              const room = rooms.find((r) => r.id === selectedBed.roomId);
+                              const targetBedId = room?.bedIds?.[selectedBed.bedIndex];
+                              if (targetBedId) {
                                 const { error: bErr } = await supabase
                                   .from("beds")
                                   .update({ status: "occupied" })
-                                  .eq("id", bedsList[selectedBed.bedIndex].id);
+                                  .eq("id", targetBedId);
                                 if (bErr) throw bErr;
                               }
 

@@ -4,6 +4,7 @@ export interface Room {
   floor: number;
   capacity: number;
   beds: ("available" | "occupied" | "reserved" | "notice")[];
+  bedIds?: string[];
 }
 
 export interface Tenant {
