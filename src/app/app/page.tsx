@@ -155,6 +155,13 @@ export default function Home() {
   const [tenantRoomId, setTenantRoomId] = useState("");
   const [tenantRent, setTenantRent] = useState("");
   const [tenantDeposit, setTenantDeposit] = useState("");
+  const [tenantJoinDate, setTenantJoinDate] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
 
   // New Room form state
   const [roomName, setRoomName] = useState("");
@@ -914,7 +921,8 @@ export default function Home() {
         status: "active",
         invite_token: inviteToken,
         invite_expires_at: inviteExpiresAt,
-        user_id: null
+        user_id: null,
+        join_date: tenantJoinDate || null
       })
       .select()
       .single();
@@ -959,6 +967,13 @@ export default function Home() {
     setTenantRoomId("");
     setTenantRent("");
     setTenantDeposit("");
+    setTenantJoinDate(() => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    });
     setIsAddTenantOpen(false);
     alert(`Tenant boarded successfully! Share this Invite Token with them:\n\nToken: ${inviteToken}\nExpires: 7 days`);
     setToastMessage(`Tenant "${tenantName}" boarded successfully!`);
@@ -1886,19 +1901,35 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="tenantDeposit" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Security Deposit (₹)
-                  </label>
-                  <input
-                    id="tenantDeposit"
-                    type="number"
-                    value={tenantDeposit}
-                    onChange={(e) => setTenantDeposit(e.target.value)}
-                    placeholder="e.g. 10000"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="tenantDeposit" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Security Deposit (₹)
+                    </label>
+                    <input
+                      id="tenantDeposit"
+                      type="number"
+                      value={tenantDeposit}
+                      onChange={(e) => setTenantDeposit(e.target.value)}
+                      placeholder="e.g. 10000"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="tenantJoinDate" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Joining Date
+                    </label>
+                    <input
+                      id="tenantJoinDate"
+                      type="date"
+                      value={tenantJoinDate}
+                      onChange={(e) => setTenantJoinDate(e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white text-slate-800"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <button

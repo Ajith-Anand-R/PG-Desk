@@ -1,16 +1,16 @@
-# Graph Report - PG Desk  (2026-06-11)
+# Graph Report - PG Desk  (2026-06-24)
 
 ## Corpus Check
-- 46 files · ~62,440 words
+- 57 files · ~62,053 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 358 nodes · 396 edges · 48 communities (32 shown, 16 thin omitted)
+- 395 nodes · 450 edges · 38 communities (27 shown, 11 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `48afa518`
+- Built from commit: `4dbadbf9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -34,24 +34,11 @@
 - [[_COMMUNITY_Property Selector Bottom|Property Selector Bottom]]
 - [[_COMMUNITY_Graphify Lifecycle Update|Graphify Lifecycle Update]]
 - [[_COMMUNITY_Change Password Changepasswordview|Change Password Changepasswordview]]
-- [[_COMMUNITY_Receipts & Reminders|Receipts & Reminders]]
 - [[_COMMUNITY_Readme Deploy Vercel|Readme Deploy Vercel]]
-- [[_COMMUNITY_Bank Details Bankdetails|Bank Details Bankdetails]]
-- [[_COMMUNITY_Bills Billsview Billsviewprops|Bills Billsview Billsviewprops]]
-- [[_COMMUNITY_Notifications Notificationitem Notificationsview|Notifications Notificationitem Notificationsview]]
-- [[_COMMUNITY_Receipts & Reminders|Receipts & Reminders]]
-- [[_COMMUNITY_Support & Terms View|Support & Terms View]]
-- [[_COMMUNITY_Wallet Transaction Walletview|Wallet Transaction Walletview]]
 - [[_COMMUNITY_Graphify Lifecycle Update|Graphify Lifecycle Update]]
-- [[_COMMUNITY_Graphify Knowledge Graph|Graphify Knowledge Graph]]
 - [[_COMMUNITY_3D Graphics Scene|3D Graphics Scene]]
-- [[_COMMUNITY_Claude Settings Hooks|Claude Settings Hooks]]
-- [[_COMMUNITY_Create Property Createpropertyview|Create Property Createpropertyview]]
-- [[_COMMUNITY_Profile Profileview Profileviewprops|Profile Profileview Profileviewprops]]
-- [[_COMMUNITY_Property Modal Propertyqrmodal|Property Modal Propertyqrmodal]]
 - [[_COMMUNITY_Subscription Subscriptionview Subscriptionviewprops|Subscription Subscriptionview Subscriptionviewprops]]
 - [[_COMMUNITY_Graphify Lifecycle Update|Graphify Lifecycle Update]]
-- [[_COMMUNITY_Mobile Frame Mobileframe|Mobile Frame Mobileframe]]
 - [[_COMMUNITY_Linter Settings|Linter Settings]]
 - [[_COMMUNITY_Config Postcss|Config Postcss]]
 - [[_COMMUNITY_Graphify Knowledge Graph|Graphify Knowledge Graph]]
@@ -60,40 +47,40 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 16 edges
-2. `supabase` - 11 edges
+2. `supabase` - 14 edges
 3. `tailwind` - 6 edges
 4. `aliases` - 6 edges
 5. `Room` - 6 edges
-6. `scripts` - 5 edges
-7. `Button()` - 3 edges
-8. `cn()` - 3 edges
-9. `Step 1 - Ensure graphify is installed` - 3 edges
-10. `Save scan root so graphify update (no args) knows where to look next time` - 3 edges
+6. `Tenant` - 6 edges
+7. `scripts` - 5 edges
+8. `cn()` - 4 edges
+9. `BottomSheet()` - 3 edges
+10. `Button()` - 3 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Step 1 - Ensure graphify is installed` --references--> `Detect the correct Python interpreter (handles uv tool, pipx, venv, system installs)`  [EXTRACTED]
   .claude/skills/graphify/SKILL.md → .codex/skills/graphify/SKILL.md
 - `Write interpreter path for all subsequent steps (persists across invocations)` --references--> `Save scan root so graphify update (no args) knows where to look next time`  [EXTRACTED]
   .codex/skills/graphify/SKILL.md → .claude/skills/graphify/SKILL.md
+- `DepositNoticeViewProps` --references--> `Tenant`  [EXTRACTED]
+  src/components/deposit-notice-view.tsx → src/lib/types.ts
+- `PastTenantsViewProps` --references--> `Tenant`  [EXTRACTED]
+  src/components/past-tenants-view.tsx → src/lib/types.ts
 - `RoomsViewProps` --references--> `Room`  [EXTRACTED]
   src/components/rooms-view.tsx → src/lib/types.ts
-- `VacantBedsViewProps` --references--> `Room`  [EXTRACTED]
-  src/components/vacant-beds-view.tsx → src/lib/types.ts
-- `Button()` --calls--> `cn()`  [EXTRACTED]
-  src/components/ui/button.tsx → src/lib/utils.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (48 total, 16 thin omitted)
+## Communities (38 total, 11 thin omitted)
 
 ### Community 0 - "Agent System Documentation"
-Cohesion: 0.33
-Nodes (4): geistMono, metadata, outfit, viewport
+Cohesion: 0.25
+Nodes (5): geistMono, metadata, outfit, viewport, QueryProvider()
 
 ### Community 1 - "Bookings & Expenses Management"
-Cohesion: 0.08
-Nodes (22): BookingsView(), BookingsViewProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps, InventoryView(), InventoryViewProps, LoginView() (+14 more)
+Cohesion: 0.06
+Nodes (28): BookingsView(), BookingsViewProps, ChangePasswordView(), ChangePasswordViewProps, ChecklistItemProps, EXPENSE_CATEGORIES, ExpensesView(), ExpensesViewProps (+20 more)
 
 ### Community 2 - "Graphify Lifecycle Update"
 Cohesion: 0.11
@@ -104,8 +91,8 @@ Cohesion: 0.09
 Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent (+13 more)
 
 ### Community 4 - "3D Graphics Scene"
-Cohesion: 0.10
-Nodes (20): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+12 more)
+Cohesion: 0.09
+Nodes (23): dependencies, @base-ui/react, class-variance-authority, clsx, framer-motion, gsap, lucide-react, next (+15 more)
 
 ### Community 5 - "TypeScript Configuration"
 Cohesion: 0.10
@@ -120,12 +107,12 @@ Cohesion: 0.11
 Nodes (17): Also prune old nodes for re-extracted (changed) files before inserting fresh AST., and newextraction (buildmerge combines them). Falling back to, Explicit source/target last so they win over any stale attrs in d., For --cluster-only, For --update (incremental re-extraction), G.graph"hyperedges" holds hyperedges from both existing graph.json, graphify reference: incremental update and cluster-only, Load new extraction and incremental state (+9 more)
 
 ### Community 9 - "Page Tenant Terms"
-Cohesion: 0.19
-Nodes (7): DrawerItemProps, TabButtonProps, ViewType, DueItem, ReceiptItem, ReceiptsView(), ReceiptsViewProps
+Cohesion: 0.05
+Nodes (33): DrawerItemProps, TabButtonProps, ViewType, BankDetails, BankDetailsView(), BankDetailsViewProps, BillsView(), BillsViewProps (+25 more)
 
 ### Community 10 - "Rooms & Staff View"
-Cohesion: 0.16
-Nodes (11): RoomCardProps, RoomsView(), RoomsViewProps, VacantBedsView(), VacantBedsViewProps, Room, Tenant, BedIcon() (+3 more)
+Cohesion: 0.08
+Nodes (25): DepositNoticeView(), DepositNoticeViewProps, PastTenantsView(), PastTenantsViewProps, Property, PropertySelector(), PropertySelectorProps, RoomCardProps (+17 more)
 
 ### Community 11 - "Graphify Knowledge Graph"
 Cohesion: 0.07
@@ -147,69 +134,37 @@ Nodes (8): Add --backend gemini|kimi|openai|deepseek|claude-cli depending on whi
 Cohesion: 0.25
 Nodes (7): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if totalwords > 5000)
 
-### Community 16 - "Property Selector Bottom"
-Cohesion: 0.33
-Nodes (5): Property, PropertySelector(), PropertySelectorProps, BottomSheet(), BottomSheetProps
-
 ### Community 17 - "Graphify Lifecycle Update"
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
-
-### Community 18 - "Change Password Changepasswordview"
-Cohesion: 0.40
-Nodes (3): ChangePasswordView(), ChangePasswordViewProps, ChecklistItemProps
-
-### Community 19 - "Receipts & Reminders"
-Cohesion: 0.50
-Nodes (3): BankDetails, BankDetailsView(), BankDetailsViewProps
-
-### Community 21 - "Bank Details Bankdetails"
-Cohesion: 0.70
-Nodes (3): cn(), Button(), buttonVariants
-
-### Community 22 - "Bills Billsview Billsviewprops"
-Cohesion: 0.50
-Nodes (3): BillsView(), BillsViewProps, Tenant
-
-### Community 23 - "Notifications Notificationitem Notificationsview"
-Cohesion: 0.50
-Nodes (3): NotificationItem, NotificationsView(), NotificationsViewProps
-
-### Community 24 - "Receipts & Reminders"
-Cohesion: 0.50
-Nodes (3): ReminderItem, RemindersView(), RemindersViewProps
-
-### Community 25 - "Support & Terms View"
-Cohesion: 0.50
-Nodes (3): FAQItem, SupportView(), SupportViewProps
 
 ### Community 27 - "Graphify Lifecycle Update"
 Cohesion: 0.50
 Nodes (3): For /graphify add, For --watch, graphify reference: add a URL and watch a folder
 
 ### Community 51 - "Community 51"
-Cohesion: 0.17
-Nodes (11): background_color, description, display, icons, id, name, orientation, scope (+3 more)
+Cohesion: 0.12
+Nodes (15): background_color, categories, description, display, icons, id, launch_handler, client_mode (+7 more)
 
 ## Knowledge Gaps
-- **143 isolated node(s):** `recommendations`, `$schema`, `style`, `rsc`, `tsx` (+138 more)
+- **149 isolated node(s):** `recommendations`, `$schema`, `style`, `rsc`, `tsx` (+144 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `dependencies` connect `3D Graphics Scene` to `Linter Settings`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Why does `Save scan root so graphify update (no args) knows where to look next time` connect `Graphify Lifecycle Update` to `Graphify Knowledge Graph`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **What connects `recommendations`, `$schema`, `style` to the rest of the system?**
-  _143 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _149 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Bookings & Expenses Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.08172043010752689 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06282051282051282 - nodes in this community are weakly interconnected._
 - **Should `Graphify Lifecycle Update` be split into smaller, more focused modules?**
   _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._
 - **Should `Aliases Tailwind Hooks` be split into smaller, more focused modules?**
   _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
 - **Should `3D Graphics Scene` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
-- **Should `TypeScript Configuration` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
