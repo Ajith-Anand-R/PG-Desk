@@ -162,6 +162,10 @@ export default function Home() {
     const day = String(d.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   });
+  const [tenantAadhaar, setTenantAadhaar] = useState("");
+  const [tenantEmergencyContact, setTenantEmergencyContact] = useState("");
+  const [tenantAddress, setTenantAddress] = useState("");
+  const [tenantPhone, setTenantPhone] = useState("");
 
   // New Room form state
   const [roomName, setRoomName] = useState("");
@@ -965,7 +969,11 @@ export default function Home() {
         invite_token: inviteToken,
         invite_expires_at: inviteExpiresAt,
         user_id: null,
-        join_date: tenantJoinDate || null
+        join_date: tenantJoinDate || null,
+        phone: tenantPhone.trim() || null,
+        aadhaar_number: tenantAadhaar.trim() || null,
+        emergency_contact: tenantEmergencyContact.trim() || null,
+        permanent_address: tenantAddress.trim() || null
       })
       .select()
       .single();
@@ -1017,6 +1025,10 @@ export default function Home() {
       const day = String(d.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     });
+    setTenantPhone("");
+    setTenantAadhaar("");
+    setTenantEmergencyContact("");
+    setTenantAddress("");
     setIsAddTenantOpen(false);
     alert(`Tenant boarded successfully! Share this Invite Token with them:\n\nToken: ${inviteToken}\nExpires: 7 days`);
     setToastMessage(`Tenant "${tenantName}" boarded successfully!`);
@@ -1890,8 +1902,8 @@ export default function Home() {
                 </button>
               </div>
 
-              <form onSubmit={handleAddTenantSubmit} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
+              <form onSubmit={handleAddTenantSubmit} className="flex flex-col gap-4 max-h-[65vh] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-1.5 font-sans">
                   <label htmlFor="tenantName" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Full Name
                   </label>
@@ -1901,6 +1913,69 @@ export default function Home() {
                     value={tenantName}
                     onChange={(e) => setTenantName(e.target.value)}
                     placeholder="e.g. Rahul Sharma"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="tenantPhone" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Contact No.
+                    </label>
+                    <input
+                      id="tenantPhone"
+                      type="tel"
+                      value={tenantPhone}
+                      onChange={(e) => setTenantPhone(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="tenantAadhaar" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Aadhaar No.
+                    </label>
+                    <input
+                      id="tenantAadhaar"
+                      type="text"
+                      maxLength={12}
+                      value={tenantAadhaar}
+                      onChange={(e) => setTenantAadhaar(e.target.value.replace(/\D/g, ""))}
+                      placeholder="12-digit number"
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="tenantEmergencyContact" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Emergency Contact No.
+                  </label>
+                  <input
+                    id="tenantEmergencyContact"
+                    type="tel"
+                    value={tenantEmergencyContact}
+                    onChange={(e) => setTenantEmergencyContact(e.target.value)}
+                    placeholder="e.g. 9876543211"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="tenantAddress" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Permanent Address
+                  </label>
+                  <input
+                    id="tenantAddress"
+                    type="text"
+                    value={tenantAddress}
+                    onChange={(e) => setTenantAddress(e.target.value)}
+                    placeholder="e.g. Street, City, State"
                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
                     required
                   />
