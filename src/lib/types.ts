@@ -2,6 +2,7 @@ export interface Room {
   id: string;
   name: string;
   floor: number;
+  rent?: number;
   capacity: number;
   beds: ("available" | "occupied" | "reserved" | "notice")[];
   bedIds?: string[];

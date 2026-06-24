@@ -46,7 +46,7 @@ interface ReceiptsViewProps {
   initialTab?: "dues" | "receipts";
   dues?: DueItem[];
   receipts?: ReceiptItem[];
-  onCollectRent?: (dueId: string) => void;
+  onCollectRent?: (dueId: string, paymentMethod: string) => void;
 }
 
 export function ReceiptsView({
@@ -59,6 +59,7 @@ export function ReceiptsView({
 }: ReceiptsViewProps) {
   const [activeTab, setActiveTab] = useState<"dues" | "receipts">(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDueId, setSelectedDueId] = useState<string | null>(null);
 
   // Mock Receipts Database Fallback
   const defaultReceipts: ReceiptItem[] = [
@@ -459,7 +460,7 @@ export function ReceiptsView({
                             {onCollectRent && (
                               <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => onCollectRent(item.id)}
+                                onClick={() => setSelectedDueId(item.id)}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 rounded-xl text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-xs text-center"
                               >
                                 Mark Paid
@@ -511,6 +512,69 @@ export function ReceiptsView({
           <ChevronRight className="w-4 h-4" />
         </motion.button>
       </div>
+
+      {/* Payment Method Selector Modal */}
+      <AnimatePresence>
+        {selectedDueId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedDueId(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-10 bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-100"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <h3 className="font-bold text-lg text-slate-800">Select Payment Method</h3>
+                <button
+                  onClick={() => setSelectedDueId(null)}
+                  className="p-1 rounded-full hover:bg-slate-100 text-slate-400 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3 font-sans">
+                <p className="text-xs text-slate-500 font-semibold mb-2">
+                  Please choose how the tenant paid this outstanding balance:
+                </p>
+                
+                <button
+                  onClick={() => {
+                    if (onCollectRent && selectedDueId) {
+                      onCollectRent(selectedDueId, "UPI");
+                    }
+                    setSelectedDueId(null);
+                  }}
+                  className="w-full flex items-center justify-between bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/50 text-emerald-800 font-bold py-3.5 px-5 rounded-2xl transition-all cursor-pointer text-sm shadow-2xs"
+                >
+                  <span>Pay via UPI / Online</span>
+                  <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-extrabold uppercase">Recommended</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (onCollectRent && selectedDueId) {
+                      onCollectRent(selectedDueId, "Cash");
+                    }
+                    setSelectedDueId(null);
+                  }}
+                  className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 border border-slate-200/50 text-slate-800 font-bold py-3.5 px-5 rounded-2xl transition-all cursor-pointer text-sm"
+                >
+                  <span>Pay via Cash</span>
+                  <span className="text-[10px] bg-slate-500 text-white px-2 py-0.5 rounded-full font-extrabold uppercase">Cash</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

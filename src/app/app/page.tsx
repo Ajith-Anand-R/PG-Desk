@@ -171,6 +171,7 @@ export default function Home() {
   const [roomName, setRoomName] = useState("");
   const [roomFloor, setRoomFloor] = useState("");
   const [roomCapacity, setRoomCapacity] = useState("3");
+  const [roomRent, setRoomRent] = useState("7000");
 
   // Load session and user data from Supabase
   const fetchPgData = async (pgId: number | string) => {
@@ -237,6 +238,7 @@ export default function Home() {
           id: String(r.id),
           name: r.room_number,
           floor: r.floor,
+          rent: Number(r.rent || 0),
           capacity: (r.beds || []).filter((b: any) => !b.deleted_at).length,
           beds: (r.beds || [])
             .filter((b: any) => !b.deleted_at)
@@ -638,9 +640,32 @@ export default function Home() {
     return true;
   }).length;
 
-  const collectedAmountSum = payments
-    .filter((p) => p.status === "paid")
-    .reduce((acc, p) => acc + Number(p.amount), 0);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 1-indexed
+
+  const collectedAmountSum = (() => {
+    const currentMonthPaymentsSum = payments
+      .filter((p) => {
+        if (p.status !== "paid") return false;
+        if (!p.payment_date) return false;
+        const parts = p.payment_date.split("-");
+        if (parts.length < 2) return false;
+        return Number(parts[0]) === currentYear && Number(parts[1]) === currentMonth;
+      })
+      .reduce((acc, p) => acc + Number(p.amount), 0);
+
+    const currentMonthDepositsSum = tenants
+      .filter((t) => {
+        if (!t.joinDate) return false;
+        const parts = t.joinDate.split("-");
+        if (parts.length < 2) return false;
+        return Number(parts[0]) === currentYear && Number(parts[1]) === currentMonth;
+      })
+      .reduce((acc, t) => acc + Number(t.deposit || 0), 0);
+
+    return currentMonthPaymentsSum + currentMonthDepositsSum;
+  })();
 
   const pendingDuesAmount = payments
     .filter((p) => p.status === "pending" || p.status === "overdue")
@@ -1055,8 +1080,7 @@ export default function Home() {
 
     const pgId = profile.pg_id;
     const capacity = Number(roomCapacity);
-    // Hardcode basic rent for V1, or we can prompt for it
-    const rent = 7000;
+    const rent = Number(roomRent) || 7000;
 
     // Check for duplicate room name/number
     if (rooms.some(r => r.name.trim().toLowerCase() === roomName.trim().toLowerCase())) {
@@ -1098,11 +1122,12 @@ export default function Home() {
     setRoomName("");
     setRoomFloor("");
     setRoomCapacity("3");
+    setRoomRent("7000");
     setIsAddRoomOpen(false);
     setToastMessage(`Room "${roomName}" added successfully!`);
   };
 
-  const handleCollectRent = async (dueId: string) => {
+  const handleCollectRent = async (dueId: string, paymentMethod?: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
@@ -1115,13 +1140,18 @@ export default function Home() {
 
       if (!profile?.pg_id) return;
 
+      const method = paymentMethod || "UPI";
+      const referenceCode = method.toUpperCase() === "CASH" 
+        ? `CASH-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
+        : `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
+
       const { error } = await supabase
         .from("payments")
         .update({
           status: "paid",
           payment_date: new Date().toISOString().split("T")[0],
-          payment_method: "UPI",
-          reference_code: `TXN-${crypto.randomUUID().substring(0, 8).toUpperCase()}`
+          payment_method: method,
+          reference_code: referenceCode
         })
         .eq("id", dueId)
         .eq("pg_id", profile.pg_id);
@@ -1988,7 +2018,14 @@ export default function Home() {
                   <select
                     id="tenantRoom"
                     value={tenantRoomId}
-                    onChange={(e) => setTenantRoomId(e.target.value)}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      setTenantRoomId(selectedId);
+                      const selectedRoom = rooms.find((r) => r.id === selectedId);
+                      if (selectedRoom && selectedRoom.rent !== undefined) {
+                        setTenantRent(String(selectedRoom.rent));
+                      }
+                    }}
                     className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold bg-white"
                     required
                   >
@@ -2138,6 +2175,22 @@ export default function Home() {
                       required
                     />
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="roomRentInput" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Monthly Rent (₹)
+                  </label>
+                  <input
+                    id="roomRentInput"
+                    type="number"
+                    min="0"
+                    value={roomRent}
+                    onChange={(e) => setRoomRent(e.target.value)}
+                    placeholder="e.g. 7000"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-semibold"
+                    required
+                  />
                 </div>
 
                 <button

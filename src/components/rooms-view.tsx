@@ -16,7 +16,9 @@ import {
   AlertCircle,
   AlertTriangle,
   Clock,
-  Trash2
+  Trash2,
+  Edit2,
+  Check
 } from "lucide-react";
 import { StatCard } from "./ui/stat-card";
 import { BedIcon } from "./ui/bed-icon";
@@ -62,6 +64,31 @@ export function RoomsView({
 
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
+
+  const [isEditingRent, setIsEditingRent] = useState(false);
+  const [editRentAmount, setEditRentAmount] = useState("");
+
+  const handleSaveRent = async () => {
+    if (!selectedBed || !editRentAmount) return;
+    try {
+      const { error } = await supabase
+        .from("rooms")
+        .update({ rent: Number(editRentAmount) })
+        .eq("id", selectedBed.roomId);
+
+      if (error) {
+        alert("Error updating rent: " + error.message);
+      } else {
+        setBedDetails(prev => prev ? { ...prev, rentAmount: Number(editRentAmount) } : null);
+        setIsEditingRent(false);
+        if (onRefresh) {
+          onRefresh();
+        }
+      }
+    } catch (err) {
+      console.error("Error saving rent:", err);
+    }
+  };
 
   // Helper to calculate days remaining for notice period
   const getDaysRemaining = (vacateDateStr?: string | null) => {
@@ -506,6 +533,7 @@ export function RoomsView({
                 onClick={() => {
                   setSelectedBed(null);
                   setBedDetails(null);
+                  setIsEditingRent(false);
                 }}
                 className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-400 cursor-pointer"
               >
@@ -560,9 +588,45 @@ export function RoomsView({
                           <span className="text-xs font-black text-slate-700">Monthly Rent</span>
                         </div>
                       </div>
-                      <span className="text-sm font-black text-slate-800 font-mono">
-                        {formatCurrency(bedDetails?.rentAmount)}
-                      </span>
+                      
+                      {isEditingRent ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={editRentAmount}
+                            onChange={(e) => setEditRentAmount(e.target.value)}
+                            className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 focus:outline-hidden"
+                            autoFocus
+                          />
+                          <button
+                            onClick={handleSaveRent}
+                            className="p-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setIsEditingRent(false)}
+                            className="p-1 rounded-md bg-slate-200 hover:bg-slate-300 text-slate-600 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-slate-800 font-mono">
+                            {formatCurrency(bedDetails?.rentAmount)}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setEditRentAmount(String(bedDetails?.rentAmount || ""));
+                              setIsEditingRent(true);
+                            }}
+                            className="p-1 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {(selectedBed.status === "occupied" || selectedBed.status === "reserved" || selectedBed.status === "notice") ? (
