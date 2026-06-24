@@ -401,11 +401,31 @@ export default function Home() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setIsLoggedIn(true);
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from("users")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
+
+        if (!profile) {
+          // Re-create user profile if it's missing (e.g. truncated public.users)
+          const metadata = session.user.user_metadata || {};
+          const { data: newProfile } = await supabase
+            .from("users")
+            .insert({
+              id: session.user.id,
+              name: metadata.name || metadata.full_name || session.user.email?.split("@")[0] || "Owner",
+              email: session.user.email || "",
+              phone: metadata.phone || "",
+              role: metadata.role || "Owner",
+              photo: metadata.avatar_url || null
+            })
+            .select()
+            .maybeSingle();
+          if (newProfile) {
+            profile = newProfile;
+          }
+        }
 
         if (profile) {
           setUser({
@@ -415,8 +435,6 @@ export default function Home() {
             photo: profile.photo || null,
             role: profile.role
           });
-
-
 
           // Fetch properties list for this Owner
           const { data: pgsList } = await supabase
@@ -464,11 +482,31 @@ export default function Home() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setIsLoggedIn(true);
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from("users")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
+
+        if (!profile) {
+          const metadata = session.user.user_metadata || {};
+          const { data: newProfile } = await supabase
+            .from("users")
+            .insert({
+              id: session.user.id,
+              name: metadata.name || metadata.full_name || session.user.email?.split("@")[0] || "Owner",
+              email: session.user.email || "",
+              phone: metadata.phone || "",
+              role: metadata.role || "Owner",
+              photo: metadata.avatar_url || null
+            })
+            .select()
+            .maybeSingle();
+          if (newProfile) {
+            profile = newProfile;
+          }
+        }
+
         if (profile) {
           setUser({
             name: profile.name,
