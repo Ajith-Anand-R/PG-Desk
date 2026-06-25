@@ -180,22 +180,33 @@ export function DepositNoticeView({
       if (tenant.bedId) {
         const bedIdNum = parseInt(tenant.bedId);
         
-        // Check if there is a prebooked tenant waiting for this bed
-        const { data: prebookedTenant } = await supabase
+        // Check if there is another active or notice tenant still occupying this bed
+        const { data: otherActiveTenant } = await supabase
           .from("tenants")
           .select("id")
           .eq("bed_id", bedIdNum)
-          .eq("status", "prebooked")
+          .in("status", ["active", "notice"])
+          .neq("id", parseInt(tenant.id))
           .maybeSingle();
 
-        const newBedStatus = prebookedTenant ? "reserved" : "available";
+        if (!otherActiveTenant) {
+          // Check if there is a prebooked tenant waiting for this bed
+          const { data: prebookedTenant } = await supabase
+            .from("tenants")
+            .select("id")
+            .eq("bed_id", bedIdNum)
+            .eq("status", "prebooked")
+            .maybeSingle();
 
-        const { error: bedError } = await supabase
-          .from("beds")
-          .update({ status: newBedStatus })
-          .eq("id", bedIdNum);
+          const newBedStatus = prebookedTenant ? "reserved" : "available";
 
-        if (bedError) throw bedError;
+          const { error: bedError } = await supabase
+            .from("beds")
+            .update({ status: newBedStatus })
+            .eq("id", bedIdNum);
+
+          if (bedError) throw bedError;
+        }
       }
 
       setSuccessMessage(`${tenant.name} checked out successfully.`);
