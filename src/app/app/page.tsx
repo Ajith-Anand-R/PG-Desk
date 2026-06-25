@@ -645,7 +645,7 @@ export default function Home() {
   const currentMonth = now.getMonth() + 1; // 1-indexed
 
   const collectedAmountSum = (() => {
-    const currentMonthPaymentsSum = payments
+    return payments
       .filter((p) => {
         if (p.status !== "paid") return false;
         if (!p.payment_date) return false;
@@ -654,17 +654,6 @@ export default function Home() {
         return Number(parts[0]) === currentYear && Number(parts[1]) === currentMonth;
       })
       .reduce((acc, p) => acc + Number(p.amount), 0);
-
-    const currentMonthDepositsSum = tenants
-      .filter((t) => {
-        if (!t.joinDate) return false;
-        const parts = t.joinDate.split("-");
-        if (parts.length < 2) return false;
-        return Number(parts[0]) === currentYear && Number(parts[1]) === currentMonth;
-      })
-      .reduce((acc, t) => acc + Number(t.deposit || 0), 0);
-
-    return currentMonthPaymentsSum + currentMonthDepositsSum;
   })();
 
   const pendingDuesAmount = payments

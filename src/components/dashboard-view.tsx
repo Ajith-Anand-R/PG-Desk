@@ -172,6 +172,7 @@ export function DashboardView({
             const shortName = matchedMonth.short;
             if (p.status === "paid") {
               details[shortName].depositCollected += amount;
+              details[shortName].totalRevenue += amount;
             }
           }
         } else {
